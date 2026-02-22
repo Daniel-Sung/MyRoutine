@@ -110,45 +110,6 @@ body {
 
 .icon-btn:active { transform: scale(0.9); }
 
-/* Steps Indicator */
-.steps {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  padding: 0 4px;
-}
-
-.step {
-  flex: 1;
-  text-align: center;
-  padding: 8px 4px;
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--card);
-  color: var(--text-light);
-  transition: all var(--transition);
-  position: relative;
-}
-
-.step.active {
-  background: var(--mint);
-  color: white;
-  box-shadow: 0 2px 8px rgba(126, 206, 193, 0.4);
-}
-
-.step.completed {
-  background: var(--mint-light);
-  color: var(--mint);
-}
-
-.step-num {
-  display: block;
-  font-size: 14px;
-  font-weight: 800;
-  margin-bottom: 2px;
-}
-
 /* Card */
 .card {
   background: var(--card);
@@ -619,7 +580,7 @@ body {
 .bar-fill {
   height: 100%;
   border-radius: 4px;
-  transition: width 0.6s ease;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .bar-fill.fixed { background: var(--blue-gray); }
@@ -987,6 +948,156 @@ body {
   justify-content: center;
 }
 
+/* Monthly Calendar */
+.calendar-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-header h3 {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.calendar-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg);
+  color: var(--text-sub);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+
+.calendar-nav:active { background: var(--mint-bg); }
+
+.calendar-dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-light);
+  margin-bottom: 4px;
+}
+
+.calendar-dow span:first-child { color: var(--coral); }
+.calendar-dow span:last-child { color: var(--blue-gray); }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-light);
+  position: relative;
+  cursor: default;
+}
+
+.calendar-day.has-data {
+  color: var(--text);
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--bg);
+}
+
+.calendar-day.has-data:active { background: var(--mint-bg); }
+
+.calendar-day.today {
+  border: 2px solid var(--mint);
+}
+
+.calendar-day.starred .day-star {
+  display: block;
+}
+
+.day-num {
+  line-height: 1;
+}
+
+.day-star {
+  display: none;
+  color: #FFD700;
+  font-size: 10px;
+  line-height: 1;
+  margin-top: 1px;
+}
+
+.calendar-summary {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-sub);
+}
+
+.calendar-summary .star-count {
+  color: #FFD700;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes barGrow {
+  from { width: 0%; }
+}
+
+.summary-card {
+  animation: fadeInUp 0.6s ease both;
+}
+
+.bar-chart-item {
+  animation: fadeInUp 0.4s ease both;
+}
+
+.bar-chart-item:nth-child(1) { animation-delay: 0s; }
+.bar-chart-item:nth-child(2) { animation-delay: 0.05s; }
+.bar-chart-item:nth-child(3) { animation-delay: 0.1s; }
+.bar-chart-item:nth-child(4) { animation-delay: 0.15s; }
+.bar-chart-item:nth-child(5) { animation-delay: 0.2s; }
+.bar-chart-item:nth-child(6) { animation-delay: 0.25s; }
+.bar-chart-item:nth-child(7) { animation-delay: 0.3s; }
+.bar-chart-item:nth-child(8) { animation-delay: 0.35s; }
+
+.stat-row {
+  animation: fadeInUp 0.4s ease both;
+}
+.stat-row:nth-child(1) { animation-delay: 0.1s; }
+.stat-row:nth-child(2) { animation-delay: 0.2s; }
+.stat-row:nth-child(3) { animation-delay: 0.3s; }
+
+.key-question {
+  animation: fadeInUp 0.5s ease both;
+  animation-delay: 0.2s;
+}
+
 /* Print hide */
 @media print {
   .tab-bar, .header-actions, .btn, .delete-btn, .pwa-install-banner { display: none !important; }
@@ -1000,6 +1111,7 @@ body {
   <div class="header">
     <h1>MyRoutine</h1>
     <div class="header-actions">
+      <button class="icon-btn" onclick="switchTab('history')" title="히스토리">📅</button>
       <button class="icon-btn" onclick="toggleDarkMode()" title="다크 모드">🌙</button>
       <button class="icon-btn" onclick="showBackupModal()" title="백업/복원">💾</button>
     </div>
@@ -1007,12 +1119,6 @@ body {
 
   <!-- Section: Record (미션1) -->
   <div id="sec-record" class="section active">
-    <div class="steps">
-      <div class="step active"><span class="step-num">1</span>기록</div>
-      <div class="step"><span class="step-num">2</span>분류</div>
-      <div class="step"><span class="step-num">3</span>분석</div>
-    </div>
-
     <div class="card">
       <div class="date-display">
         <div class="date" id="current-date"></div>
@@ -1052,12 +1158,6 @@ body {
 
   <!-- Section: Classify (미션2) -->
   <div id="sec-classify" class="section">
-    <div class="steps">
-      <div class="step completed"><span class="step-num">✓</span>기록</div>
-      <div class="step active"><span class="step-num">2</span>분류</div>
-      <div class="step"><span class="step-num">3</span>분석</div>
-    </div>
-
     <div class="guide">
       <strong>고정 시간</strong>: 반드시 해야 하는 것 (업무, 출퇴근, 식사, 수면 등)<br>
       <strong>유동 시간</strong>: 내가 스스로 선택하는 시간 (영화, 산책, SNS 등)
@@ -1072,12 +1172,6 @@ body {
 
   <!-- Section: Analysis (미션3) -->
   <div id="sec-analysis" class="section">
-    <div class="steps">
-      <div class="step completed"><span class="step-num">✓</span>기록</div>
-      <div class="step completed"><span class="step-num">✓</span>분류</div>
-      <div class="step active"><span class="step-num">3</span>분석</div>
-    </div>
-
     <div class="card">
       <h3 style="font-size:16px;margin-bottom:16px;text-align:center">시간 분배</h3>
       <div class="chart-container">
@@ -1106,6 +1200,8 @@ body {
     <div id="final-summary"></div>
 
     <div id="encourage-msg"></div>
+
+    <div id="monthly-calendar"></div>
 
     <button class="btn btn-coral btn-block" onclick="exportPDF()" style="margin-top:16px">
       📄 PDF로 내보내기
@@ -1138,6 +1234,21 @@ body {
                  style="padding:8px;border:2px solid var(--mint-light);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);outline:none"
                  onchange="saveSettings()">
         </div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06)">
+          <h4 style="font-size:13px;color:var(--text-sub);margin-bottom:10px">카테고리 색상</h4>
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
+            <label style="font-size:13px;flex-shrink:0">고정 시간</label>
+            <input type="color" id="color-fixed" value="#8E9AAF"
+                   style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none"
+                   onchange="saveColorSettings()">
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <label style="font-size:13px;flex-shrink:0">유동 시간</label>
+            <input type="color" id="color-flexible" value="#7ECEC1"
+                   style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none"
+                   onchange="saveColorSettings()">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1154,9 +1265,6 @@ body {
     </button>
     <button class="tab" data-tab="analysis" onclick="switchTab('analysis')">
       <span class="tab-icon">📊</span>분석
-    </button>
-    <button class="tab" data-tab="history" onclick="switchTab('history')">
-      <span class="tab-icon">📅</span>히스토리
     </button>
   </div>
 </div>
@@ -1181,15 +1289,21 @@ body {
 
 <script>
 // ============== State ==============
-const DEFAULT_PRESETS = ['기상', '식사', '이동', '업무', '몰입', '운동', '산책', '독서', '시청', '가족', '가사'];
+const DEFAULT_PRESETS = ['기상', '식사', '이동', '업무', '몰입', '운동', '독서', '시청', '게임', '가족', '가사', '위생', '취침'];
 const DEFAULT_CATEGORIES = {
   '기상': 'fixed', '식사': 'fixed', '이동': 'fixed', '업무': 'fixed',
-  '몰입': 'flexible', '운동': 'flexible', '산책': 'flexible', '독서': 'flexible',
-  '시청': 'flexible', '가족': 'flexible', '가사': 'flexible'
+  '몰입': 'flexible', '운동': 'flexible', '독서': 'flexible',
+  '시청': 'flexible', '게임': 'flexible', '가족': 'flexible', '가사': 'flexible', '위생': 'fixed', '취침': 'fixed'
 };
+const DEFAULT_ICONS = {
+  '기상': '🌅', '식사': '🍽️', '이동': '🚗', '업무': '💼', '몰입': '🎯',
+  '운동': '💪', '독서': '📖', '시청': '📺', '게임': '🎮', '가족': '👨‍👩‍👧', '가사': '🧹', '위생': '🧼', '취침': '😴', '수면': '😴'
+};
+function getIcon(activity) { return DEFAULT_ICONS[activity] || '📌'; }
 let data = { dates: {}, activityPresets: {}, settings: { defaultSleepStart: '00:00', defaultWakeUp: '07:00' } };
 let currentDate = getTodayStr();
 let donutChart = null;
+let calendarMonth = null;
 
 // ============== Init ==============
 function init() {
@@ -1203,6 +1317,7 @@ function init() {
       localStorage.getItem('myRoutineDark') === 'true') {
     document.documentElement.setAttribute('data-theme', 'dark');
   }
+  loadColorSettings();
 }
 
 function getTodayStr() {
@@ -1254,12 +1369,39 @@ function saveSettings() {
   saveData();
 }
 
+function saveColorSettings() {
+  const fixedColor = document.getElementById('color-fixed').value;
+  const flexColor = document.getElementById('color-flexible').value;
+  localStorage.setItem('myRoutineColorFixed', fixedColor);
+  localStorage.setItem('myRoutineColorFlex', flexColor);
+  applyCustomColors(fixedColor, flexColor);
+}
+
+function loadColorSettings() {
+  const fixedColor = localStorage.getItem('myRoutineColorFixed') || '#8E9AAF';
+  const flexColor = localStorage.getItem('myRoutineColorFlex') || '#7ECEC1';
+  document.getElementById('color-fixed').value = fixedColor;
+  document.getElementById('color-flexible').value = flexColor;
+  applyCustomColors(fixedColor, flexColor);
+}
+
+function applyCustomColors(fixedColor, flexColor) {
+  document.documentElement.style.setProperty('--blue-gray', fixedColor);
+  document.documentElement.style.setProperty('--mint', flexColor);
+  // Compute lighter variants
+  const fixLt = fixedColor + '66';
+  const flexLt = flexColor + '66';
+  document.documentElement.style.setProperty('--blue-gray-light', fixedColor + '99');
+  document.documentElement.style.setProperty('--mint-light', flexColor + '99');
+}
+
 // ============== Tab Navigation ==============
 function switchTab(tab) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.getElementById('sec-' + tab).classList.add('active');
-  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+  const bottomTab = document.querySelector(`.tab[data-tab="${tab}"]`);
+  if (bottomTab) bottomTab.classList.add('active');
 
   if (tab === 'classify') renderClassify();
   if (tab === 'analysis') renderAnalysis();
@@ -1268,6 +1410,7 @@ function switchTab(tab) {
 
 function switchDate(d) {
   currentDate = d;
+  calendarMonth = null;
   renderAll();
 }
 
@@ -1318,10 +1461,21 @@ function editEntryTime(id) {
   const entry = dd.entries.find(e => e.id === id);
   if (!entry) return;
 
+  const hour = parseInt(entry.time.split(':')[0]);
   showModal(`
     <h3>시간 수정</h3>
-    <p style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${entry.activity}</p>
-    <input type="time" id="modal-time" value="${entry.time}">
+    <p style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${getIcon(entry.activity)} ${entry.activity}</p>
+    <div style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-sub);margin-bottom:4px">
+        <span>0시</span><span id="slider-label">${hour}시</span><span>23시</span>
+      </div>
+      <input type="range" id="modal-hour-slider" min="0" max="23" value="${hour}"
+        style="width:100%;accent-color:var(--mint);"
+        oninput="document.getElementById('slider-label').textContent=this.value+'시';
+          var t=document.getElementById('modal-time');var m=t.value.split(':')[1]||'00';
+          t.value=String(this.value).padStart(2,'0')+':'+m;">
+    </div>
+    <input type="time" id="modal-time" value="${entry.time}" oninput="document.getElementById('modal-hour-slider').value=parseInt(this.value.split(':')[0]);document.getElementById('slider-label').textContent=parseInt(this.value.split(':')[0])+'시';">
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">취소</button>
       <button class="btn btn-primary" onclick="confirmEditTime('${id}')">확인</button>
@@ -1423,7 +1577,7 @@ function renderTimeline() {
         <div class="timeline-content">
           <div class="timeline-info">
             <div class="timeline-time" onclick="editEntryTime('${entry.id}')">${entry.time}</div>
-            <div class="timeline-activity">${escHtml(entry.activity)}</div>
+            <div class="timeline-activity">${getIcon(entry.activity)} ${escHtml(entry.activity)}</div>
             ${duration ? `<div class="timeline-duration">${duration}</div>` : ''}
           </div>
           ${dd.status !== 'completed' ? `
@@ -1457,7 +1611,7 @@ function renderChips() {
   }
 
   container.innerHTML = chips.map(c =>
-    `<button class="chip" onmousedown="event.preventDefault()" onclick="addEntry('${escAttr(c)}')">${escHtml(c)}</button>`
+    `<button class="chip" onmousedown="event.preventDefault()" onclick="addEntry('${escAttr(c)}')">${getIcon(c)} ${escHtml(c)}</button>`
   ).join('');
 }
 
@@ -1478,7 +1632,7 @@ function renderClassify() {
     html += `
       <div class="classify-item ${cat}">
         <div class="classify-info">
-          <div class="classify-activity">${escHtml(entry.activity)}</div>
+          <div class="classify-activity">${getIcon(entry.activity)} ${escHtml(entry.activity)}</div>
           <div class="classify-time">${entry.time} ${duration ? '· ' + duration : ''}</div>
         </div>
         <div class="toggle-group">
@@ -1517,6 +1671,7 @@ function goAnalysis() {
 }
 
 function renderAnalysis() {
+  renderMonthlyCalendar();
   const dd = getDateData(currentDate);
   if (!dd || dd.entries.length === 0) {
     document.getElementById('stat-summary').innerHTML = '<div class="empty-state"><p>분석할 데이터가 없어요</p></div>';
@@ -1620,19 +1775,37 @@ function renderStatSummary(stats) {
 
 function renderBarChart(dd, stats) {
   const container = document.getElementById('bar-chart-list');
-  const maxMin = Math.max(...stats.activities.map(a => a.minutes), 1);
 
-  container.innerHTML = stats.activities.map(a => `
+  // Aggregate same activity names (sleep is already single)
+  const merged = {};
+  stats.activities.forEach(a => {
+    if (merged[a.activity]) {
+      merged[a.activity].minutes += a.minutes;
+    } else {
+      merged[a.activity] = { ...a };
+    }
+  });
+  const mergedList = Object.values(merged).sort((a, b) => b.minutes - a.minutes);
+  const maxMin = Math.max(...mergedList.map(a => a.minutes), 1);
+
+  container.innerHTML = mergedList.map(a => `
     <div class="bar-chart-item">
       <div class="bar-label">
-        <span>${escHtml(a.activity)}</span>
+        <span>${getIcon(a.activity)} ${escHtml(a.activity)}</span>
         <span>${formatMin(a.minutes)}</span>
       </div>
       <div class="bar-track">
-        <div class="bar-fill ${a.category || 'fixed'}" style="width:${(a.minutes/maxMin*100)}%"></div>
+        <div class="bar-fill ${a.category || 'fixed'}" data-width="${(a.minutes/maxMin*100)}" style="width:0%"></div>
       </div>
     </div>
   `).join('');
+
+  // Animate bars
+  requestAnimationFrame(() => {
+    container.querySelectorAll('.bar-fill').forEach(el => {
+      el.style.width = el.dataset.width + '%';
+    });
+  });
 }
 
 function renderDesiredList(dd, stats) {
@@ -1651,7 +1824,7 @@ function renderDesiredList(dd, stats) {
       <div class="desired-item ${checked ? 'checked' : ''}" onclick="toggleDesired('${entry ? entry.id : ''}')">
         <div class="desired-check">${checked ? '✓' : ''}</div>
         <div style="flex:1">
-          <div style="font-weight:600;font-size:14px">${escHtml(a.activity)}</div>
+          <div style="font-weight:600;font-size:14px">${getIcon(a.activity)} ${escHtml(a.activity)}</div>
           <div style="font-size:12px;color:var(--text-sub)">${formatMin(a.minutes)}</div>
         </div>
       </div>
@@ -1736,6 +1909,7 @@ function renderHistory() {
 
 function loadHistoryDate(d) {
   currentDate = d;
+  calendarMonth = null;
   document.getElementById('record-date').value = d;
   const dd = data.dates[d];
   if (dd && dd.status === 'completed') {
@@ -1747,6 +1921,53 @@ function loadHistoryDate(d) {
 }
 
 // ============== PDF Export ==============
+function buildPdfCalendar() {
+  const [y, mo] = currentDate.split('-').map(Number);
+  const firstDay = new Date(y, mo - 1, 1).getDay();
+  const daysInMonth = new Date(y, mo, 0).getDate();
+  const dowLabels = ['일','월','화','수','목','금','토'];
+
+  let totalWithData = 0, starCount = 0;
+  const dayData = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${y}-${String(mo).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const result = calcDesiredPctForDate(ds);
+    const hasData = result !== null;
+    const starred = hasData && result.flexMin > 0 && result.desiredPct >= 80;
+    if (hasData) totalWithData++;
+    if (starred) starCount++;
+    dayData.push({ day: d, hasData, starred, dateStr: ds });
+  }
+
+  let cells = '';
+  const cellStyle = 'width:14.28%;text-align:center;padding:6px 2px;font-size:12px;';
+  // Header
+  cells += '<tr>' + dowLabels.map(d => `<th style="${cellStyle}font-weight:600;color:#888;">${d}</th>`).join('') + '</tr>';
+  // Empty leading cells
+  let row = '<tr>';
+  for (let i = 0; i < firstDay; i++) row += `<td style="${cellStyle}"></td>`;
+  let col = firstDay;
+  dayData.forEach(dd => {
+    const bg = dd.dateStr === currentDate ? '#E8F6F3' : (dd.hasData ? '#fafafa' : '#fff');
+    const star = dd.starred ? ' ★' : '';
+    const color = dd.starred ? '#FFD700' : (dd.hasData ? '#333' : '#ccc');
+    row += `<td style="${cellStyle}background:${bg};color:${color};border-radius:6px;">${dd.day}${star}</td>`;
+    col++;
+    if (col % 7 === 0) { row += '</tr><tr>'; }
+  });
+  // Fill remaining
+  while (col % 7 !== 0) { row += `<td style="${cellStyle}"></td>`; col++; }
+  row += '</tr>';
+
+  return `
+    <div style="margin-top:24px;page-break-before:auto;">
+      <h3 style="font-size:16px;color:#333;margin-bottom:8px;">${y}년 ${mo}월 달성 현황</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:8px;">${cells}${row}</table>
+      <p style="text-align:center;font-size:13px;color:#888;">${totalWithData}일 중 ${starCount}일 달성 ★</p>
+    </div>
+  `;
+}
+
 function exportPDF() {
   const dd = getDateData(currentDate);
   const stats = calcStats(dd);
@@ -1813,6 +2034,8 @@ function exportPDF() {
         <p style="font-size:32px;font-weight:800;color:#FF7F7F;margin:8px 0;">${h}시간 ${m}분</p>
         <p style="font-size:13px;color:#888;">유동 시간 중 ${desiredPct}%가 원하는 삶을 위한 시간입니다</p>
       </div>
+
+      ${buildPdfCalendar()}
     </div>
   `;
 
@@ -1997,6 +2220,114 @@ function showToast(msg) {
   setTimeout(() => { toast.style.opacity = '0'; }, 2000);
 }
 
+// ============== Monthly Calendar ==============
+function calcDesiredPctForDate(dateStr) {
+  const dd = data.dates[dateStr];
+  if (!dd || dd.status !== 'completed' || dd.entries.length === 0) return null;
+
+  let flexMin = 0;
+  dd.entries.forEach((entry, i) => {
+    if (entry.category === 'flexible') {
+      flexMin += calcDurationMin(dd, i);
+    }
+  });
+
+  if (flexMin <= 0) return { flexMin: 0, desiredPct: 0 };
+
+  let desiredMin = 0;
+  dd.entries.forEach((entry, i) => {
+    if (entry.category === 'flexible' && entry.isDesiredLife) {
+      desiredMin += calcDurationMin(dd, i);
+    }
+  });
+
+  return { flexMin, desiredPct: Math.round(desiredMin / flexMin * 100) };
+}
+
+function renderMonthlyCalendar() {
+  const container = document.getElementById('monthly-calendar');
+  if (!container) return;
+
+  // Determine which month to show
+  if (!calendarMonth) {
+    const [y, m] = currentDate.split('-').map(Number);
+    calendarMonth = { year: y, month: m };
+  }
+
+  const { year, month } = calendarMonth;
+  const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const todayStr = getTodayStr();
+
+  // Build day cells
+  let dayCells = '';
+  // Empty cells for offset
+  for (let i = 0; i < firstDay; i++) {
+    dayCells += '<div class="calendar-day"></div>';
+  }
+
+  let totalWithData = 0;
+  let starCount = 0;
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = dateStr === todayStr;
+    const result = calcDesiredPctForDate(dateStr);
+    const hasData = result !== null;
+    const starred = hasData && result.flexMin > 0 && result.desiredPct >= 80;
+
+    if (hasData) totalWithData++;
+    if (starred) starCount++;
+
+    const classes = ['calendar-day'];
+    if (hasData) classes.push('has-data');
+    if (isToday) classes.push('today');
+    if (starred) classes.push('starred');
+
+    const onclick = hasData ? ` onclick="loadHistoryDate('${dateStr}')"` : '';
+
+    dayCells += `<div class="${classes.join(' ')}"${onclick}>
+      <span class="day-num">${d}</span>
+      <span class="day-star">★</span>
+    </div>`;
+  }
+
+  const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  container.innerHTML = `
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <button class="calendar-nav" onclick="changeCalendarMonth(-1)">◀</button>
+        <h3>${year}년 ${monthNames[month - 1]}</h3>
+        <button class="calendar-nav" onclick="changeCalendarMonth(1)">▶</button>
+      </div>
+      <div class="calendar-dow">
+        <span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span>
+      </div>
+      <div class="calendar-grid">
+        ${dayCells}
+      </div>
+      ${totalWithData > 0 ? `<div class="calendar-summary"><span class="star-count">★</span> ${totalWithData}일 중 ${starCount}일 달성</div>` : ''}
+    </div>
+  `;
+}
+
+function changeCalendarMonth(delta) {
+  if (!calendarMonth) {
+    const [y, m] = currentDate.split('-').map(Number);
+    calendarMonth = { year: y, month: m };
+  }
+  calendarMonth.month += delta;
+  if (calendarMonth.month > 12) {
+    calendarMonth.month = 1;
+    calendarMonth.year++;
+  } else if (calendarMonth.month < 1) {
+    calendarMonth.month = 12;
+    calendarMonth.year--;
+  }
+  renderMonthlyCalendar();
+}
+
 // ============== Render All ==============
 function renderAll() {
   renderTimeline();
@@ -2037,6 +2368,29 @@ function dismissInstallBanner() {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+// ============== Touch Swipe ==============
+(function() {
+  const TAB_ORDER = ['record', 'classify', 'analysis'];
+  let touchStartX = 0, touchStartY = 0;
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].screenX - touchStartX;
+    const dy = e.changedTouches[0].screenY - touchStartY;
+    if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+    // Find current tab
+    const activeSection = document.querySelector('.section.active');
+    if (!activeSection) return;
+    const cur = activeSection.id.replace('sec-', '');
+    const idx = TAB_ORDER.indexOf(cur);
+    if (idx === -1) return;
+    if (dx < 0 && idx < TAB_ORDER.length - 1) switchTab(TAB_ORDER[idx + 1]); // swipe left = next
+    if (dx > 0 && idx > 0) switchTab(TAB_ORDER[idx - 1]); // swipe right = prev
+  }, { passive: true });
+})();
 
 // ============== Start ==============
 init();
