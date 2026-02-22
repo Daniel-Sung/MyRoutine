@@ -1432,7 +1432,7 @@ const TRANSLATIONS = {
     'toast.backupSaved': '백업 파일이 저장되었습니다', 'toast.dataLoaded': '데이터를 불러왔습니다',
     'toast.invalidFile': '올바른 MyRoutine 백업 파일이 아닙니다',
     'toast.readError': '파일을 읽을 수 없습니다',
-    'toast.enterName': '이름을 입력하세요', 'toast.duplicateName': '이미 같은 이름이 있습니다',
+    'toast.enterName': '이름을 입력하세요', 'toast.duplicateName': '이미 같은 이름이 있습니다', 'toast.cannotDelete': '기상/취침은 삭제할 수 없습니다',
     'day.sun': '일', 'day.mon': '월', 'day.tue': '화', 'day.wed': '수',
     'day.thu': '목', 'day.fri': '금', 'day.sat': '토',
     'month.1': '1월', 'month.2': '2월', 'month.3': '3월', 'month.4': '4월',
@@ -1502,7 +1502,7 @@ const TRANSLATIONS = {
     'toast.backupSaved': 'バックアップファイルが保存されました', 'toast.dataLoaded': 'データを読み込みました',
     'toast.invalidFile': '正しいMyRoutineバックアップファイルではありません',
     'toast.readError': 'ファイルを読み取れません',
-    'toast.enterName': '名前を入力してください', 'toast.duplicateName': '同じ名前がすでにあります',
+    'toast.enterName': '名前を入力してください', 'toast.duplicateName': '同じ名前がすでにあります', 'toast.cannotDelete': '起床/就寝は削除できません',
     'day.sun': '日', 'day.mon': '月', 'day.tue': '火', 'day.wed': '水',
     'day.thu': '木', 'day.fri': '金', 'day.sat': '土',
     'month.1': '1月', 'month.2': '2月', 'month.3': '3月', 'month.4': '4月',
@@ -1572,7 +1572,7 @@ const TRANSLATIONS = {
     'toast.backupSaved': 'Backup file has been saved', 'toast.dataLoaded': 'Data has been loaded',
     'toast.invalidFile': 'Not a valid MyRoutine backup file',
     'toast.readError': 'Cannot read the file',
-    'toast.enterName': 'Please enter a name', 'toast.duplicateName': 'This name already exists',
+    'toast.enterName': 'Please enter a name', 'toast.duplicateName': 'This name already exists', 'toast.cannotDelete': 'Wake Up/Bedtime cannot be deleted',
     'day.sun': 'Sun', 'day.mon': 'Mon', 'day.tue': 'Tue', 'day.wed': 'Wed',
     'day.thu': 'Thu', 'day.fri': 'Fri', 'day.sat': 'Sat',
     'month.1': 'Jan', 'month.2': 'Feb', 'month.3': 'Mar', 'month.4': 'Apr',
@@ -1664,6 +1664,24 @@ const ICON_CANDIDATES = [
   '🏥','💊','🛏️','🧳','🎤','🎬','🏊','⚽','🍺','🙏',
   '💰','📝','🎁','🔧','🚿','👔','🤝','🧑‍💻','🎹','🏋️'
 ];
+function isWakeActivity(name) {
+  if (name === '기상') return true;
+  for (const lang of Object.keys(PRESET_TRANSLATIONS)) {
+    if (PRESET_TRANSLATIONS[lang]?.['기상'] === name) return true;
+  }
+  return false;
+}
+function isBedActivity(name) {
+  if (name === '취침') return true;
+  for (const lang of Object.keys(PRESET_TRANSLATIONS)) {
+    if (PRESET_TRANSLATIONS[lang]?.['취침'] === name) return true;
+  }
+  return false;
+}
+function isSleepPreset(name) {
+  return isWakeActivity(name) || isBedActivity(name);
+}
+
 function getIcon(activity) {
   if (data.customPresets) {
     const cp = data.customPresets.find(p => p.name === activity);
@@ -1893,13 +1911,18 @@ function closeDay() {
     return;
   }
 
+  // 취침 엔트리에서 시간 가져오기
+  const bedEntry = [...dd.entries].reverse().find(e => isBedActivity(e.activity));
+  const defaultCloseTime = bedEntry ? bedEntry.time : getCurrentTime();
+  const defaultSleepTime = bedEntry ? bedEntry.time : data.settings.defaultSleepStart;
+
   showModal(`
     <h3>${t('modal.closeDay')}</h3>
     <p style="font-size:14px;color:var(--text-sub);margin-bottom:12px">${t('modal.closeDayDesc')}</p>
     <label style="font-size:13px;color:var(--text-sub)">${t('modal.closeTime')}</label>
-    <input type="time" id="modal-close-time" value="${getCurrentTime()}">
+    <input type="time" id="modal-close-time" value="${defaultCloseTime}">
     <label style="font-size:13px;color:var(--text-sub)">${t('modal.sleepTime')}</label>
-    <input type="time" id="modal-sleep-time" value="${data.settings.defaultSleepStart}">
+    <input type="time" id="modal-sleep-time" value="${defaultSleepTime}">
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">${t('modal.cancel')}</button>
       <button class="btn btn-coral" onclick="confirmCloseDay()">${t('modal.closeDayBtn')}</button>
@@ -2123,6 +2146,8 @@ function calcStats(dd) {
   const activities = [];
 
   dd.entries.forEach((entry, i) => {
+    // 취침 엔트리는 수면으로 처리되므로 활동 시간에서 제외
+    if (isBedActivity(entry.activity)) return;
     const mins = calcDurationMin(dd, i);
     activities.push({ ...entry, minutes: mins });
     if (entry.category === 'fixed') fixedMin += mins;
@@ -2595,30 +2620,41 @@ function calcDuration(dd, i) {
 
 function calcSleepMin(dd) {
   if (!dd.entries.length) return 0;
-  const wakeMin = timeToMin(dd.entries[0].time);
-  const sleepStart = dd.sleepStart || data.settings.defaultSleepStart;
-  const sleepMin = timeToMin(sleepStart);
 
-  // Sleep = from sleepStart (of previous night) to wake
-  // If sleepStart > wakeTime, it means sleepStart is from the night before
-  let total;
-  if (sleepMin > wakeMin) {
-    // e.g. sleep at 23:00, wake at 07:00 => 8 hours
-    total = (24 * 60 - sleepMin) + wakeMin;
-  } else {
-    // e.g. sleep at 00:00, wake at 07:00 => 7 hours
-    total = wakeMin - sleepMin;
+  const hasWakeOrBed = dd.entries.some(e => isWakeActivity(e.activity) || isBedActivity(e.activity));
+
+  // Fallback: no wake/bed entries → treat first entry time as implicit wake
+  if (!hasWakeOrBed) {
+    return timeToMin(dd.entries[0].time);
   }
 
-  // Also add time after closedAt to midnight + sleepStart
-  if (dd.closedAt) {
-    const closeMin = timeToMin(dd.closedAt);
-    if (sleepMin >= closeMin) {
-      total += (sleepMin - closeMin);
+  let totalSleep = 0;
+  let lastBedTime = null;
+  let hadFirstWake = false;
+
+  for (const entry of dd.entries) {
+    if (isBedActivity(entry.activity)) {
+      lastBedTime = timeToMin(entry.time);
+    } else if (isWakeActivity(entry.activity)) {
+      const wakeTime = timeToMin(entry.time);
+      if (lastBedTime !== null) {
+        // 취침→기상 pair (nighttime or daytime nap)
+        totalSleep += Math.max(0, wakeTime - lastBedTime);
+        lastBedTime = null;
+      } else if (!hadFirstWake) {
+        // First 기상 without preceding 취침: 00:00→기상
+        totalSleep += wakeTime;
+      }
+      hadFirstWake = true;
     }
   }
 
-  return Math.max(0, total);
+  // Last 취침 without following 기상: 취침→24:00
+  if (lastBedTime !== null) {
+    totalSleep += 24 * 60 - lastBedTime;
+  }
+
+  return Math.max(0, totalSleep);
 }
 
 function formatMin(min) {
@@ -2694,14 +2730,17 @@ function renderPresetList() {
     container.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:20px;">${t('preset.empty')}</div>`;
     return;
   }
-  container.innerHTML = data.customPresets.map((p, i) => `
+  container.innerHTML = data.customPresets.map((p, i) => {
+    const isProtected = isSleepPreset(p.name);
+    return `
     <div class="preset-item">
       <button class="preset-icon-btn" onclick="showPresetEditor(${i})">${p.icon}</button>
       <span class="preset-name" onclick="showPresetEditor(${i})" style="cursor:pointer">${escHtml(p.name)}</span>
       <button class="preset-cat ${p.category}" onclick="togglePresetCat(${i})">${p.category === 'fixed' ? t('classify.fixed') : t('classify.flexible')}</button>
-      <button class="preset-del-btn" onclick="deletePreset(${i})">✕</button>
+      ${isProtected ? '' : `<button class="preset-del-btn" onclick="deletePreset(${i})">✕</button>`}
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function togglePresetCat(index) {
@@ -2713,9 +2752,10 @@ function togglePresetCat(index) {
 
 function showPresetEditor(index) {
   const p = data.customPresets[index];
+  const isProtected = isSleepPreset(p.name);
   const html = `
     <h3>${t('preset.edit')}</h3>
-    <input type="text" id="preset-edit-name" value="${escAttr(p.name)}" placeholder="${t('preset.name')}">
+    <input type="text" id="preset-edit-name" value="${escAttr(p.name)}" placeholder="${t('preset.name')}" ${isProtected ? 'readonly style="opacity:0.6;cursor:not-allowed"' : ''}>
     <div style="font-size:13px;color:var(--text-sub);margin-bottom:6px;">${t('preset.selectIcon')}</div>
     <div class="icon-grid" id="icon-grid">
       ${ICON_CANDIDATES.map(ic => `<button class="${ic === p.icon ? 'selected' : ''}" onclick="selectPresetIcon(this, '${ic}')">${ic}</button>`).join('')}
@@ -2797,6 +2837,7 @@ function confirmAddPreset() {
 
 function deletePreset(index) {
   const name = data.customPresets[index].name;
+  if (isSleepPreset(name)) { showToast(t('toast.cannotDelete')); return; }
   data.customPresets.splice(index, 1);
   saveData();
   renderPresetList();
