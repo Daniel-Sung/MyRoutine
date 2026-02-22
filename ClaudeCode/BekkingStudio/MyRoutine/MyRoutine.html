@@ -1088,11 +1088,20 @@ body {
 }
 
 .day-star {
-  display: none;
   color: #FFD700;
   font-size: 10px;
   line-height: 1;
-  margin-top: 1px;
+  position: absolute;
+  top: 2px;
+  right: 4px;
+}
+
+.day-desired {
+  font-size: 9px;
+  line-height: 1;
+  margin-top: 2px;
+  color: var(--mint);
+  font-weight: 600;
 }
 
 .calendar-summary {
@@ -2882,7 +2891,7 @@ function calcDesiredPctForDate(dateStr) {
     }
   });
 
-  if (flexMin <= 0) return { flexMin: 0, desiredPct: 0 };
+  if (flexMin <= 0) return { flexMin: 0, desiredMin: 0, desiredPct: 0 };
 
   let desiredMin = 0;
   dd.entries.forEach((entry, i) => {
@@ -2891,7 +2900,7 @@ function calcDesiredPctForDate(dateStr) {
     }
   });
 
-  return { flexMin, desiredPct: Math.round(desiredMin / flexMin * 100) };
+  return { flexMin, desiredMin, desiredPct: Math.round(desiredMin / flexMin * 100) };
 }
 
 function renderMonthlyCalendar() {
@@ -2936,9 +2945,14 @@ function renderMonthlyCalendar() {
 
     const onclick = hasData ? ` onclick="loadHistoryDate('${dateStr}')"` : '';
 
+    const desiredHrs = hasData && result.desiredMin > 0
+      ? (result.desiredMin >= 60 ? Math.floor(result.desiredMin / 60) + 'h' : result.desiredMin + 'm')
+      : (hasData ? '0h' : '');
+
     dayCells += `<div class="${classes.join(' ')}"${onclick}>
       <span class="day-num">${d}</span>
-      <span class="day-star">★</span>
+      ${starred ? '<span class="day-star">★</span>' : ''}
+      ${hasData ? `<span class="day-desired">${desiredHrs}</span>` : ''}
     </div>`;
   }
 
