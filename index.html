@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#7ECEC1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MyRoutine">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>MyRoutine - 나의 하루 분석</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root {
+  --mint: #7ECEC1;
+  --mint-light: #B8E6DE;
+  --mint-bg: #E8F6F3;
+  --coral: #FF7F7F;
+  --coral-light: #FFB3B3;
+  --coral-bg: #FFF0F0;
+  --blue-gray: #8E9AAF;
+  --blue-gray-light: #BCC5D3;
+  --blue-gray-bg: #EEF1F6;
+  --bg: #F7F9FC;
+  --card: #FFFFFF;
+  --text: #2D3436;
+  --text-sub: #636E72;
+  --text-light: #B2BEC3;
+  --danger: #E17055;
+  --success: #00B894;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --tab-height: 64px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+  --bg: #1A1A2E;
+  --card: #16213E;
+  --text: #EAEAEA;
+  --text-sub: #A0A0B0;
+  --text-light: #555570;
+  --shadow: 0 2px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 4px 24px rgba(0,0,0,0.4);
+  --mint-bg: #1A3A35;
+  --coral-bg: #3A1A1A;
+  --blue-gray-bg: #1A1A3A;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: calc(var(--tab-height) + 16px);
+  transition: background var(--transition), color var(--transition);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  margin-bottom: 8px;
+}
+
+.header h1 {
+  font-size: 22px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--mint), var(--coral));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: transform var(--transition);
+}
+
+.icon-btn:active { transform: scale(0.9); }
+
+/* Steps Indicator */
+.steps {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 0 4px;
+}
+
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--text-light);
+  transition: all var(--transition);
+  position: relative;
+}
+
+.step.active {
+  background: var(--mint);
+  color: white;
+  box-shadow: 0 2px 8px rgba(126, 206, 193, 0.4);
+}
+
+.step.completed {
+  background: var(--mint-light);
+  color: var(--mint);
+}
+
+.step-num {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: background var(--transition);
+}
+
+/* Date Display */
+.date-display {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.date-display .date {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.date-display .time {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--mint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Date Selector */
+.date-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+
+.date-selector input[type="date"] {
+  padding: 8px 14px;
+  border: 2px solid var(--mint-light);
+  border-radius: var(--radius-sm);
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+}
+
+.date-selector input[type="date"]:focus {
+  border-color: var(--mint);
+}
+
+/* Input Area */
+.input-area {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.input-area input {
+  flex: 1;
+  padding: 14px 18px;
+  border: 2px solid var(--mint-light);
+  border-radius: var(--radius);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+  transition: border-color var(--transition);
+}
+
+.input-area input:focus {
+  border-color: var(--mint);
+}
+
+.input-area input::placeholder {
+  color: var(--text-light);
+}
+
+.btn {
+  padding: 14px 24px;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+
+.btn:active { transform: scale(0.95); }
+
+.btn-primary {
+  background: var(--mint);
+  color: white;
+  box-shadow: 0 2px 8px rgba(126, 206, 193, 0.4);
+}
+
+.btn-primary:hover { background: #6BC4B6; }
+
+.btn-coral {
+  background: var(--coral);
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 127, 127, 0.4);
+}
+
+.btn-coral:hover { background: #FF6B6B; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--mint);
+  border: 2px solid var(--mint);
+}
+
+.btn-block {
+  width: 100%;
+  display: block;
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+}
+
+/* Quick Chips */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 8px 14px;
+  border-radius: 20px;
+  background: var(--mint-bg);
+  color: var(--mint);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.chip:active {
+  background: var(--mint);
+  color: white;
+}
+
+/* Timeline */
+.timeline {
+  position: relative;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--mint-light);
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px 0;
+  position: relative;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--mint);
+  border: 3px solid var(--mint-light);
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  flex-shrink: 0;
+  margin-left: 19px;
+}
+
+.timeline-content {
+  flex: 1;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.timeline-info {
+  flex: 1;
+}
+
+.timeline-time {
+  font-size: 13px;
+  color: var(--text-sub);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.timeline-time:hover {
+  color: var(--mint);
+  text-decoration: underline;
+}
+
+.timeline-activity {
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.timeline-duration {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 2px;
+}
+
+.timeline-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.delete-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--coral-bg);
+  color: var(--danger);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Classification */
+.classify-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  background: var(--bg);
+  transition: background var(--transition);
+}
+
+.classify-item.fixed { border-left: 4px solid var(--blue-gray); }
+.classify-item.flexible { border-left: 4px solid var(--mint); }
+
+.classify-info {
+  flex: 1;
+}
+
+.classify-activity {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.classify-time {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 2px;
+}
+
+.classify-duration {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.toggle-group {
+  display: flex;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid var(--blue-gray-light);
+}
+
+.toggle-btn {
+  padding: 6px 12px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  color: var(--text-sub);
+  transition: all var(--transition);
+}
+
+.toggle-btn.active-fixed {
+  background: var(--blue-gray);
+  color: white;
+}
+
+.toggle-btn.active-flexible {
+  background: var(--mint);
+  color: white;
+}
+
+/* Guide Text */
+.guide {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--mint-bg);
+  font-size: 13px;
+  color: var(--text-sub);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.guide strong {
+  color: var(--text);
+}
+
+/* Analysis */
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto 20px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-sub);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.stat-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.key-question {
+  text-align: center;
+  padding: 24px 16px;
+  margin: 20px 0;
+  background: linear-gradient(135deg, var(--coral-bg), var(--mint-bg));
+  border-radius: var(--radius);
+}
+
+.key-question p {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.desired-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.desired-item.checked {
+  background: var(--coral-bg);
+  border-left: 4px solid var(--coral);
+}
+
+.desired-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--text-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+
+.desired-item.checked .desired-check {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: white;
+}
+
+.summary-card {
+  text-align: center;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--mint), #6BC4B6);
+  border-radius: var(--radius);
+  color: white;
+  margin: 20px 0;
+}
+
+.summary-card .big-number {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  margin: 8px 0;
+}
+
+.summary-card .unit {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.summary-card .desc {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.bar-chart-item {
+  margin-bottom: 12px;
+}
+
+.bar-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.bar-label span:first-child {
+  font-weight: 600;
+}
+
+.bar-label span:last-child {
+  color: var(--text-sub);
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+
+.bar-fill.fixed { background: var(--blue-gray); }
+.bar-fill.flexible { background: var(--mint); }
+.bar-fill.desired { background: var(--coral); }
+
+/* History */
+.history-list {
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  background: var(--bg);
+  cursor: pointer;
+  transition: background var(--transition);
+}
+
+.history-item:active {
+  background: var(--mint-bg);
+}
+
+.history-date {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.history-preview {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 2px;
+}
+
+.history-status {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.history-status.completed {
+  background: var(--mint-bg);
+  color: var(--success);
+}
+
+.history-status.recording {
+  background: var(--coral-bg);
+  color: var(--coral);
+}
+
+/* Bottom Tab Bar */
+.tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--tab-height);
+  background: var(--card);
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.tab-bar-inner {
+  display: flex;
+  max-width: 480px;
+  width: 100%;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--text-light);
+  font-size: 11px;
+  font-weight: 600;
+  transition: color var(--transition);
+}
+
+.tab.active {
+  color: var(--mint);
+}
+
+.tab-icon {
+  font-size: 20px;
+}
+
+/* Sections */
+.section {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.section.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 360px;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+.modal input[type="time"],
+.modal input[type="text"] {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--mint-light);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+  margin-bottom: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+/* Encouragement */
+.encourage {
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--coral-bg);
+  text-align: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--coral);
+  margin: 12px 0;
+}
+
+/* PDF Report */
+.pdf-report {
+  padding: 30px;
+  background: white;
+  color: #333;
+  font-family: sans-serif;
+}
+
+.pdf-report h1 {
+  text-align: center;
+  color: #7ECEC1;
+  margin-bottom: 4px;
+}
+
+.pdf-report .pdf-date {
+  text-align: center;
+  color: #888;
+  margin-bottom: 24px;
+}
+
+.pdf-report table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 24px;
+}
+
+.pdf-report th, .pdf-report td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+  font-size: 13px;
+}
+
+.pdf-report th {
+  background: #f7f7f7;
+  font-weight: 600;
+}
+
+.pdf-stat {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 24px;
+}
+
+.pdf-stat-item {
+  text-align: center;
+}
+
+.pdf-stat-item .val {
+  font-size: 28px;
+  font-weight: 800;
+  color: #7ECEC1;
+}
+
+.pdf-stat-item .lbl {
+  font-size: 12px;
+  color: #888;
+}
+
+.pdf-message {
+  text-align: center;
+  padding: 20px;
+  background: #f0faf7;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Backup/Restore */
+.settings-section {
+  margin-top: 12px;
+}
+
+.settings-section h4 {
+  font-size: 14px;
+  color: var(--text-sub);
+  margin-bottom: 10px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+
+.empty-state .emoji {
+  font-size: 48px;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* Time input inline */
+.time-edit-input {
+  width: 80px;
+  padding: 4px 6px;
+  border: 2px solid var(--mint);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--card);
+  color: var(--text);
+  outline: none;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--text-light); border-radius: 4px; }
+
+/* PWA Install Banner */
+.pwa-install-banner {
+  position: fixed;
+  bottom: calc(var(--tab-height) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 460px;
+  width: calc(100% - 32px);
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px;
+  display: none;
+  align-items: center;
+  gap: 12px;
+  z-index: 150;
+  animation: slideUp 0.3s ease;
+}
+
+.pwa-install-banner.show {
+  display: flex;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.pwa-install-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.pwa-install-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pwa-install-text .title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pwa-install-text .desc {
+  font-size: 12px;
+  color: var(--text-sub);
+  margin-top: 2px;
+}
+
+.pwa-install-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pwa-install-close {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: var(--bg);
+  color: var(--text-sub);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Print hide */
+@media print {
+  .tab-bar, .header-actions, .btn, .delete-btn, .pwa-install-banner { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <h1>MyRoutine</h1>
+    <div class="header-actions">
+      <button class="icon-btn" onclick="toggleDarkMode()" title="다크 모드">🌙</button>
+      <button class="icon-btn" onclick="showBackupModal()" title="백업/복원">💾</button>
+    </div>
+  </div>
+
+  <!-- Section: Record (미션1) -->
+  <div id="sec-record" class="section active">
+    <div class="steps">
+      <div class="step active"><span class="step-num">1</span>기록</div>
+      <div class="step"><span class="step-num">2</span>분류</div>
+      <div class="step"><span class="step-num">3</span>분석</div>
+    </div>
+
+    <div class="card">
+      <div class="date-display">
+        <div class="date" id="current-date"></div>
+        <div class="time" id="current-time"></div>
+      </div>
+      <div class="date-selector">
+        <input type="date" id="record-date" onchange="switchDate(this.value)">
+      </div>
+    </div>
+
+    <!-- Quick chips -->
+    <div class="chips" id="quick-chips"></div>
+
+    <div class="input-area">
+      <input type="text" id="activity-input" placeholder="기상, 출근, 커피, 점심..."
+             onkeypress="if(event.key==='Enter')addEntry()">
+      <button class="btn btn-primary" onclick="addEntry()">기록</button>
+    </div>
+
+    <!-- Timeline -->
+    <div class="card">
+      <h3 style="font-size:15px;margin-bottom:12px;color:var(--text-sub)">오늘의 타임라인</h3>
+      <div class="timeline" id="timeline"></div>
+      <div class="empty-state" id="timeline-empty">
+        <div class="emoji">📝</div>
+        <p>아직 기록이 없어요<br>지금 하고 있는 활동을 기록해보세요!</p>
+      </div>
+    </div>
+
+    <button class="btn btn-coral btn-block" id="close-day-btn" onclick="closeDay()" style="display:none">
+      🌙 하루 마감하기
+    </button>
+    <button class="btn btn-outline btn-block" id="reopen-day-btn" onclick="reopenDay()" style="display:none;margin-top:8px">
+      🔓 마감 취소 (다시 기록하기)
+    </button>
+  </div>
+
+  <!-- Section: Classify (미션2) -->
+  <div id="sec-classify" class="section">
+    <div class="steps">
+      <div class="step completed"><span class="step-num">✓</span>기록</div>
+      <div class="step active"><span class="step-num">2</span>분류</div>
+      <div class="step"><span class="step-num">3</span>분석</div>
+    </div>
+
+    <div class="guide">
+      <strong>고정 시간</strong>: 반드시 해야 하는 것 (업무, 출퇴근, 식사, 수면 등)<br>
+      <strong>유동 시간</strong>: 내가 스스로 선택하는 시간 (영화, 산책, SNS 등)
+    </div>
+
+    <div id="classify-list"></div>
+
+    <button class="btn btn-primary btn-block" onclick="goAnalysis()" style="margin-top:16px">
+      📊 분석하기
+    </button>
+  </div>
+
+  <!-- Section: Analysis (미션3) -->
+  <div id="sec-analysis" class="section">
+    <div class="steps">
+      <div class="step completed"><span class="step-num">✓</span>기록</div>
+      <div class="step completed"><span class="step-num">✓</span>분류</div>
+      <div class="step active"><span class="step-num">3</span>분석</div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px;margin-bottom:16px;text-align:center">시간 분배</h3>
+      <div class="chart-container">
+        <canvas id="donut-chart"></canvas>
+      </div>
+      <div id="stat-summary"></div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px;margin-bottom:16px">활동별 소요 시간</h3>
+      <div id="bar-chart-list"></div>
+    </div>
+
+    <div class="key-question">
+      <p>당신이 사용한 유동 시간 중에,<br><strong style="color:var(--coral)">당신이 살고 싶은 삶</strong>을<br>위한 시간이 있는가?</p>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size:16px;margin-bottom:12px">유동 시간 활동</h3>
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
+        내가 원하는 삶을 위한 시간이라고 생각되면 체크하세요
+      </p>
+      <div id="desired-list"></div>
+    </div>
+
+    <div id="final-summary"></div>
+
+    <div id="encourage-msg"></div>
+
+    <button class="btn btn-coral btn-block" onclick="exportPDF()" style="margin-top:16px">
+      📄 PDF로 내보내기
+    </button>
+  </div>
+
+  <!-- Section: History -->
+  <div id="sec-history" class="section">
+    <div class="card">
+      <h3 style="font-size:16px;margin-bottom:16px">기록 히스토리</h3>
+      <ul class="history-list" id="history-list"></ul>
+      <div class="empty-state" id="history-empty" style="display:none">
+        <div class="emoji">📅</div>
+        <p>아직 기록된 날이 없어요<br>'기록' 탭에서 하루를 시작해보세요!</p>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="card">
+        <h4>설정</h4>
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+          <label style="font-size:13px;flex-shrink:0">기본 취침 시간</label>
+          <input type="time" id="default-sleep" value="00:00"
+                 style="padding:8px;border:2px solid var(--mint-light);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);outline:none"
+                 onchange="saveSettings()">
+        </div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <label style="font-size:13px;flex-shrink:0">기본 기상 시간</label>
+          <input type="time" id="default-wake" value="07:00"
+                 style="padding:8px;border:2px solid var(--mint-light);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);outline:none"
+                 onchange="saveSettings()">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Tab Bar -->
+<div class="tab-bar">
+  <div class="tab-bar-inner">
+    <button class="tab active" data-tab="record" onclick="switchTab('record')">
+      <span class="tab-icon">✏️</span>기록
+    </button>
+    <button class="tab" data-tab="classify" onclick="switchTab('classify')">
+      <span class="tab-icon">🏷️</span>분류
+    </button>
+    <button class="tab" data-tab="analysis" onclick="switchTab('analysis')">
+      <span class="tab-icon">📊</span>분석
+    </button>
+    <button class="tab" data-tab="history" onclick="switchTab('history')">
+      <span class="tab-icon">📅</span>히스토리
+    </button>
+  </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="pwa-install-banner" id="pwa-install-banner">
+  <img class="pwa-install-icon" src="icon-192.png" alt="MyRoutine">
+  <div class="pwa-install-text">
+    <div class="title">MyRoutine 설치</div>
+    <div class="desc">홈 화면에 추가하여 앱처럼 사용하세요</div>
+  </div>
+  <div class="pwa-install-actions">
+    <button class="btn btn-primary btn-sm" onclick="installPWA()">설치</button>
+    <button class="pwa-install-close" onclick="dismissInstallBanner()">✕</button>
+  </div>
+</div>
+
+<!-- Modal container -->
+<div id="modal-container"></div>
+
+<!-- PDF is generated dynamically, no hidden template needed -->
+
+<script>
+// ============== State ==============
+const DEFAULT_PRESETS = ['기상', '식사', '이동', '업무', '몰입', '운동', '산책', '독서', '시청', '가족', '가사'];
+const DEFAULT_CATEGORIES = {
+  '기상': 'fixed', '식사': 'fixed', '이동': 'fixed', '업무': 'fixed',
+  '몰입': 'flexible', '운동': 'flexible', '산책': 'flexible', '독서': 'flexible',
+  '시청': 'flexible', '가족': 'flexible', '가사': 'flexible'
+};
+let data = { dates: {}, activityPresets: {}, settings: { defaultSleepStart: '00:00', defaultWakeUp: '07:00' } };
+let currentDate = getTodayStr();
+let donutChart = null;
+
+// ============== Init ==============
+function init() {
+  loadData();
+  updateClock();
+  setInterval(updateClock, 1000);
+  document.getElementById('record-date').value = currentDate;
+  renderAll();
+  loadSettings();
+  if (document.documentElement.getAttribute('data-theme') === 'dark' ||
+      localStorage.getItem('myRoutineDark') === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+}
+
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function updateClock() {
+  const now = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('current-date').textContent =
+    `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
+  document.getElementById('current-time').textContent =
+    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+}
+
+// ============== Data ==============
+function loadData() {
+  try {
+    const raw = localStorage.getItem('myRoutine');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      data = { ...data, ...parsed };
+    }
+  } catch(e) { console.warn('localStorage load error', e); }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('myRoutine', JSON.stringify(data));
+  } catch(e) { console.warn('localStorage save error', e); }
+}
+
+function getDateData(d) {
+  if (!data.dates[d]) {
+    data.dates[d] = { status: 'recording', entries: [], closedAt: null, sleepStart: data.settings.defaultSleepStart };
+  }
+  return data.dates[d];
+}
+
+function loadSettings() {
+  document.getElementById('default-sleep').value = data.settings.defaultSleepStart || '00:00';
+  document.getElementById('default-wake').value = data.settings.defaultWakeUp || '07:00';
+}
+
+function saveSettings() {
+  data.settings.defaultSleepStart = document.getElementById('default-sleep').value;
+  data.settings.defaultWakeUp = document.getElementById('default-wake').value;
+  saveData();
+}
+
+// ============== Tab Navigation ==============
+function switchTab(tab) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+
+  if (tab === 'classify') renderClassify();
+  if (tab === 'analysis') renderAnalysis();
+  if (tab === 'history') renderHistory();
+}
+
+function switchDate(d) {
+  currentDate = d;
+  renderAll();
+}
+
+// ============== Mission 1: Record ==============
+function addEntry(activityName) {
+  const input = document.getElementById('activity-input');
+  const activity = activityName || input.value.trim();
+  if (!activity) return;
+
+  const now = new Date();
+  const time = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  const dd = getDateData(currentDate);
+  if (dd.status === 'completed') {
+    showToast('이미 마감된 날짜입니다');
+    return;
+  }
+
+  dd.entries.push({
+    id: generateId(),
+    time: time,
+    activity: activity,
+    category: data.activityPresets[activity] || DEFAULT_CATEGORIES[activity] || null,
+    isDesiredLife: false
+  });
+
+  dd.entries.sort((a, b) => timeToMin(a.time) - timeToMin(b.time));
+
+  if (!activityName) {
+    input.value = '';
+    input.focus();
+  }
+
+  saveData();
+  renderTimeline();
+  renderChips();
+}
+
+function deleteEntry(id) {
+  const dd = getDateData(currentDate);
+  dd.entries = dd.entries.filter(e => e.id !== id);
+  saveData();
+  renderTimeline();
+}
+
+function editEntryTime(id) {
+  const dd = getDateData(currentDate);
+  const entry = dd.entries.find(e => e.id === id);
+  if (!entry) return;
+
+  showModal(`
+    <h3>시간 수정</h3>
+    <p style="font-size:14px;color:var(--text-sub);margin-bottom:8px">${entry.activity}</p>
+    <input type="time" id="modal-time" value="${entry.time}">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-primary" onclick="confirmEditTime('${id}')">확인</button>
+    </div>
+  `);
+}
+
+function confirmEditTime(id) {
+  const newTime = document.getElementById('modal-time').value;
+  if (!newTime) return;
+  const dd = getDateData(currentDate);
+  const entry = dd.entries.find(e => e.id === id);
+  if (entry) {
+    entry.time = newTime;
+    dd.entries.sort((a, b) => timeToMin(a.time) - timeToMin(b.time));
+    saveData();
+    renderTimeline();
+  }
+  closeModal();
+}
+
+function closeDay() {
+  const dd = getDateData(currentDate);
+  if (dd.entries.length === 0) {
+    showToast('기록이 없습니다');
+    return;
+  }
+
+  showModal(`
+    <h3>하루 마감</h3>
+    <p style="font-size:14px;color:var(--text-sub);margin-bottom:12px">마감 시간과 취침 시간을 입력해주세요</p>
+    <label style="font-size:13px;color:var(--text-sub)">마감 시간 (잠들기 전 마지막 시간)</label>
+    <input type="time" id="modal-close-time" value="${getCurrentTime()}">
+    <label style="font-size:13px;color:var(--text-sub)">취침 시간 (잠든 시간)</label>
+    <input type="time" id="modal-sleep-time" value="${data.settings.defaultSleepStart}">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">취소</button>
+      <button class="btn btn-coral" onclick="confirmCloseDay()">마감하기</button>
+    </div>
+  `);
+}
+
+function confirmCloseDay() {
+  const closeTime = document.getElementById('modal-close-time').value;
+  const sleepTime = document.getElementById('modal-sleep-time').value;
+  const dd = getDateData(currentDate);
+  dd.status = 'completed';
+  dd.closedAt = closeTime;
+  dd.sleepStart = sleepTime;
+
+  // Auto-classify from presets + defaults
+  dd.entries.forEach(e => {
+    if (!e.category) {
+      e.category = data.activityPresets[e.activity] || DEFAULT_CATEGORIES[e.activity] || null;
+    }
+  });
+
+  saveData();
+  closeModal();
+  switchTab('classify');
+}
+
+function reopenDay() {
+  const dd = getDateData(currentDate);
+  dd.status = 'recording';
+  dd.closedAt = null;
+  saveData();
+  renderTimeline();
+  renderChips();
+  showToast('마감이 취소되었습니다. 다시 기록할 수 있어요!');
+}
+
+function renderTimeline() {
+  const dd = getDateData(currentDate);
+  const container = document.getElementById('timeline');
+  const emptyState = document.getElementById('timeline-empty');
+  const closeDayBtn = document.getElementById('close-day-btn');
+  const reopenDayBtn = document.getElementById('reopen-day-btn');
+
+  if (dd.entries.length === 0) {
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+    closeDayBtn.style.display = 'none';
+    reopenDayBtn.style.display = 'none';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  const isCompleted = dd.status === 'completed';
+  closeDayBtn.style.display = isCompleted ? 'none' : 'block';
+  reopenDayBtn.style.display = isCompleted ? 'block' : 'none';
+
+  let html = '';
+  dd.entries.forEach((entry, i) => {
+    const duration = calcDuration(dd, i);
+    html += `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-info">
+            <div class="timeline-time" onclick="editEntryTime('${entry.id}')">${entry.time}</div>
+            <div class="timeline-activity">${escHtml(entry.activity)}</div>
+            ${duration ? `<div class="timeline-duration">${duration}</div>` : ''}
+          </div>
+          ${dd.status !== 'completed' ? `
+          <div class="timeline-actions">
+            <button class="delete-btn" onclick="deleteEntry('${entry.id}')">✕</button>
+          </div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+function renderChips() {
+  const dd = getDateData(currentDate);
+  const todayActivities = dd.entries.map(e => e.activity);
+
+  // Merge: default presets + user presets + history activities
+  const allActivities = new Set([...DEFAULT_PRESETS, ...Object.keys(data.activityPresets)]);
+  Object.values(data.dates).forEach(d => {
+    d.entries.forEach(e => allActivities.add(e.activity));
+  });
+
+  // Filter out already recorded today
+  const chips = [...allActivities].filter(a => !todayActivities.includes(a));
+  const container = document.getElementById('quick-chips');
+
+  if (chips.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = chips.map(c =>
+    `<button class="chip" onmousedown="event.preventDefault()" onclick="addEntry('${escAttr(c)}')">${escHtml(c)}</button>`
+  ).join('');
+}
+
+// ============== Mission 2: Classify ==============
+function renderClassify() {
+  const dd = getDateData(currentDate);
+  const container = document.getElementById('classify-list');
+
+  if (!dd || dd.entries.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="emoji">🏷️</div><p>분류할 활동이 없어요<br>먼저 기록 탭에서 활동을 기록하세요</p></div>';
+    return;
+  }
+
+  let html = '';
+  dd.entries.forEach((entry, i) => {
+    const duration = calcDuration(dd, i);
+    const cat = entry.category || '';
+    html += `
+      <div class="classify-item ${cat}">
+        <div class="classify-info">
+          <div class="classify-activity">${escHtml(entry.activity)}</div>
+          <div class="classify-time">${entry.time} ${duration ? '· ' + duration : ''}</div>
+        </div>
+        <div class="toggle-group">
+          <button class="toggle-btn ${cat === 'fixed' ? 'active-fixed' : ''}"
+                  onclick="setCategory('${entry.id}', 'fixed')">고정</button>
+          <button class="toggle-btn ${cat === 'flexible' ? 'active-flexible' : ''}"
+                  onclick="setCategory('${entry.id}', 'flexible')">유동</button>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = html;
+}
+
+function setCategory(id, cat) {
+  const dd = getDateData(currentDate);
+  const entry = dd.entries.find(e => e.id === id);
+  if (entry) {
+    entry.category = cat;
+    // Save preset
+    data.activityPresets[entry.activity] = cat;
+    saveData();
+    renderClassify();
+  }
+}
+
+// ============== Mission 3: Analysis ==============
+function goAnalysis() {
+  const dd = getDateData(currentDate);
+  const unclassified = dd.entries.filter(e => !e.category);
+  if (unclassified.length > 0) {
+    showToast('모든 활동을 분류해주세요');
+    return;
+  }
+  switchTab('analysis');
+}
+
+function renderAnalysis() {
+  const dd = getDateData(currentDate);
+  if (!dd || dd.entries.length === 0) {
+    document.getElementById('stat-summary').innerHTML = '<div class="empty-state"><p>분석할 데이터가 없어요</p></div>';
+    return;
+  }
+
+  const stats = calcStats(dd);
+  renderDonutChart(stats);
+  renderStatSummary(stats);
+  renderBarChart(dd, stats);
+  renderDesiredList(dd, stats);
+  renderFinalSummary(dd, stats);
+  renderEncouragement(stats);
+}
+
+function calcStats(dd) {
+  let fixedMin = 0, flexMin = 0;
+  const activities = [];
+
+  dd.entries.forEach((entry, i) => {
+    const mins = calcDurationMin(dd, i);
+    activities.push({ ...entry, minutes: mins });
+    if (entry.category === 'fixed') fixedMin += mins;
+    else if (entry.category === 'flexible') flexMin += mins;
+  });
+
+  // Add sleep time
+  const sleepMin = calcSleepMin(dd);
+  if (sleepMin > 0) {
+    fixedMin += sleepMin;
+    activities.unshift({ activity: '수면', category: 'fixed', minutes: sleepMin, isDesiredLife: false });
+  }
+
+  const totalMin = fixedMin + flexMin;
+  const desiredMin = activities.filter(a => a.category === 'flexible' && a.isDesiredLife).reduce((s, a) => s + a.minutes, 0);
+
+  return { fixedMin, flexMin, totalMin, desiredMin, activities, sleepMin };
+}
+
+function renderDonutChart(stats) {
+  const ctx = document.getElementById('donut-chart').getContext('2d');
+
+  if (donutChart) donutChart.destroy();
+
+  donutChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['고정 시간', '유동 시간'],
+      datasets: [{
+        data: [stats.fixedMin, stats.flexMin],
+        backgroundColor: ['#8E9AAF', '#7ECEC1'],
+        borderWidth: 0,
+        cutout: '65%'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 16,
+            font: { size: 13, weight: '600' },
+            usePointStyle: true,
+            pointStyleWidth: 12
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return ctx.label + ': ' + formatMin(ctx.raw);
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+function renderStatSummary(stats) {
+  const container = document.getElementById('stat-summary');
+  const fixPct = stats.totalMin > 0 ? Math.round(stats.fixedMin / stats.totalMin * 100) : 0;
+  const flexPct = stats.totalMin > 0 ? Math.round(stats.flexMin / stats.totalMin * 100) : 0;
+
+  container.innerHTML = `
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot" style="background:var(--blue-gray)"></span>고정 시간</span>
+      <span class="stat-value">${formatMin(stats.fixedMin)} (${fixPct}%)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label"><span class="stat-dot" style="background:var(--mint)"></span>유동 시간</span>
+      <span class="stat-value">${formatMin(stats.flexMin)} (${flexPct}%)</span>
+    </div>
+    <div class="stat-row">
+      <span class="stat-label">전체</span>
+      <span class="stat-value">${formatMin(stats.totalMin)}</span>
+    </div>
+  `;
+}
+
+function renderBarChart(dd, stats) {
+  const container = document.getElementById('bar-chart-list');
+  const maxMin = Math.max(...stats.activities.map(a => a.minutes), 1);
+
+  container.innerHTML = stats.activities.map(a => `
+    <div class="bar-chart-item">
+      <div class="bar-label">
+        <span>${escHtml(a.activity)}</span>
+        <span>${formatMin(a.minutes)}</span>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill ${a.category || 'fixed'}" style="width:${(a.minutes/maxMin*100)}%"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDesiredList(dd, stats) {
+  const container = document.getElementById('desired-list');
+  const flexActivities = stats.activities.filter(a => a.category === 'flexible');
+
+  if (flexActivities.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text-light);padding:16px">유동 시간 활동이 없습니다</p>';
+    return;
+  }
+
+  container.innerHTML = flexActivities.map(a => {
+    const entry = dd.entries.find(e => e.activity === a.activity);
+    const checked = entry ? entry.isDesiredLife : false;
+    return `
+      <div class="desired-item ${checked ? 'checked' : ''}" onclick="toggleDesired('${entry ? entry.id : ''}')">
+        <div class="desired-check">${checked ? '✓' : ''}</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px">${escHtml(a.activity)}</div>
+          <div style="font-size:12px;color:var(--text-sub)">${formatMin(a.minutes)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleDesired(id) {
+  if (!id) return;
+  const dd = getDateData(currentDate);
+  const entry = dd.entries.find(e => e.id === id);
+  if (entry) {
+    entry.isDesiredLife = !entry.isDesiredLife;
+    saveData();
+    renderAnalysis();
+  }
+}
+
+function renderFinalSummary(dd, stats) {
+  const desiredMin = dd.entries.filter(e => e.category === 'flexible' && e.isDesiredLife)
+    .reduce((s, e, i) => {
+      const idx = dd.entries.indexOf(e);
+      return s + calcDurationMin(dd, idx);
+    }, 0);
+
+  const desiredPct = stats.flexMin > 0 ? Math.round(desiredMin / stats.flexMin * 100) : 0;
+  const h = Math.floor(desiredMin / 60);
+  const m = desiredMin % 60;
+
+  document.getElementById('final-summary').innerHTML = `
+    <div class="summary-card">
+      <div class="desc">오늘 하루, 진짜 나를 위한 시간</div>
+      <div class="big-number">${h}<span class="unit">시간</span> ${m}<span class="unit">분</span></div>
+      <div class="desc">유동 시간 중 ${desiredPct}%가 원하는 삶을 위한 시간입니다</div>
+    </div>
+  `;
+}
+
+function renderEncouragement(stats) {
+  const container = document.getElementById('encourage-msg');
+  if (stats.flexMin < stats.fixedMin) {
+    container.innerHTML = `
+      <div class="encourage">
+        💪 유동 시간이 고정 시간보다 적어요.<br>
+        작은 시간이라도 나를 위해 쓸 수 있어요!
+      </div>
+    `;
+  } else {
+    container.innerHTML = '';
+  }
+}
+
+// ============== History ==============
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  const emptyState = document.getElementById('history-empty');
+  const dates = Object.keys(data.dates).sort().reverse();
+
+  if (dates.length === 0) {
+    container.innerHTML = '';
+    emptyState.style.display = 'block';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  container.innerHTML = dates.map(d => {
+    const dd = data.dates[d];
+    const preview = dd.entries.slice(0, 3).map(e => e.activity).join(', ');
+    const statusClass = dd.status === 'completed' ? 'completed' : 'recording';
+    const statusText = dd.status === 'completed' ? '완료' : '기록중';
+    return `
+      <li class="history-item" onclick="loadHistoryDate('${d}')">
+        <div>
+          <div class="history-date">${formatDateKr(d)}</div>
+          <div class="history-preview">${escHtml(preview)}${dd.entries.length > 3 ? '...' : ''}</div>
+        </div>
+        <span class="history-status ${statusClass}">${statusText}</span>
+      </li>
+    `;
+  }).join('');
+}
+
+function loadHistoryDate(d) {
+  currentDate = d;
+  document.getElementById('record-date').value = d;
+  const dd = data.dates[d];
+  if (dd && dd.status === 'completed') {
+    switchTab('analysis');
+  } else {
+    switchTab('record');
+  }
+  renderAll();
+}
+
+// ============== PDF Export ==============
+function exportPDF() {
+  const dd = getDateData(currentDate);
+  const stats = calcStats(dd);
+  const desiredMin = dd.entries.filter(e => e.category === 'flexible' && e.isDesiredLife)
+    .reduce((s, e) => {
+      const idx = dd.entries.indexOf(e);
+      return s + calcDurationMin(dd, idx);
+    }, 0);
+  const h = Math.floor(desiredMin / 60);
+  const m = desiredMin % 60;
+  const desiredPct = stats.flexMin > 0 ? Math.round(desiredMin / stats.flexMin * 100) : 0;
+
+  const htmlString = `
+    <div style="padding:30px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#333;width:700px;">
+      <h1 style="text-align:center;color:#7ECEC1;margin-bottom:4px;font-size:24px;">MyRoutine - 나의 하루 분석</h1>
+      <p style="text-align:center;color:#888;margin-bottom:24px;font-size:14px;">${formatDateKr(currentDate)}</p>
+
+      <h3 style="font-size:14px;color:#888;margin-bottom:8px;">타임라인</h3>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+        <thead>
+          <tr style="background:#f7f7f7;">
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">시간</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">활동</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">분류</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">소요</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${dd.entries.map((e, i) => {
+            const bgColor = e.category === 'flexible' ? '#f0faf7' : '#fff';
+            return `<tr style="background:${bgColor};">
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">${e.time}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;font-weight:600;">${escHtml(e.activity)}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">
+                <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;background:${e.category === 'fixed' ? '#EEF1F6' : '#E8F6F3'};color:${e.category === 'fixed' ? '#8E9AAF' : '#7ECEC1'};">
+                  ${e.category === 'fixed' ? '고정' : '유동'}
+                </span>
+              </td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">${formatMin(calcDurationMin(dd, i))}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+
+      <table style="width:100%;margin-bottom:24px;background:#f9f9f9;border-radius:12px;">
+        <tr>
+          <td style="text-align:center;padding:20px;">
+            <div style="font-size:28px;font-weight:800;color:#8E9AAF;">${formatMin(stats.fixedMin)}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">고정 시간</div>
+          </td>
+          <td style="text-align:center;padding:20px;">
+            <div style="font-size:28px;font-weight:800;color:#7ECEC1;">${formatMin(stats.flexMin)}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">유동 시간</div>
+          </td>
+          <td style="text-align:center;padding:20px;">
+            <div style="font-size:28px;font-weight:800;color:#FF7F7F;">${formatMin(desiredMin)}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">원하는 삶을 위한 시간</div>
+          </td>
+        </tr>
+      </table>
+
+      <div style="text-align:center;padding:24px;background:#f0faf7;border-radius:12px;line-height:1.8;">
+        <p style="font-size:15px;color:#333;">오늘 하루, 당신이 진짜 원하는 삶을 위해 사용한 시간은</p>
+        <p style="font-size:32px;font-weight:800;color:#FF7F7F;margin:8px 0;">${h}시간 ${m}분</p>
+        <p style="font-size:13px;color:#888;">유동 시간 중 ${desiredPct}%가 원하는 삶을 위한 시간입니다</p>
+      </div>
+    </div>
+  `;
+
+  const opt = {
+    margin: 10,
+    filename: `MyRoutine_${currentDate}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(htmlString, 'string').save().then(() => {
+    showToast('PDF가 저장되었습니다');
+  }).catch(() => {
+    showToast('PDF 생성에 실패했습니다');
+  });
+}
+
+// ============== Dark Mode ==============
+function toggleDarkMode() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  localStorage.setItem('myRoutineDark', !isDark);
+}
+
+// ============== Backup/Restore ==============
+function showBackupModal() {
+  showModal(`
+    <h3>데이터 관리</h3>
+    <button class="btn btn-primary btn-block" onclick="exportJSON()" style="margin-bottom:10px">📤 JSON 내보내기</button>
+    <button class="btn btn-outline btn-block" onclick="document.getElementById('import-file').click()">📥 JSON 가져오기</button>
+    <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn btn-outline btn-block" onclick="closeModal()">닫기</button>
+    </div>
+  `);
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `MyRoutine_backup_${getTodayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('백업 파일이 저장되었습니다');
+}
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (imported.dates) {
+        data = { ...data, ...imported };
+        saveData();
+        renderAll();
+        closeModal();
+        showToast('데이터를 불러왔습니다');
+      } else {
+        showToast('올바른 MyRoutine 백업 파일이 아닙니다');
+      }
+    } catch(err) {
+      showToast('파일을 읽을 수 없습니다');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============== Helpers ==============
+function timeToMin(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function calcDurationMin(dd, i) {
+  const entries = dd.entries;
+  if (i >= entries.length) return 0;
+  const start = timeToMin(entries[i].time);
+  let end;
+  if (i < entries.length - 1) {
+    end = timeToMin(entries[i + 1].time);
+  } else {
+    end = dd.closedAt ? timeToMin(dd.closedAt) : start;
+  }
+  return Math.max(0, end - start);
+}
+
+function calcDuration(dd, i) {
+  const mins = calcDurationMin(dd, i);
+  if (mins === 0) return '';
+  return formatMin(mins);
+}
+
+function calcSleepMin(dd) {
+  if (!dd.entries.length) return 0;
+  const wakeMin = timeToMin(dd.entries[0].time);
+  const sleepStart = dd.sleepStart || data.settings.defaultSleepStart;
+  const sleepMin = timeToMin(sleepStart);
+
+  // Sleep = from sleepStart (of previous night) to wake
+  // If sleepStart > wakeTime, it means sleepStart is from the night before
+  let total;
+  if (sleepMin > wakeMin) {
+    // e.g. sleep at 23:00, wake at 07:00 => 8 hours
+    total = (24 * 60 - sleepMin) + wakeMin;
+  } else {
+    // e.g. sleep at 00:00, wake at 07:00 => 7 hours
+    total = wakeMin - sleepMin;
+  }
+
+  // Also add time after closedAt to midnight + sleepStart
+  if (dd.closedAt) {
+    const closeMin = timeToMin(dd.closedAt);
+    if (sleepMin >= closeMin) {
+      total += (sleepMin - closeMin);
+    }
+  }
+
+  return Math.max(0, total);
+}
+
+function formatMin(min) {
+  if (min < 60) return min + '분';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return m > 0 ? `${h}시간 ${m}분` : `${h}시간`;
+}
+
+function formatDateKr(d) {
+  const [y, m, day] = d.split('-');
+  const dt = new Date(d);
+  const days = ['일','월','화','수','목','금','토'];
+  return `${y}년 ${parseInt(m)}월 ${parseInt(day)}일 (${days[dt.getDay()]})`;
+}
+
+function getCurrentTime() {
+  const now = new Date();
+  return String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+}
+
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function escAttr(s) {
+  return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ============== Modal ==============
+function showModal(html) {
+  document.getElementById('modal-container').innerHTML = `
+    <div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+      <div class="modal">${html}</div>
+    </div>
+  `;
+}
+
+function closeModal() {
+  document.getElementById('modal-container').innerHTML = '';
+}
+
+// ============== Toast ==============
+function showToast(msg) {
+  let toast = document.getElementById('toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity 0.3s;pointer-events:none;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+}
+
+// ============== Render All ==============
+function renderAll() {
+  renderTimeline();
+  renderChips();
+}
+
+// ============== PWA Service Worker & Install ==============
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const dismissed = localStorage.getItem('myRoutinePWADismissed');
+  if (!dismissed) {
+    document.getElementById('pwa-install-banner').classList.add('show');
+  }
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  document.getElementById('pwa-install-banner').classList.remove('show');
+});
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then((result) => {
+    deferredPrompt = null;
+    document.getElementById('pwa-install-banner').classList.remove('show');
+  });
+}
+
+function dismissInstallBanner() {
+  document.getElementById('pwa-install-banner').classList.remove('show');
+  localStorage.setItem('myRoutinePWADismissed', 'true');
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ============== Start ==============
+init();
+</script>
+</body>
+</html>
