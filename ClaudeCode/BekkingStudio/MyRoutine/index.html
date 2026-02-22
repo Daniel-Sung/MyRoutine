@@ -2421,7 +2421,8 @@ function buildPdfCalendar() {
     const starred = hasData && result.flexMin > 0 && result.desiredPct >= 80;
     if (hasData) totalWithData++;
     if (starred) starCount++;
-    dayData.push({ day: d, hasData, starred, dateStr: ds });
+    const desiredMin = hasData ? (result.desiredMin || 0) : 0;
+    dayData.push({ day: d, hasData, starred, dateStr: ds, desiredMin });
   }
 
   let cells = '';
@@ -2434,9 +2435,12 @@ function buildPdfCalendar() {
   let col = firstDay;
   dayData.forEach(dd => {
     const bg = dd.dateStr === currentDate ? '#E8F6F3' : (dd.hasData ? '#fafafa' : '#fff');
-    const star = dd.starred ? ' ★' : '';
-    const color = dd.starred ? '#FFD700' : (dd.hasData ? '#333' : '#ccc');
-    row += `<td style="${cellStyle}background:${bg};color:${color};border-radius:6px;">${dd.day}${star}</td>`;
+    const star = dd.starred ? '<span style="color:#FFD700;font-size:9px;"> ★</span>' : '';
+    const color = dd.hasData ? '#333' : '#ccc';
+    const desiredLabel = dd.hasData
+      ? `<br><span style="font-size:9px;color:#7ECEC1;font-weight:600;">${dd.desiredMin >= 60 ? Math.floor(dd.desiredMin / 60) + 'h' : (dd.desiredMin > 0 ? dd.desiredMin + 'm' : '0h')}</span>`
+      : '';
+    row += `<td style="${cellStyle}background:${bg};color:${color};border-radius:6px;">${dd.day}${star}${desiredLabel}</td>`;
     col++;
     if (col % 7 === 0) { row += '</tr><tr>'; }
   });
