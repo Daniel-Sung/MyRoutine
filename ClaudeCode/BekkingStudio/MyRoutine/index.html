@@ -145,21 +145,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.date-time-row .date-picker-mini {
-  padding: 4px 8px;
-  border: 1.5px solid var(--mint-light);
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--card);
-  color: var(--text-sub);
-  outline: none;
-  cursor: pointer;
-}
-
-.date-time-row .date-picker-mini:focus {
-  border-color: var(--mint);
-}
 
 /* Input Area */
 .input-area {
@@ -1211,7 +1196,6 @@ body {
         <div id="record-status" class="record-status"></div>
         <div class="date-time-row">
           <div class="time" id="current-time"></div>
-          <input type="date" id="record-date" class="date-picker-mini" onchange="switchDate(this.value)">
         </div>
       </div>
     </div>
@@ -1709,7 +1693,6 @@ function init() {
   applyStaticTranslations();
   updateClock();
   setInterval(updateClock, 1000);
-  document.getElementById('record-date').value = currentDate;
   renderAll();
   loadSettings();
   if (document.documentElement.getAttribute('data-theme') === 'dark' ||
@@ -2395,7 +2378,6 @@ function renderHistory() {
 function loadHistoryDate(d) {
   currentDate = d;
   calendarMonth = null;
-  document.getElementById('record-date').value = d;
   const dd = data.dates[d];
   if (dd && dd.status === 'completed') {
     switchTab('analysis');
