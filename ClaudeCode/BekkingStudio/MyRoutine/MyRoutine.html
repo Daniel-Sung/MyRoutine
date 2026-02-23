@@ -1681,7 +1681,13 @@ body {
       </div>
 
       <div class="card" id="stats-ranking-card">
-        <h3 style="font-size:15px;margin-bottom:12px" data-i18n="stats.activityRanking">활동 TOP 5</h3>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <h3 style="font-size:15px;margin:0" data-i18n="stats.activityRanking">활동 TOP 5</h3>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-sub);cursor:pointer">
+            <input type="checkbox" id="stats-exclude-fixed" onchange="toggleStatsExcludeFixed()" style="accent-color:var(--coral)">
+            <span data-i18n="stats.excludeFixed">고정 활동 제외</span>
+          </label>
+        </div>
         <div id="stats-ranking-list"></div>
       </div>
 
@@ -1691,6 +1697,10 @@ body {
         <div class="stats-chart-container"><canvas id="stats-activity-chart"></canvas></div>
       </div>
     </div>
+
+    <button class="btn btn-coral btn-block" onclick="exportStatsPDF()" style="margin-top:16px" id="stats-export-pdf-btn">
+      📄 <span data-i18n="stats.exportPdf">PDF로 내보내기</span>
+    </button>
   </div>
 </div>
 
@@ -1819,6 +1829,7 @@ const TRANSLATIONS = {
     'stats.fixedFlexTrend': '고정/유동 시간 비율', 'stats.activityTrend': '활동별 시간 추이',
     'stats.totalTime': '총 시간', 'stats.avgDesired': '평균 달성률', 'stats.avgFlex': '평균 유동 비율',
     'stats.selectActivity': '활동을 선택하세요',
+    'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -1900,6 +1911,7 @@ const TRANSLATIONS = {
     'stats.fixedFlexTrend': '固定/自由時間の割合', 'stats.activityTrend': '活動別時間の推移',
     'stats.totalTime': '合計時間', 'stats.avgDesired': '平均達成率', 'stats.avgFlex': '平均自由比率',
     'stats.selectActivity': '活動を選択してください',
+    'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -1981,6 +1993,7 @@ const TRANSLATIONS = {
     'stats.fixedFlexTrend': 'Fixed/Flexible Ratio', 'stats.activityTrend': 'Activity Time Trend',
     'stats.totalTime': 'Total Time', 'stats.avgDesired': 'Avg Achievement', 'stats.avgFlex': 'Avg Flexible',
     'stats.selectActivity': 'Select an activity',
+    'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.pdfTitle': 'MyRoutine - Period Stats',
   }
 };
 
@@ -2089,6 +2102,9 @@ let statsDesiredChart = null;
 let statsRatioChart = null;
 let statsActivityChart = null;
 let statsSelectedActivity = null;
+let statsExcludeFixed = false;
+let statsCachedDays = [];
+let statsCachedDates = [];
 
 // ============== Init ==============
 function init() {
@@ -2303,20 +2319,25 @@ function renderStats() {
 
   const dates = getStatsPeriodDates();
   const days = aggregateStatsData(dates);
+  statsCachedDays = days;
+  statsCachedDates = dates;
 
   const chartsArea = document.getElementById('stats-charts-area');
   const emptyEl = document.getElementById('stats-empty');
   const summaryRow = document.getElementById('stats-summary-row');
+  const pdfBtn = document.getElementById('stats-export-pdf-btn');
 
   if (days.length === 0) {
     chartsArea.style.display = 'none';
     summaryRow.style.display = 'none';
     emptyEl.style.display = '';
+    if (pdfBtn) pdfBtn.style.display = 'none';
     return;
   }
   chartsArea.style.display = '';
   summaryRow.style.display = '';
   emptyEl.style.display = 'none';
+  if (pdfBtn) pdfBtn.style.display = '';
 
   renderStatsSummaryCards(days);
   renderStatsDesiredChart(days, dates);
@@ -2425,6 +2446,7 @@ function renderStatsRanking(days) {
   const actMap = {};
   days.forEach(d => {
     d.activities.forEach(a => {
+      if (statsExcludeFixed && a.category === 'fixed') return;
       if (!actMap[a.activity]) actMap[a.activity] = 0;
       actMap[a.activity] += a.minutes;
     });
@@ -2514,6 +2536,118 @@ function selectStatsActivity(activity) {
   const dates = getStatsPeriodDates();
   const days = aggregateStatsData(dates);
   renderStatsActivityTrend(days, dates);
+}
+
+function toggleStatsExcludeFixed() {
+  statsExcludeFixed = document.getElementById('stats-exclude-fixed').checked;
+  renderStatsRanking(statsCachedDays);
+}
+
+function exportStatsPDF() {
+  const days = statsCachedDays;
+  const dates = statsCachedDates;
+  if (!days || days.length === 0) return;
+
+  const periodLabel = formatStatsPeriodLabel();
+
+  // Summary stats
+  const totalMin = days.reduce((s, d) => s + d.totalMin, 0);
+  const avgDesired = days.length > 0
+    ? Math.round(days.reduce((s, d) => s + (d.flexMin > 0 ? (d.desiredMin / d.flexMin * 100) : 0), 0) / days.length)
+    : 0;
+  const avgFlex = days.length > 0
+    ? Math.round(days.reduce((s, d) => s + (d.totalMin > 0 ? (d.flexMin / d.totalMin * 100) : 0), 0) / days.length)
+    : 0;
+
+  // Chart images
+  const desiredImg = document.getElementById('stats-desired-chart').toDataURL('image/png');
+  const ratioImg = document.getElementById('stats-ratio-chart').toDataURL('image/png');
+  const activityImg = statsActivityChart ? document.getElementById('stats-activity-chart').toDataURL('image/png') : null;
+
+  // TOP 5 ranking (respects current filter)
+  const actMap = {};
+  days.forEach(d => {
+    d.activities.forEach(a => {
+      if (statsExcludeFixed && a.category === 'fixed') return;
+      if (!actMap[a.activity]) actMap[a.activity] = 0;
+      actMap[a.activity] += a.minutes;
+    });
+  });
+  const sorted = Object.entries(actMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const medals = ['🥇', '🥈', '🥉', '4', '5'];
+
+  const rankingRows = sorted.map(([name, mins], i) =>
+    `<tr>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:center;">${medals[i]}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;font-weight:600;">${escHtml(name)}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:14px;text-align:right;">${formatMin(mins)}</td>
+    </tr>`
+  ).join('');
+
+  const filterNote = statsExcludeFixed ? `<p style="font-size:11px;color:#aaa;margin-top:4px;">* ${t('stats.excludeFixed')}</p>` : '';
+
+  const htmlString = `
+    <div style="padding:30px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#333;width:700px;">
+      <h1 style="text-align:center;color:#7ECEC1;margin-bottom:4px;font-size:24px;">${t('stats.pdfTitle')}</h1>
+      <p style="text-align:center;color:#888;margin-bottom:24px;font-size:14px;">${escHtml(periodLabel)} (${days.length} ${t('stats.recordedDays')})</p>
+
+      <table style="width:100%;margin-bottom:24px;background:#f9f9f9;border-radius:12px;">
+        <tr>
+          <td style="text-align:center;padding:20px;">
+            <div style="font-size:28px;font-weight:800;color:#8E9AAF;">${formatMin(totalMin)}</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">${t('stats.totalTime')}</div>
+          </td>
+          <td style="text-align:center;padding:20px;">
+            <div style="font-size:28px;font-weight:800;color:#FF7F7F;">${avgDesired}%</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">${t('stats.avgDesired')}</div>
+          </td>
+          <td style="text-align:center;padding:20px;">
+            <div style="font-size:28px;font-weight:800;color:#7ECEC1;">${avgFlex}%</div>
+            <div style="font-size:12px;color:#888;margin-top:4px;">${t('stats.avgFlex')}</div>
+          </td>
+        </tr>
+      </table>
+
+      <h3 style="font-size:14px;color:#888;margin-bottom:8px;">${t('stats.desiredTrend')}</h3>
+      <img src="${desiredImg}" style="width:100%;margin-bottom:24px;border-radius:8px;">
+
+      <h3 style="font-size:14px;color:#888;margin-bottom:8px;">${t('stats.fixedFlexTrend')}</h3>
+      <img src="${ratioImg}" style="width:100%;margin-bottom:24px;border-radius:8px;">
+
+      <h3 style="font-size:14px;color:#888;margin-bottom:8px;">${t('stats.activityRanking')}</h3>
+      ${filterNote}
+      <table style="width:100%;border-collapse:collapse;margin-bottom:24px;">
+        <thead>
+          <tr style="background:#f7f7f7;">
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:center;font-size:13px;width:40px;">#</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">${t('pdf.activity')}</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:right;font-size:13px;">${t('pdf.duration')}</th>
+          </tr>
+        </thead>
+        <tbody>${rankingRows}</tbody>
+      </table>
+
+      ${activityImg && statsSelectedActivity ? `
+        <h3 style="font-size:14px;color:#888;margin-bottom:8px;">${t('stats.activityTrend')} - ${escHtml(statsSelectedActivity)}</h3>
+        <img src="${activityImg}" style="width:100%;margin-bottom:24px;border-radius:8px;">
+      ` : ''}
+    </div>
+  `;
+
+  const safePeriod = periodLabel.replace(/[\/\\:*?"<>|]/g, '_');
+  const opt = {
+    margin: 10,
+    filename: `MyRoutine_Stats_${safePeriod}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(htmlString, 'string').save().then(() => {
+    showToast(t('toast.pdfSaved'));
+  }).catch(() => {
+    showToast(t('toast.pdfFailed'));
+  });
 }
 
 // ============== Tab Navigation ==============
