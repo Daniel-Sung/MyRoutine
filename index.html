@@ -1298,21 +1298,7 @@ body {
 
     <div class="settings-section">
       <div class="card">
-        <h4 data-i18n="settings.title">설정</h4>
-        <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
-          <label style="font-size:13px;flex-shrink:0" data-i18n="settings.defaultSleep">기본 취침 시간</label>
-          <input type="time" id="default-sleep" value="00:00"
-                 style="padding:8px;border:2px solid var(--mint-light);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);outline:none"
-                 onchange="saveSettings()">
-        </div>
-        <div style="display:flex;gap:12px;align-items:center">
-          <label style="font-size:13px;flex-shrink:0" data-i18n="settings.defaultWake">기본 기상 시간</label>
-          <input type="time" id="default-wake" value="07:00"
-                 style="padding:8px;border:2px solid var(--mint-light);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);outline:none"
-                 onchange="saveSettings()">
-        </div>
-        <div style="margin-top:16px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.06)">
-          <h4 style="font-size:13px;color:var(--text-sub);margin-bottom:10px" data-i18n="settings.categoryColor">카테고리 색상</h4>
+        <h4 data-i18n="settings.categoryColor">카테고리 색상</h4>
           <div style="display:flex;gap:12px;align-items:center;margin-bottom:8px">
             <label style="font-size:13px;flex-shrink:0" data-i18n="settings.fixedTime">고정 시간</label>
             <input type="color" id="color-fixed" value="#8E9AAF"
@@ -1325,7 +1311,6 @@ body {
                    style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;background:none"
                    onchange="saveColorSettings()">
           </div>
-        </div>
       </div>
     </div>
   </div>
@@ -1403,7 +1388,6 @@ const TRANSLATIONS = {
     'history.title': '기록 히스토리',
     'history.emptyMsg': '아직 기록된 날이 없어요<br>\'기록\' 탭에서 하루를 시작해보세요!',
     'history.completed': '완료', 'history.recording': '기록중',
-    'settings.title': '설정', 'settings.defaultSleep': '기본 취침 시간', 'settings.defaultWake': '기본 기상 시간',
     'settings.categoryColor': '카테고리 색상', 'settings.fixedTime': '고정 시간', 'settings.flexibleTime': '유동 시간',
     'modal.editTime': '시간 수정', 'modal.hourLabel': '{h}시',
     'modal.cancel': '취소', 'modal.confirm': '확인',
@@ -1473,7 +1457,6 @@ const TRANSLATIONS = {
     'history.title': '記録履歴',
     'history.emptyMsg': 'まだ記録された日がありません<br>「記録」タブで一日を始めましょう！',
     'history.completed': '完了', 'history.recording': '記録中',
-    'settings.title': '設定', 'settings.defaultSleep': 'デフォルト就寝時間', 'settings.defaultWake': 'デフォルト起床時間',
     'settings.categoryColor': 'カテゴリ色', 'settings.fixedTime': '固定時間', 'settings.flexibleTime': '自由時間',
     'modal.editTime': '時間修正', 'modal.hourLabel': '{h}時',
     'modal.cancel': 'キャンセル', 'modal.confirm': '確認',
@@ -1543,7 +1526,6 @@ const TRANSLATIONS = {
     'history.title': 'Record History',
     'history.emptyMsg': "No recorded days yet<br>Start your day in the 'Record' tab!",
     'history.completed': 'Done', 'history.recording': 'Recording',
-    'settings.title': 'Settings', 'settings.defaultSleep': 'Default Sleep Time', 'settings.defaultWake': 'Default Wake Time',
     'settings.categoryColor': 'Category Colors', 'settings.fixedTime': 'Fixed Time', 'settings.flexibleTime': 'Flexible Time',
     'modal.editTime': 'Edit Time', 'modal.hourLabel': '{h}:00',
     'modal.cancel': 'Cancel', 'modal.confirm': 'OK',
@@ -1682,7 +1664,7 @@ function getIcon(activity) {
   }
   return DEFAULT_ICONS[activity] || '📌';
 }
-let data = { dates: {}, activityPresets: {}, customPresets: null, settings: { defaultSleepStart: '00:00', defaultWakeUp: '07:00' } };
+let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {} };
 let currentDate = getTodayStr();
 let donutChart = null;
 let calendarMonth = null;
@@ -1694,7 +1676,6 @@ function init() {
   updateClock();
   setInterval(updateClock, 1000);
   renderAll();
-  loadSettings();
   if (document.documentElement.getAttribute('data-theme') === 'dark' ||
       localStorage.getItem('myRoutineDark') === 'true') {
     document.documentElement.setAttribute('data-theme', 'dark');
@@ -1714,9 +1695,26 @@ function updateClock() {
   document.getElementById('current-time').textContent =
     String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
 
-  // 자정이 지나면 currentDate를 오늘로 자동 전환
+  // 자정이 지나면 이전 날짜 자동 마감 + currentDate를 오늘로 전환
   const today = getTodayStr();
   if (currentDate !== today) {
+    const prevDate = currentDate;
+    const prevDD = data.dates[prevDate];
+    if (prevDD && prevDD.status === 'recording' && prevDD.entries.length > 0) {
+      prevDD.status = 'completed';
+      prevDD.closedAt = '23:59';
+      // 미분류 활동 자동 분류
+      prevDD.entries.forEach(e => {
+        if (!e.category) {
+          if (data.customPresets) {
+            const cp = data.customPresets.find(p => p.name === e.activity);
+            if (cp) { e.category = cp.category; return; }
+          }
+          e.category = data.activityPresets[e.activity] || DEFAULT_CATEGORIES[e.activity] || null;
+        }
+      });
+      saveData();
+    }
     currentDate = today;
     renderAll();
   }
@@ -1747,20 +1745,9 @@ function saveData() {
 
 function getDateData(d) {
   if (!data.dates[d]) {
-    data.dates[d] = { status: 'recording', entries: [], closedAt: null, sleepStart: data.settings.defaultSleepStart, memo: '' };
+    data.dates[d] = { status: 'recording', entries: [], closedAt: null, sleepStart: null, memo: '' };
   }
   return data.dates[d];
-}
-
-function loadSettings() {
-  document.getElementById('default-sleep').value = data.settings.defaultSleepStart || '00:00';
-  document.getElementById('default-wake').value = data.settings.defaultWakeUp || '07:00';
-}
-
-function saveSettings() {
-  data.settings.defaultSleepStart = document.getElementById('default-sleep').value;
-  data.settings.defaultWakeUp = document.getElementById('default-wake').value;
-  saveData();
 }
 
 function saveColorSettings() {
@@ -1913,7 +1900,7 @@ function closeDay() {
   // 취침 엔트리에서 시간 가져오기
   const bedEntry = [...dd.entries].reverse().find(e => isBedActivity(e.activity));
   const defaultCloseTime = bedEntry ? bedEntry.time : getCurrentTime();
-  const defaultSleepTime = bedEntry ? bedEntry.time : data.settings.defaultSleepStart;
+  const defaultSleepTime = bedEntry ? bedEntry.time : '00:00';
 
   showModal(`
     <h3>${t('modal.closeDay')}</h3>
