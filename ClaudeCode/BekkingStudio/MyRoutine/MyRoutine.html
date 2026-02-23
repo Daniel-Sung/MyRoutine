@@ -1881,9 +1881,19 @@ function getTodayStr() {
 function updateClock() {
   const now = new Date();
   const days = getDayNames();
-  document.getElementById('current-date').textContent = formatDateDisplay(now.getFullYear(), now.getMonth()+1, now.getDate(), days[now.getDay()]);
-  document.getElementById('current-time').textContent =
-    String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+  const timeEl = document.getElementById('current-time');
+
+  // 과거 날짜 열람 중이면 해당 날짜 표시 + 시계 숨김
+  if (viewingPastDate && currentDate !== getTodayStr()) {
+    const [py, pm, pd] = currentDate.split('-').map(Number);
+    const pastDt = new Date(py, pm - 1, pd);
+    document.getElementById('current-date').textContent = formatDateDisplay(py, pm, pd, days[pastDt.getDay()]);
+    timeEl.style.display = 'none';
+  } else {
+    document.getElementById('current-date').textContent = formatDateDisplay(now.getFullYear(), now.getMonth()+1, now.getDate(), days[now.getDay()]);
+    timeEl.textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    timeEl.style.display = '';
+  }
 
   // 자정이 지나면 이전 날짜 자동 마감 + currentDate를 오늘로 전환
   const today = getTodayStr();
@@ -2185,6 +2195,8 @@ function updateRecordStatus() {
 
   if (isCompleted) {
     el.innerHTML = '<span class="pulse-dot"></span>' + t('record.statusCompleted');
+  } else if (viewingPastDate) {
+    el.innerHTML = '<span class="pulse-dot"></span>' + t('record.statusRecording');
   } else if (dd.entries.length > 0) {
     const last = dd.entries[dd.entries.length - 1];
     const [h, m] = last.time.split(':').map(Number);
