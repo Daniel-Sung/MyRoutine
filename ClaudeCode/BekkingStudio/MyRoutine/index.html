@@ -1816,7 +1816,7 @@ const TRANSLATIONS = {
     'history.completed': '완료', 'history.recording': '기록중', 'history.days': '{n}일', 'history.year': '{y}년',
     'settings.categoryColor': '카테고리 색상', 'settings.fixedTime': '고정 시간', 'settings.flexibleTime': '유동 시간',
     'modal.editTime': '시간 수정', 'modal.hourLabel': '{h}시',
-    'modal.cancel': '취소', 'modal.confirm': '확인',
+    'modal.cancel': '취소', 'modal.confirm': '확인', 'modal.confirmTitle': '확인',
     'modal.closeDay': '하루 마감',
     'modal.closeDayDesc': '마감 시간과 취침 시간을 입력해주세요',
     'modal.closeTime': '마감 시간 (잠들기 전 마지막 시간)',
@@ -1908,7 +1908,7 @@ const TRANSLATIONS = {
     'history.completed': '完了', 'history.recording': '記録中', 'history.days': '{n}日', 'history.year': '{y}年',
     'settings.categoryColor': 'カテゴリ色', 'settings.fixedTime': '固定時間', 'settings.flexibleTime': '自由時間',
     'modal.editTime': '時間修正', 'modal.hourLabel': '{h}時',
-    'modal.cancel': 'キャンセル', 'modal.confirm': '確認',
+    'modal.cancel': 'キャンセル', 'modal.confirm': '確認', 'modal.confirmTitle': '確認',
     'modal.closeDay': '一日の締め',
     'modal.closeDayDesc': '締め時間と就寝時間を入力してください',
     'modal.closeTime': '締め時間（寝る前の最後の時間）',
@@ -2000,7 +2000,7 @@ const TRANSLATIONS = {
     'history.completed': 'Done', 'history.recording': 'Recording', 'history.days': '{n} days', 'history.year': '{y}',
     'settings.categoryColor': 'Category Colors', 'settings.fixedTime': 'Fixed Time', 'settings.flexibleTime': 'Flexible Time',
     'modal.editTime': 'Edit Time', 'modal.hourLabel': '{h}:00',
-    'modal.cancel': 'Cancel', 'modal.confirm': 'OK',
+    'modal.cancel': 'Cancel', 'modal.confirm': 'OK', 'modal.confirmTitle': 'Confirm',
     'modal.closeDay': 'Close Day',
     'modal.closeDayDesc': 'Enter closing time and sleep time',
     'modal.closeTime': 'Closing time (last time before bed)',
@@ -2802,12 +2802,13 @@ function addEntry(activityName) {
 }
 
 function deleteEntry(id) {
-  if (!confirm(t('toast.confirmDelete'))) return;
-  const dd = getDateData(currentDate);
-  dd.entries = dd.entries.filter(e => e.id !== id);
-  saveData();
-  renderTimeline();
-  renderGoalCards();
+  showConfirm(t('toast.confirmDelete'), function() {
+    const dd = getDateData(currentDate);
+    dd.entries = dd.entries.filter(e => e.id !== id);
+    saveData();
+    renderTimeline();
+    renderGoalCards();
+  });
 }
 
 function toggleTimelineMemo(entryId, event) {
@@ -4277,12 +4278,13 @@ function saveGoal() {
 }
 
 function deleteGoal(goalId) {
-  if (!confirm(t('goals.delete'))) return;
-  data.goals = data.goals.filter(g => g.id !== goalId);
-  saveData();
-  renderGoalCards();
-  showToast(t('goals.deleted'));
-  showGoalManager();
+  showConfirm(t('goals.delete'), function() {
+    data.goals = data.goals.filter(g => g.id !== goalId);
+    saveData();
+    renderGoalCards();
+    showToast(t('goals.deleted'));
+    showGoalManager();
+  });
 }
 
 function toggleGoalActive(goalId) {
@@ -4293,6 +4295,26 @@ function toggleGoalActive(goalId) {
     renderGoalCards();
     showGoalManager();
   }
+}
+
+// ============== Confirm Dialog ==============
+function showConfirm(msg, onConfirm) {
+  const html = `
+    <div style="text-align:center;padding:8px 0;">
+      <div style="font-size:32px;margin-bottom:8px;">⚠️</div>
+      <h3 style="margin-bottom:4px;">${t('modal.confirmTitle')}</h3>
+      <p style="font-size:14px;color:var(--text-sub);margin:12px 0;">${msg}</p>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn btn-block" onclick="closeModal()" style="flex:1;">${t('modal.cancel')}</button>
+        <button class="btn btn-coral btn-block" id="confirm-yes-btn" style="flex:1;">${t('modal.confirm')}</button>
+      </div>
+    </div>
+  `;
+  showModal(html);
+  document.getElementById('confirm-yes-btn').onclick = function() {
+    closeModal();
+    onConfirm();
+  };
 }
 
 // ============== Modal ==============
