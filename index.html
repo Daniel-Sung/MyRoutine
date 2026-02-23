@@ -322,6 +322,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  cursor: pointer;
 }
 
 .timeline-info {
@@ -954,6 +956,55 @@ body {
   color: var(--text-light);
 }
 
+/* Activity Memo (Timeline accordion) */
+.timeline-memo-area {
+  width: 100%;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease, margin-top 0.3s ease;
+  margin-top: 0;
+}
+.timeline-item.memo-expanded .timeline-memo-area {
+  max-height: 120px;
+  margin-top: 8px;
+}
+.timeline-memo-input {
+  width: 100%;
+  min-height: 50px;
+  padding: 8px 10px;
+  border: 1.5px solid var(--mint-light);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  resize: none;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+.timeline-memo-input:focus {
+  border-color: var(--mint);
+}
+.timeline-memo-input::placeholder {
+  color: var(--text-light);
+}
+.timeline-memo-badge {
+  font-size: 11px;
+  margin-left: 4px;
+  opacity: 0.7;
+}
+.activity-memo-list {
+  margin-top: 4px;
+  padding-left: 4px;
+}
+.activity-memo-item {
+  font-size: 12px;
+  color: var(--text-sub);
+  line-height: 1.5;
+  margin-top: 2px;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -1487,7 +1538,9 @@ const TRANSLATIONS = {
     'pdf.memo': '오늘의 메모',
     'pdf.calendarTitle': '{y}년 {m}월 달성 현황',
     'pdf.calendarSummary': '{total}일 중 {stars}일 달성 ★',
+    'pdf.activityMemo': '메모',
     'calendar.achievement': '{total}일 중 {stars}일 달성',
+    'activityMemo.placeholder': '이 활동에 대한 메모...',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -1559,7 +1612,9 @@ const TRANSLATIONS = {
     'pdf.memo': '今日のメモ',
     'pdf.calendarTitle': '{y}年 {m}月 達成状況',
     'pdf.calendarSummary': '{total}日中 {stars}日達成 ★',
+    'pdf.activityMemo': 'メモ',
     'calendar.achievement': '{total}日中 {stars}日達成',
+    'activityMemo.placeholder': 'この活動についてメモ...',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -1631,7 +1686,9 @@ const TRANSLATIONS = {
     'pdf.memo': "Today's Memo",
     'pdf.calendarTitle': '{month} {y} Achievement',
     'pdf.calendarSummary': '{stars} of {total} days achieved ★',
+    'pdf.activityMemo': 'Memo',
     'calendar.achievement': '{stars} of {total} days achieved',
+    'activityMemo.placeholder': 'Leave a note about this activity...',
   }
 };
 
@@ -1890,7 +1947,8 @@ function addEntry(activityName) {
       }
       return data.activityPresets[activity] || DEFAULT_CATEGORIES[activity] || null;
     })(),
-    isDesiredLife: false
+    isDesiredLife: false,
+    memo: ''
   });
 
   dd.entries.sort((a, b) => timeToMin(a.time) - timeToMin(b.time));
@@ -1910,6 +1968,39 @@ function deleteEntry(id) {
   dd.entries = dd.entries.filter(e => e.id !== id);
   saveData();
   renderTimeline();
+}
+
+function toggleTimelineMemo(entryId, event) {
+  if (event.target.closest('.timeline-time') || event.target.closest('.delete-btn')) return;
+  const item = document.getElementById('tl-' + entryId);
+  if (!item) return;
+  const wasExpanded = item.classList.contains('memo-expanded');
+  item.classList.toggle('memo-expanded');
+  if (!wasExpanded) {
+    const ta = item.querySelector('.timeline-memo-input');
+    if (ta) setTimeout(() => ta.focus(), 100);
+  }
+}
+
+function saveActivityMemo(entryId, value) {
+  const dd = getDateData(currentDate);
+  const entry = dd.entries.find(e => e.id === entryId);
+  if (!entry) return;
+  entry.memo = value;
+  saveData();
+  const item = document.getElementById('tl-' + entryId);
+  if (!item) return;
+  const actDiv = item.querySelector('.timeline-activity');
+  if (!actDiv) return;
+  let badge = actDiv.querySelector('.timeline-memo-badge');
+  if (value && !badge) {
+    const span = document.createElement('span');
+    span.className = 'timeline-memo-badge';
+    span.textContent = '📝';
+    actDiv.appendChild(span);
+  } else if (!value && badge) {
+    badge.remove();
+  }
 }
 
 function editEntryTime(id) {
@@ -2078,19 +2169,26 @@ function renderTimeline() {
   let html = '';
   dd.entries.forEach((entry, i) => {
     const duration = calcDuration(dd, i);
+    const memo = entry.memo || '';
+    const memoBadge = memo ? '<span class="timeline-memo-badge">📝</span>' : '';
     html += `
-      <div class="timeline-item">
+      <div class="timeline-item" id="tl-${entry.id}" onclick="toggleTimelineMemo('${entry.id}', event)">
         <div class="timeline-dot"></div>
         <div class="timeline-content">
           <div class="timeline-info">
             <div class="timeline-time" onclick="editEntryTime('${entry.id}')">${entry.time}</div>
-            <div class="timeline-activity">${getIcon(entry.activity)} ${escHtml(displayActivity(entry.activity))}</div>
+            <div class="timeline-activity">${getIcon(entry.activity)} ${escHtml(displayActivity(entry.activity))}${memoBadge}</div>
             ${duration ? `<div class="timeline-duration">${duration}</div>` : ''}
           </div>
           ${dd.status !== 'completed' ? `
           <div class="timeline-actions">
             <button class="delete-btn" onclick="deleteEntry('${entry.id}')">✕</button>
           </div>` : ''}
+          <div class="timeline-memo-area">
+            <textarea class="timeline-memo-input" placeholder="${t('activityMemo.placeholder')}"
+              onclick="event.stopPropagation()"
+              oninput="saveActivityMemo('${entry.id}', this.value)">${escHtml(memo)}</textarea>
+          </div>
         </div>
       </div>
     `;
@@ -2321,6 +2419,17 @@ function renderBarChart(dd, stats) {
   const container = document.getElementById('bar-chart-list');
   const isPastCompleted = currentDate !== getTodayStr() && dd.status === 'completed';
 
+  // Collect memos by activity name
+  const memosByActivity = {};
+  dd.entries.forEach(e => {
+    const m = e.memo || '';
+    if (m) {
+      const name = displayActivity(e.activity);
+      if (!memosByActivity[name]) memosByActivity[name] = [];
+      memosByActivity[name].push({ time: e.time, memo: m });
+    }
+  });
+
   // Aggregate same activity names (sleep is already single)
   const merged = {};
   stats.activities.forEach(a => {
@@ -2345,16 +2454,24 @@ function renderBarChart(dd, stats) {
                 onclick="setCategoryInAnalysis('${encodedName}', 'flexible')">${t('classify.flexible')}</button>
       </div>
     ` : '';
+    const displayName = displayActivity(a.activity);
+    const memos = memosByActivity[displayName] || [];
+    const memosHtml = memos.length > 0 ? `
+      <div class="activity-memo-list">
+        ${memos.map(m => `<div class="activity-memo-item">📝 ${m.time} ${escHtml(m.memo)}</div>`).join('')}
+      </div>
+    ` : '';
     return `
       <div class="bar-chart-item">
         <div class="bar-label">
-          <span>${getIcon(a.activity)} ${escHtml(displayActivity(a.activity))}</span>
+          <span>${getIcon(a.activity)} ${escHtml(displayName)}</span>
           <span>${formatMin(a.minutes)}</span>
         </div>
         <div class="bar-track">
           <div class="bar-fill ${a.category || 'fixed'}" data-width="${(a.minutes/maxMin*100)}" style="width:0%"></div>
         </div>
         ${toggleHtml}
+        ${memosHtml}
       </div>
     `;
   }).join('');
@@ -2393,12 +2510,14 @@ function renderDesiredList(dd, stats) {
   container.innerHTML = flexActivities.map(a => {
     const entry = dd.entries.find(e => e.id === a.id);
     const checked = entry ? entry.isDesiredLife : false;
+    const memo = entry ? (entry.memo || '') : '';
     return `
       <div class="desired-item ${checked ? 'checked' : ''}" onclick="toggleDesired('${a.id}')">
         <div class="desired-check">${checked ? '✓' : ''}</div>
         <div style="flex:1">
           <div style="font-weight:600;font-size:14px">${getIcon(a.activity)} ${escHtml(displayActivity(a.activity))}</div>
           <div style="font-size:12px;color:var(--text-sub)">${formatMin(a.minutes)}</div>
+          ${memo ? `<div style="font-size:12px;color:var(--text-sub);margin-top:2px">📝 ${escHtml(memo)}</div>` : ''}
         </div>
       </div>
     `;
@@ -2602,6 +2721,7 @@ function exportPDF() {
             <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">${t('pdf.activity')}</th>
             <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">${t('pdf.category')}</th>
             <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">${t('pdf.duration')}</th>
+            <th style="padding:8px 12px;border-bottom:2px solid #ddd;text-align:left;font-size:13px;">${t('pdf.activityMemo')}</th>
           </tr>
         </thead>
         <tbody>
@@ -2616,6 +2736,7 @@ function exportPDF() {
                 </span>
               </td>
               <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">${formatMin(calcDurationMin(dd, i))}</td>
+              <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;max-width:150px;word-break:break-word;">${e.memo ? escHtml(e.memo) : ''}</td>
             </tr>`;
           }).join('')}
         </tbody>
