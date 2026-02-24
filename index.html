@@ -1863,7 +1863,7 @@ body {
   </div>
 </div>
 
-<!-- PWA Install Banner -->
+<!-- PWA Install Banner (Android) -->
 <div class="pwa-install-banner" id="pwa-install-banner">
   <img class="pwa-install-icon" src="icon-192.png" alt="MyRoutine">
   <div class="pwa-install-text">
@@ -1873,6 +1873,18 @@ body {
   <div class="pwa-install-actions">
     <button class="btn btn-primary btn-sm" onclick="installPWA()" data-i18n="pwa.installBtn">설치</button>
     <button class="pwa-install-close" onclick="dismissInstallBanner()">✕</button>
+  </div>
+</div>
+
+<!-- PWA Install Banner (iOS Safari) -->
+<div class="pwa-install-banner" id="pwa-ios-banner">
+  <img class="pwa-install-icon" src="icon-192.png" alt="MyRoutine">
+  <div class="pwa-install-text">
+    <div class="title" data-i18n="pwa.install">MyRoutine 설치</div>
+    <div class="desc" data-i18n="pwa.iosDesc">Safari 하단의 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택하세요</div>
+  </div>
+  <div class="pwa-install-actions">
+    <button class="pwa-install-close" onclick="dismissIOSBanner()">✕</button>
   </div>
 </div>
 
@@ -1957,6 +1969,7 @@ const TRANSLATIONS = {
     'month.9': '9월', 'month.10': '10월', 'month.11': '11월', 'month.12': '12월',
     'tab.record': '기록', 'tab.classify': '분류', 'tab.analysis': '분석', 'tab.stats': '통계',
     'pwa.install': 'MyRoutine 설치', 'pwa.installDesc': '홈 화면에 추가하여 앱처럼 사용하세요', 'pwa.installBtn': '설치',
+    'pwa.iosDesc': 'Safari 하단의 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택하세요',
     'memo.title': '오늘의 메모', 'memo.placeholder': '오늘 하루를 돌아보며 간단한 메모를 남겨보세요...',
     'sleep': '수면',
     'pdf.title': 'MyRoutine - 나의 하루 분석', 'pdf.timeline': '타임라인',
@@ -2075,6 +2088,7 @@ const TRANSLATIONS = {
     'month.9': '9月', 'month.10': '10月', 'month.11': '11月', 'month.12': '12月',
     'tab.record': '記録', 'tab.classify': '分類', 'tab.analysis': '分析', 'tab.stats': '統計',
     'pwa.install': 'MyRoutine インストール', 'pwa.installDesc': 'ホーム画面に追加してアプリのように使いましょう', 'pwa.installBtn': 'インストール',
+    'pwa.iosDesc': 'Safari下部の共有ボタン(□↑)をタップし「ホーム画面に追加」を選択してください',
     'memo.title': '今日のメモ', 'memo.placeholder': '今日一日を振り返りながら簡単なメモを残してみましょう...',
     'sleep': '睡眠',
     'pdf.title': 'MyRoutine - 一日の分析', 'pdf.timeline': 'タイムライン',
@@ -2193,6 +2207,7 @@ const TRANSLATIONS = {
     'month.9': 'Sep', 'month.10': 'Oct', 'month.11': 'Nov', 'month.12': 'Dec',
     'tab.record': 'Record', 'tab.classify': 'Classify', 'tab.analysis': 'Analysis', 'tab.stats': 'Stats',
     'pwa.install': 'Install MyRoutine', 'pwa.installDesc': 'Add to home screen and use like an app', 'pwa.installBtn': 'Install',
+    'pwa.iosDesc': 'Tap the share button (□↑) at the bottom of Safari, then select "Add to Home Screen"',
     'memo.title': "Today's Memo", 'memo.placeholder': 'Reflect on your day and leave a quick note...',
     'sleep': 'Sleep',
     'pdf.title': 'MyRoutine - Daily Analysis', 'pdf.timeline': 'Timeline',
@@ -5214,6 +5229,25 @@ function dismissInstallBanner() {
   document.getElementById('pwa-install-banner').classList.remove('show');
   localStorage.setItem('myRoutinePWADismissed', 'true');
 }
+
+// iOS Safari install guide
+function showIOSInstallBanner() {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone === true;
+  const dismissed = localStorage.getItem('myRoutineIOSDismissed');
+  if (isIOS && !isStandalone && !dismissed) {
+    setTimeout(() => {
+      document.getElementById('pwa-ios-banner').classList.add('show');
+    }, 2000);
+  }
+}
+
+function dismissIOSBanner() {
+  document.getElementById('pwa-ios-banner').classList.remove('show');
+  localStorage.setItem('myRoutineIOSDismissed', 'true');
+}
+
+showIOSInstallBanner();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});

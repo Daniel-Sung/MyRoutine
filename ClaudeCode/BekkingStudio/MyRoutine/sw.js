@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myroutine-v21';
+const CACHE_NAME = 'myroutine-v22';
 const ASSETS = [
   './index.html',
   './manifest.json',
