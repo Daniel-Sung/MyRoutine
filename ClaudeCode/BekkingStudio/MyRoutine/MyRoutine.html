@@ -1949,6 +1949,7 @@ const TRANSLATIONS = {
     'auth.uploadComplete': '클라우드 업로드 완료',
     'auth.downloadComplete': '클라우드 데이터 적용 완료',
     'auth.syncNow': '지금 동기화', 'auth.never': '없음',
+    'support.coffee': '개발자 응원하기',
     'share.daily': '공유하기', 'share.stats': '통계 공유하기',
     'share.shareText': 'MyRoutine으로 분석한 나의 하루',
     'share.generating': '이미지 생성 중...', 'share.shared': '공유 완료!',
@@ -2058,6 +2059,7 @@ const TRANSLATIONS = {
     'auth.uploadComplete': 'アップロード完了',
     'auth.downloadComplete': 'ダウンロード完了',
     'auth.syncNow': '今すぐ同期', 'auth.never': 'なし',
+    'support.coffee': '開発者を応援する',
     'share.daily': 'シェアする', 'share.stats': '統計をシェアする',
     'share.shareText': 'MyRoutineで分析した一日',
     'share.generating': '画像を生成中...', 'share.shared': 'シェア完了！',
@@ -2167,6 +2169,7 @@ const TRANSLATIONS = {
     'auth.uploadComplete': 'Upload complete',
     'auth.downloadComplete': 'Download complete',
     'auth.syncNow': 'Sync now', 'auth.never': 'Never',
+    'support.coffee': 'Buy us a coffee',
     'share.daily': 'Share', 'share.stats': 'Share Stats',
     'share.shareText': 'My day analyzed with MyRoutine',
     'share.generating': 'Generating image...', 'share.shared': 'Shared!',
@@ -2410,6 +2413,7 @@ function showProfileModal() {
       </div>
       <button class="btn btn-primary btn-block btn-sm" onclick="manualSync()" style="margin-bottom:8px;">${t('auth.syncNow')}</button>
       <button class="btn btn-outline btn-block btn-sm" onclick="closeModal();signOutUser();" style="color:var(--danger);border-color:var(--danger);">${t('auth.logout')}</button>
+      <a href="https://buymeacoffee.com/bekkingstudio" target="_blank" rel="noopener" class="btn btn-block btn-sm" style="margin-top:12px;background:#FFDD00;color:#000;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">☕ ${t('support.coffee')}</a>
       <button class="btn btn-block btn-sm" onclick="closeModal()" style="margin-top:4px;color:var(--text-sub);">${t('modal.close')}</button>
     </div>
   `;
@@ -4325,7 +4329,8 @@ function showBackupModal() {
     <button class="btn btn-primary btn-block" onclick="exportJSON()" style="margin-bottom:10px">📤 ${t('modal.exportJson')}</button>
     <button class="btn btn-outline btn-block" onclick="document.getElementById('import-file').click()">📥 ${t('modal.importJson')}</button>
     <input type="file" id="import-file" accept=".json" style="display:none" onchange="importJSON(event)">
-    <div class="modal-actions" style="margin-top:16px">
+    <a href="https://buymeacoffee.com/bekkingstudio" target="_blank" rel="noopener" class="btn btn-block" style="margin-top:16px;background:#FFDD00;color:#000;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">☕ ${t('support.coffee')}</a>
+    <div class="modal-actions" style="margin-top:8px">
       <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
     </div>
   `);
