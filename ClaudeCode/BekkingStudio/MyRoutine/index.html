@@ -12,6 +12,7 @@
 <title>MyRoutine - 나의 하루 분석</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -204,6 +205,21 @@ body {
 }
 
 .btn-coral:hover { background: #FF6B6B; }
+
+.btn-share {
+  background: linear-gradient(135deg, #7ECEC1, #5BB8A9);
+  color: white;
+  box-shadow: 0 2px 8px rgba(126, 206, 193, 0.4);
+}
+.btn-share:hover { background: linear-gradient(135deg, #6BC4B6, #4DAE9B); }
+
+.share-card-container {
+  position: fixed;
+  left: -9999px;
+  top: 0;
+  z-index: -1;
+  pointer-events: none;
+}
 
 .btn-outline {
   background: transparent;
@@ -1674,6 +1690,9 @@ body {
     <button class="btn btn-coral btn-block" onclick="exportPDF()" style="margin-top:16px">
       📄 <span data-i18n="analysis.exportPdf">PDF로 내보내기</span>
     </button>
+    <button class="btn btn-share btn-block" onclick="shareDaily()" style="margin-top:8px">
+      📤 <span data-i18n="share.daily">공유하기</span>
+    </button>
   </div>
 
   <!-- Section: History -->
@@ -1772,6 +1791,9 @@ body {
     <button class="btn btn-coral btn-block" onclick="exportStatsPDF()" style="margin-top:16px" id="stats-export-pdf-btn">
       📄 <span data-i18n="stats.exportPdf">PDF로 내보내기</span>
     </button>
+    <button class="btn btn-share btn-block" onclick="shareStats()" style="margin-top:8px" id="stats-share-btn">
+      📤 <span data-i18n="share.stats">통계 공유하기</span>
+    </button>
   </div>
 </div>
 
@@ -1805,6 +1827,9 @@ body {
 
 <!-- Modal container -->
 <div id="modal-container"></div>
+
+<!-- Offscreen share card render target -->
+<div id="share-card-render" class="share-card-container"></div>
 
 <!-- PDF is generated dynamically, no hidden template needed -->
 
@@ -1924,6 +1949,10 @@ const TRANSLATIONS = {
     'auth.uploadComplete': '클라우드 업로드 완료',
     'auth.downloadComplete': '클라우드 데이터 적용 완료',
     'auth.syncNow': '지금 동기화', 'auth.never': '없음',
+    'share.daily': '공유하기', 'share.stats': '통계 공유하기',
+    'share.shareText': 'MyRoutine으로 분석한 나의 하루',
+    'share.generating': '이미지 생성 중...', 'share.shared': '공유 완료!',
+    'share.downloaded': '이미지가 저장되었습니다', 'share.failed': '공유에 실패했습니다',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2029,6 +2058,10 @@ const TRANSLATIONS = {
     'auth.uploadComplete': 'アップロード完了',
     'auth.downloadComplete': 'ダウンロード完了',
     'auth.syncNow': '今すぐ同期', 'auth.never': 'なし',
+    'share.daily': 'シェアする', 'share.stats': '統計をシェアする',
+    'share.shareText': 'MyRoutineで分析した一日',
+    'share.generating': '画像を生成中...', 'share.shared': 'シェア完了！',
+    'share.downloaded': '画像を保存しました', 'share.failed': 'シェアに失敗しました',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -2134,6 +2167,10 @@ const TRANSLATIONS = {
     'auth.uploadComplete': 'Upload complete',
     'auth.downloadComplete': 'Download complete',
     'auth.syncNow': 'Sync now', 'auth.never': 'Never',
+    'share.daily': 'Share', 'share.stats': 'Share Stats',
+    'share.shareText': 'My day analyzed with MyRoutine',
+    'share.generating': 'Generating image...', 'share.shared': 'Shared!',
+    'share.downloaded': 'Image saved', 'share.failed': 'Failed to share',
   }
 };
 
@@ -2780,18 +2817,21 @@ function renderStats() {
   const emptyEl = document.getElementById('stats-empty');
   const summaryRow = document.getElementById('stats-summary-row');
   const pdfBtn = document.getElementById('stats-export-pdf-btn');
+  const shareBtn = document.getElementById('stats-share-btn');
 
   if (days.length === 0) {
     chartsArea.style.display = 'none';
     summaryRow.style.display = 'none';
     emptyEl.style.display = '';
     if (pdfBtn) pdfBtn.style.display = 'none';
+    if (shareBtn) shareBtn.style.display = 'none';
     return;
   }
   chartsArea.style.display = '';
   summaryRow.style.display = '';
   emptyEl.style.display = 'none';
   if (pdfBtn) pdfBtn.style.display = '';
+  if (shareBtn) shareBtn.style.display = '';
 
   renderStatsSummaryCards(days);
   renderStatsDesiredChart(days, dates);
@@ -4051,6 +4091,224 @@ function exportPDF() {
   }).catch(() => {
     showToast(t('toast.pdfFailed'));
   });
+}
+
+// ============== Social Share ==============
+function buildDonutSVG(fixedMin, flexMin, r, stroke) {
+  const total = fixedMin + flexMin;
+  if (total === 0) return '';
+  const circ = 2 * Math.PI * r;
+  const fixedPct = fixedMin / total;
+  const flexPct = flexMin / total;
+  const fixedLen = circ * fixedPct;
+  const flexLen = circ * flexPct;
+  const gap = 2;
+  const size = (r + stroke) * 2;
+  const cx = size / 2, cy = size / 2;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#8E9AAF" stroke-width="${stroke}"
+      stroke-dasharray="${Math.max(0, fixedLen - gap)} ${circ - Math.max(0, fixedLen - gap)}"
+      stroke-dashoffset="${circ * 0.25}" stroke-linecap="round"/>
+    <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#7ECEC1" stroke-width="${stroke}"
+      stroke-dasharray="${Math.max(0, flexLen - gap)} ${circ - Math.max(0, flexLen - gap)}"
+      stroke-dashoffset="${circ * 0.25 - fixedLen}" stroke-linecap="round"/>
+  </svg>`;
+}
+
+function buildDailyShareCardHTML() {
+  const dd = getDateData(currentDate);
+  if (!dd || !dd.entries || dd.entries.length === 0) return null;
+  const stats = calcStats(dd);
+  if (stats.totalMin === 0) return null;
+
+  const fixedPct = stats.totalMin > 0 ? Math.round(stats.fixedMin / stats.totalMin * 100) : 0;
+  const flexPct = 100 - fixedPct;
+  const desiredPct = stats.flexMin > 0 ? Math.round(stats.desiredMin / stats.flexMin * 100) : 0;
+
+  const actMap = {};
+  stats.activities.forEach(a => {
+    if (!actMap[a.activity]) actMap[a.activity] = 0;
+    actMap[a.activity] += a.minutes;
+  });
+  const sorted = Object.entries(actMap).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const medals = ['🥇', '🥈', '🥉'];
+  const top3Html = sorted.map(([name, mins], i) =>
+    `<div style="font-size:15px;margin-bottom:4px;color:#2D3436;">${medals[i]} ${escHtml(displayActivity(name))}　${formatMin(mins)}</div>`
+  ).join('');
+
+  const dateObj = new Date(currentDate);
+  const days = getDayNames();
+  const dateLabel = `${dateObj.getMonth()+1}/${dateObj.getDate()} (${days[dateObj.getDay()]})`;
+
+  const fixedLabel = t('analysis.fixedTime');
+  const flexLabel = t('analysis.flexibleTime');
+
+  return `<div style="width:540px;height:540px;background:#FFFFFF;border-radius:24px;padding:32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard',sans-serif;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:20px;font-weight:800;background:linear-gradient(135deg,#7ECEC1,#FF7F7F);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">MyRoutine</div>
+      <div style="font-size:15px;color:#636E72;font-weight:600;">${dateLabel}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:24px;flex:1;">
+      <div style="text-align:center;flex-shrink:0;">
+        ${buildDonutSVG(stats.fixedMin, stats.flexMin, 55, 14)}
+        <div style="font-size:13px;color:#636E72;margin-top:4px;">${t('analysis.total')} ${formatMin(stats.totalMin)}</div>
+      </div>
+      <div style="flex:1;">
+        <div style="margin-bottom:12px;">
+          <div style="font-size:14px;color:#8E9AAF;font-weight:600;">● ${fixedLabel}　${formatMin(stats.fixedMin)} (${fixedPct}%)</div>
+          <div style="font-size:14px;color:#7ECEC1;font-weight:600;margin-top:2px;">● ${flexLabel}　${formatMin(stats.flexMin)} (${flexPct}%)</div>
+        </div>
+        <div style="font-size:13px;color:#636E72;font-weight:700;margin-bottom:6px;">TOP 3</div>
+        ${top3Html}
+      </div>
+    </div>
+    <div style="background:linear-gradient(135deg,#E8F6F3,#D0F0E8);border-radius:16px;padding:16px 20px;margin-top:12px;">
+      <div style="font-size:13px;color:#636E72;font-weight:600;margin-bottom:4px;">${t('pdf.desiredTime')}</div>
+      <div style="font-size:28px;font-weight:800;color:#2D3436;">${formatMin(stats.desiredMin)}</div>
+      <div style="font-size:13px;color:#636E72;margin-top:2px;">${flexLabel} ${t('analysis.total')} ${desiredPct}%</div>
+    </div>
+    <div style="text-align:center;margin-top:auto;padding-top:12px;font-size:12px;color:#B2BEC3;">MyRoutine - ${t('app.subtitle')}</div>
+  </div>`;
+}
+
+function buildStatsShareCardHTML() {
+  if (!statsCachedDays || statsCachedDays.length === 0) return null;
+  const days = statsCachedDays;
+
+  const totalMin = days.reduce((s, d) => s + d.totalMin, 0);
+  const avgDesired = days.length > 0
+    ? Math.round(days.reduce((s, d) => s + (d.flexMin > 0 ? (d.desiredMin / d.flexMin * 100) : 0), 0) / days.length) : 0;
+  const avgFlex = days.length > 0
+    ? Math.round(days.reduce((s, d) => s + (d.totalMin > 0 ? (d.flexMin / d.totalMin * 100) : 0), 0) / days.length) : 0;
+
+  const actMap = {};
+  days.forEach(d => {
+    d.activities.forEach(a => {
+      if (!actMap[a.activity]) actMap[a.activity] = 0;
+      actMap[a.activity] += a.minutes;
+    });
+  });
+  const sorted = Object.entries(actMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const medals = ['🥇', '🥈', '🥉'];
+  const rankHtml = sorted.map(([name, mins], i) => {
+    const prefix = i < 3 ? medals[i] : `${i + 1}.`;
+    return `<div style="font-size:14px;margin-bottom:3px;color:#2D3436;">${prefix} ${escHtml(displayActivity(name))}　${formatMin(mins)}</div>`;
+  }).join('');
+
+  const periodLabel = formatStatsPeriodLabel();
+  const modeLabel = statsMode === 'weekly' ? t('stats.weekly') : t('stats.monthly');
+
+  const boxStyle = 'background:#F7F9FC;border-radius:12px;padding:12px 8px;text-align:center;flex:1;';
+
+  return `<div style="width:540px;height:540px;background:#FFFFFF;border-radius:24px;padding:32px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard',sans-serif;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:20px;font-weight:800;background:linear-gradient(135deg,#7ECEC1,#FF7F7F);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">MyRoutine</div>
+      <div style="font-size:14px;color:#636E72;font-weight:600;">${periodLabel} ${modeLabel}</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;">
+      <div style="${boxStyle}">
+        <div style="font-size:22px;font-weight:800;color:#2D3436;">${formatMin(totalMin)}</div>
+        <div style="font-size:12px;color:#636E72;margin-top:2px;">${t('stats.totalTime')}</div>
+      </div>
+      <div style="${boxStyle}">
+        <div style="font-size:22px;font-weight:800;color:#FF7F7F;">${avgDesired}%</div>
+        <div style="font-size:12px;color:#636E72;margin-top:2px;">${t('stats.avgDesired')}</div>
+      </div>
+      <div style="${boxStyle}">
+        <div style="font-size:22px;font-weight:800;color:#7ECEC1;">${avgFlex}%</div>
+        <div style="font-size:12px;color:#636E72;margin-top:2px;">${t('stats.avgFlex')}</div>
+      </div>
+    </div>
+    <div style="font-size:14px;font-weight:700;color:#2D3436;margin-bottom:10px;">${t('stats.activityRanking')}</div>
+    <div style="flex:1;">${rankHtml}</div>
+    <div style="text-align:center;margin-top:auto;padding-top:12px;font-size:12px;color:#B2BEC3;">MyRoutine - ${t('app.subtitle')}</div>
+  </div>`;
+}
+
+function renderShareCard(html) {
+  return new Promise((resolve, reject) => {
+    const container = document.getElementById('share-card-render');
+    container.innerHTML = html;
+    const card = container.firstElementChild;
+    setTimeout(() => {
+      html2canvas(card, {
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#FFFFFF', width: 540, height: 540
+      }).then(canvas => {
+        container.innerHTML = '';
+        canvas.toBlob(blob => {
+          if (blob) resolve(blob);
+          else reject(new Error('toBlob failed'));
+        }, 'image/png');
+      }).catch(err => {
+        container.innerHTML = '';
+        reject(err);
+      });
+    }, 100);
+  });
+}
+
+async function shareImage(blob, filename) {
+  const file = new File([blob], filename, { type: 'image/png' });
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    try {
+      await navigator.share({
+        files: [file],
+        title: 'MyRoutine',
+        text: t('share.shareText')
+      });
+      showToast(t('share.shared'));
+    } catch (e) {
+      if (e.name !== 'AbortError') {
+        downloadBlob(blob, filename);
+        showToast(t('share.downloaded'));
+      }
+    }
+  } else {
+    downloadBlob(blob, filename);
+    showToast(t('share.downloaded'));
+  }
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function shareDaily() {
+  const html = buildDailyShareCardHTML();
+  if (!html) {
+    showToast(t('analysis.noData'));
+    return;
+  }
+  showToast(t('share.generating'));
+  try {
+    const blob = await renderShareCard(html);
+    await shareImage(blob, `MyRoutine_${currentDate}.png`);
+  } catch (e) {
+    showToast(t('share.failed'));
+  }
+}
+
+async function shareStats() {
+  const html = buildStatsShareCardHTML();
+  if (!html) {
+    showToast(t('stats.noData'));
+    return;
+  }
+  showToast(t('share.generating'));
+  try {
+    const blob = await renderShareCard(html);
+    const safeName = formatStatsPeriodLabel().replace(/[^a-zA-Z0-9가-힣]/g, '_');
+    await shareImage(blob, `MyRoutine_Stats_${safeName}.png`);
+  } catch (e) {
+    showToast(t('share.failed'));
+  }
 }
 
 // ============== Dark Mode ==============

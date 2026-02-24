@@ -1,4 +1,4 @@
-const CACHE_NAME = 'myroutine-v16';
+const CACHE_NAME = 'myroutine-v17';
 const ASSETS = [
   './index.html',
   './manifest.json',
@@ -6,6 +6,7 @@ const ASSETS = [
   './icon-512.png',
   'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
   'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js',
   'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js'
