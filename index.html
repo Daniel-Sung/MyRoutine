@@ -10,6 +10,14 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>MyRoutine - 나의 하루 분석</title>
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HJVMWV011Z"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-HJVMWV011Z');
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -3257,6 +3265,7 @@ function switchTab(tab) {
   if (tab === 'analysis') renderAnalysis();
   if (tab === 'history') renderHistory();
   if (tab === 'stats') renderStats();
+  if (typeof gtag === 'function') gtag('event', 'tab_switch', { tab_name: tab });
 }
 
 function switchDate(d) {
@@ -3447,6 +3456,7 @@ function confirmCloseDay() {
   saveData();
   closeModal();
   switchTab('classify');
+  if (typeof gtag === 'function') gtag('event', 'close_day', { entry_count: dd.entries.length });
 }
 
 function reopenDay() {
@@ -4383,6 +4393,7 @@ function downloadBlob(blob, filename) {
 }
 
 async function shareDaily() {
+  if (typeof gtag === 'function') gtag('event', 'share', { content_type: 'daily' });
   const html = buildDailyShareCardHTML();
   if (!html) {
     showToast(t('analysis.noData'));
@@ -4398,6 +4409,7 @@ async function shareDaily() {
 }
 
 async function shareStats() {
+  if (typeof gtag === 'function') gtag('event', 'share', { content_type: 'stats' });
   const html = buildStatsShareCardHTML();
   if (!html) {
     showToast(t('stats.noData'));
@@ -5214,6 +5226,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 window.addEventListener('appinstalled', () => {
   deferredPrompt = null;
   document.getElementById('pwa-install-banner').classList.remove('show');
+  if (typeof gtag === 'function') gtag('event', 'pwa_install');
 });
 
 function installPWA() {
