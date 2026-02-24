@@ -1608,7 +1608,6 @@ body {
     <h1>MyRoutine</h1>
     <div class="header-actions">
       <button class="icon-btn" onclick="switchTab('history')" data-i18n-title="header.history" title="히스토리">📅</button>
-      <button class="icon-btn" onclick="switchTab('stats')" data-i18n-title="header.stats" title="통계">📈</button>
       <button class="icon-btn" onclick="toggleDarkMode()" data-i18n-title="header.darkMode" title="다크 모드">🌙</button>
       <button class="icon-btn" onclick="showBackupModal()" data-i18n-title="header.backup" title="백업/복원">💾</button>
       <button class="icon-btn auth-btn" id="auth-btn" onclick="handleAuthClick()">
@@ -1841,6 +1840,9 @@ body {
     <button class="tab" data-tab="analysis" onclick="switchTab('analysis')">
       <span class="tab-icon">📊</span><span data-i18n="tab.analysis">분석</span>
     </button>
+    <button class="tab" data-tab="stats" onclick="switchTab('stats')">
+      <span class="tab-icon">📈</span><span data-i18n="tab.stats">통계</span>
+    </button>
   </div>
 </div>
 
@@ -1936,7 +1938,7 @@ const TRANSLATIONS = {
     'month.1': '1월', 'month.2': '2월', 'month.3': '3월', 'month.4': '4월',
     'month.5': '5월', 'month.6': '6월', 'month.7': '7월', 'month.8': '8월',
     'month.9': '9월', 'month.10': '10월', 'month.11': '11월', 'month.12': '12월',
-    'tab.record': '기록', 'tab.classify': '분류', 'tab.analysis': '분석',
+    'tab.record': '기록', 'tab.classify': '분류', 'tab.analysis': '분석', 'tab.stats': '통계',
     'pwa.install': 'MyRoutine 설치', 'pwa.installDesc': '홈 화면에 추가하여 앱처럼 사용하세요', 'pwa.installBtn': '설치',
     'memo.title': '오늘의 메모', 'memo.placeholder': '오늘 하루를 돌아보며 간단한 메모를 남겨보세요...',
     'sleep': '수면',
@@ -1990,6 +1992,7 @@ const TRANSLATIONS = {
     'tour.record.title': '빠른 기록', 'tour.record.desc': '프리셋 버튼을 눌러 활동을 빠르게 기록하세요.',
     'tour.classify.title': '분류', 'tour.classify.desc': '기록한 활동을 고정/유동으로 분류할 수 있어요.',
     'tour.analyze.title': '분석', 'tour.analyze.desc': '하루 분석 결과를 확인하고 PDF로 내보낼 수 있어요.',
+    'tour.stats.title': '통계', 'tour.stats.desc': '주간·월간 통계와 랭킹을 확인할 수 있어요.',
     'tour.closeday.title': '하루 마감', 'tour.closeday.desc': '하루가 끝나면 마감 버튼을 눌러 하루를 정리하세요.',
     'tour.done.title': '준비 완료!', 'tour.done.desc': '지금 바로 시작해 보세요!',
     'tour.next': '다음', 'tour.skip': '건너뛰기', 'tour.start': '시작하기', 'tour.replay': '사용법 다시 보기',
@@ -2053,7 +2056,7 @@ const TRANSLATIONS = {
     'month.1': '1月', 'month.2': '2月', 'month.3': '3月', 'month.4': '4月',
     'month.5': '5月', 'month.6': '6月', 'month.7': '7月', 'month.8': '8月',
     'month.9': '9月', 'month.10': '10月', 'month.11': '11月', 'month.12': '12月',
-    'tab.record': '記録', 'tab.classify': '分類', 'tab.analysis': '分析',
+    'tab.record': '記録', 'tab.classify': '分類', 'tab.analysis': '分析', 'tab.stats': '統計',
     'pwa.install': 'MyRoutine インストール', 'pwa.installDesc': 'ホーム画面に追加してアプリのように使いましょう', 'pwa.installBtn': 'インストール',
     'memo.title': '今日のメモ', 'memo.placeholder': '今日一日を振り返りながら簡単なメモを残してみましょう...',
     'sleep': '睡眠',
@@ -2107,6 +2110,7 @@ const TRANSLATIONS = {
     'tour.record.title': 'クイック記録', 'tour.record.desc': 'プリセットボタンで活動をすばやく記録します。',
     'tour.classify.title': '分類', 'tour.classify.desc': '記録した活動を固定/柔軟に分類できます。',
     'tour.analyze.title': '分析', 'tour.analyze.desc': '一日の分析結果を確認してPDFで出力できます。',
+    'tour.stats.title': '統計', 'tour.stats.desc': '週間・月間の統計とランキングを確認できます。',
     'tour.closeday.title': '一日の締め', 'tour.closeday.desc': '一日の終わりに締めボタンで整理しましょう。',
     'tour.done.title': '準備完了！', 'tour.done.desc': 'さあ始めましょう！',
     'tour.next': '次へ', 'tour.skip': 'スキップ', 'tour.start': '始める', 'tour.replay': '使い方を見る',
@@ -2170,7 +2174,7 @@ const TRANSLATIONS = {
     'month.1': 'Jan', 'month.2': 'Feb', 'month.3': 'Mar', 'month.4': 'Apr',
     'month.5': 'May', 'month.6': 'Jun', 'month.7': 'Jul', 'month.8': 'Aug',
     'month.9': 'Sep', 'month.10': 'Oct', 'month.11': 'Nov', 'month.12': 'Dec',
-    'tab.record': 'Record', 'tab.classify': 'Classify', 'tab.analysis': 'Analysis',
+    'tab.record': 'Record', 'tab.classify': 'Classify', 'tab.analysis': 'Analysis', 'tab.stats': 'Stats',
     'pwa.install': 'Install MyRoutine', 'pwa.installDesc': 'Add to home screen and use like an app', 'pwa.installBtn': 'Install',
     'memo.title': "Today's Memo", 'memo.placeholder': 'Reflect on your day and leave a quick note...',
     'sleep': 'Sleep',
@@ -2224,6 +2228,7 @@ const TRANSLATIONS = {
     'tour.record.title': 'Quick Record', 'tour.record.desc': 'Tap preset buttons to quickly record activities.',
     'tour.classify.title': 'Classify', 'tour.classify.desc': 'Classify activities as fixed or flexible.',
     'tour.analyze.title': 'Analysis', 'tour.analyze.desc': 'View daily analysis and export as PDF.',
+    'tour.stats.title': 'Stats', 'tour.stats.desc': 'View weekly and monthly stats and rankings.',
     'tour.closeday.title': 'Close Day', 'tour.closeday.desc': 'Tap the close button to wrap up your day.',
     'tour.done.title': 'All Set!', 'tour.done.desc': 'Start recording now!',
     'tour.next': 'Next', 'tour.skip': 'Skip', 'tour.start': 'Get Started', 'tour.replay': 'Replay Tour',
@@ -5202,6 +5207,7 @@ const TOUR_STEPS = [
   { id:'record', target:'#quick-chips', position:'below' },
   { id:'classify', target:'.tab[data-tab="classify"]', position:'above' },
   { id:'analyze', target:'.tab[data-tab="analysis"]', position:'above' },
+  { id:'stats', target:'.tab[data-tab="stats"]', position:'above' },
   { id:'closeday', target:'#close-day-btn', position:'above' },
   { id:'done', target:null, position:'center' }
 ];
@@ -5311,7 +5317,7 @@ function endTour() {
 
 // ============== Touch Swipe ==============
 (function() {
-  const TAB_ORDER = ['record', 'classify', 'analysis'];
+  const TAB_ORDER = ['record', 'classify', 'analysis', 'stats'];
   let touchStartX = 0, touchStartY = 0;
   document.addEventListener('touchstart', e => {
     touchStartX = e.changedTouches[0].screenX;
