@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyRoutine">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.google.com https://www.google-analytics.com https://analytics.google.com; font-src 'self'; frame-src 'self' https://*.firebaseapp.com;">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>MyRoutine - 나의 하루 분석</title>
@@ -2385,7 +2386,7 @@ function getIcon(activity) {
 function getPresetColor(activity) {
   if (data.customPresets) {
     const cp = data.customPresets.find(p => p.name === activity);
-    if (cp && cp.color) return cp.color;
+    if (cp && cp.color) return sanitizeColor(cp.color);
   }
   return null;
 }
@@ -2476,7 +2477,12 @@ function updateAuthUI(user) {
   const iconEl = document.getElementById('auth-icon');
   if (!iconEl) return;
   if (user && user.photoURL) {
-    iconEl.innerHTML = `<img src="${user.photoURL}" class="auth-avatar" referrerpolicy="no-referrer">`;
+    iconEl.textContent = '';
+    const img = document.createElement('img');
+    img.src = user.photoURL;
+    img.className = 'auth-avatar';
+    img.referrerPolicy = 'no-referrer';
+    iconEl.appendChild(img);
   } else {
     iconEl.textContent = '👤';
   }
@@ -2500,9 +2506,9 @@ function showProfileModal() {
     : t('auth.never');
   const html = `
     <div style="text-align:center;padding:8px 0;">
-      ${currentUser.photoURL ? `<img src="${currentUser.photoURL}" style="width:56px;height:56px;border-radius:50%;margin-bottom:8px;" referrerpolicy="no-referrer">` : '<div style="font-size:48px;margin-bottom:8px;">👤</div>'}
+      ${currentUser.photoURL ? `<img src="${escAttr(currentUser.photoURL)}" style="width:56px;height:56px;border-radius:50%;margin-bottom:8px;" referrerpolicy="no-referrer">` : '<div style="font-size:48px;margin-bottom:8px;">👤</div>'}
       <h3 style="margin-bottom:4px;">${t('auth.profile')}</h3>
-      <p style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">${currentUser.email || ''}</p>
+      <p style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">${escHtml(currentUser.email || '')}</p>
       <div style="background:var(--bg);border-radius:var(--radius-sm);padding:10px 14px;margin-bottom:16px;font-size:13px;text-align:left;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <span style="color:var(--text-sub);">${t('auth.lastSync')}</span>
@@ -4464,8 +4470,14 @@ function importJSON(e) {
   reader.onload = function(ev) {
     try {
       const imported = JSON.parse(ev.target.result);
-      if (imported.dates) {
-        data = { ...data, ...imported };
+      if (imported.dates && typeof imported.dates === 'object' && !Array.isArray(imported.dates)) {
+        const safe = {};
+        if (imported.dates) safe.dates = imported.dates;
+        if (imported.activityPresets && typeof imported.activityPresets === 'object') safe.activityPresets = imported.activityPresets;
+        if (Array.isArray(imported.customPresets)) safe.customPresets = imported.customPresets;
+        if (imported.settings && typeof imported.settings === 'object') safe.settings = imported.settings;
+        if (Array.isArray(imported.goals)) safe.goals = imported.goals;
+        data = { ...data, ...safe };
         saveData();
         renderAll();
         closeModal();
@@ -4583,6 +4595,10 @@ function escHtml(s) {
 
 function escAttr(s) {
   return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+function sanitizeColor(c) {
+  return /^#[0-9A-Fa-f]{6}$/.test(c) ? c : null;
 }
 
 // ============== Preset Manager ==============
