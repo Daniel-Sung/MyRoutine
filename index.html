@@ -2372,7 +2372,7 @@ function showProfileModal() {
         </div>
       </div>
       <button class="btn btn-primary btn-block btn-sm" onclick="manualSync()" style="margin-bottom:8px;">${t('auth.syncNow')}</button>
-      <button class="btn btn-outline btn-block btn-sm" onclick="signOutUser();closeModal();" style="color:var(--danger);border-color:var(--danger);">${t('auth.logout')}</button>
+      <button class="btn btn-outline btn-block btn-sm" onclick="closeModal();signOutUser();" style="color:var(--danger);border-color:var(--danger);">${t('auth.logout')}</button>
       <button class="btn btn-block btn-sm" onclick="closeModal()" style="margin-top:4px;color:var(--text-sub);">${t('modal.close')}</button>
     </div>
   `;
@@ -2508,8 +2508,12 @@ async function syncData() {
       await syncFromCloud();
       renderAll();
     } else if (cloudExists && localHasData) {
-      // Both have data → show choice modal
-      handleFirstSync();
+      // Both have data → if synced before, just upload silently; else ask user
+      if (lastSyncTime) {
+        await syncToCloud();
+      } else {
+        handleFirstSync();
+      }
     } else {
       // Both empty → nothing to do
       updateSyncStatus('synced');
