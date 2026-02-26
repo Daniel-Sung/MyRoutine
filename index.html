@@ -734,6 +734,15 @@ body {
   color: var(--text-sub);
   margin-top: 2px;
 }
+.history-memo {
+  font-size: 11px;
+  color: var(--text-sub);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
 
 .history-status {
   font-size: 11px;
@@ -1375,6 +1384,9 @@ body {
 .calendar-summary .star-count {
   color: #FFD700;
 }
+.calendar-summary .diamond-count {
+  font-size: 12px;
+}
 
 /* Animations */
 @keyframes fadeInUp {
@@ -1493,7 +1505,7 @@ body {
 }
 .stats-summary-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -1682,6 +1694,9 @@ body {
         </div>
       </div>
     </div>
+
+    <!-- Record Past Date Banner -->
+    <div id="record-past-banner"></div>
 
     <!-- Goals -->
     <div id="goal-section" class="goal-section"></div>
@@ -1985,7 +2000,7 @@ const TRANSLATIONS = {
     'modal.dataManagement': '데이터 관리',
     'modal.exportJson': 'JSON 내보내기', 'modal.importJson': 'JSON 가져오기', 'modal.close': '닫기',
     'about.title': 'MyRoutine 정보',
-    'about.version': 'v1.0 · Bekking Studio',
+    'about.version': 'v1.1 · Bekking Studio',
     'about.privacy': '개인정보 안내',
     'about.privacyLocal': '모든 기록은 사용자 기기에만 저장됩니다',
     'about.privacyNoCollect': '개인정보를 수집하지 않습니다',
@@ -2031,6 +2046,7 @@ const TRANSLATIONS = {
     'pdf.calendarSummary': '{total}일 중 {stars}일 달성 ★',
     'pdf.activityMemo': '메모',
     'calendar.achievement': '{total}일 중 {stars}일 달성',
+    'calendar.diamondDesc': '{total}일 중 {diamonds}일 달성',
     'activityMemo.placeholder': '이 활동에 대한 메모...',
     'header.stats': '통계', 'stats.weekly': '주간', 'stats.monthly': '월간',
     'stats.period': '기간', 'stats.recordedDays': '기록일',
@@ -2040,7 +2056,7 @@ const TRANSLATIONS = {
     'stats.totalTime': '총 시간', 'stats.avgDesired': '평균 달성률', 'stats.avgFlex': '평균 유동 비율',
     'stats.selectActivity': '활동을 선택하세요',
     'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
-    'goals.title': '오늘의 목표', 'goals.manage': '목표 관리', 'goals.add': '새 목표 추가',
+    'goals.title': '오늘의 목표', 'goals.dateTitle': '{date} 목표 달성', 'goals.manage': '목표 관리', 'goals.add': '새 목표 추가',
     'goals.selectActivity': '활동 선택', 'goals.targetTime': '목표 시간',
     'goals.hours': '시간', 'goals.minutes': '분',
     'goals.streak': '{n}일 연속 달성 🔥', 'goals.achieved': '달성!',
@@ -2115,7 +2131,7 @@ const TRANSLATIONS = {
     'modal.dataManagement': 'データ管理',
     'modal.exportJson': 'JSONエクスポート', 'modal.importJson': 'JSONインポート', 'modal.close': '閉じる',
     'about.title': 'MyRoutine について',
-    'about.version': 'v1.0 · Bekking Studio',
+    'about.version': 'v1.1 · Bekking Studio',
     'about.privacy': 'プライバシー',
     'about.privacyLocal': 'すべての記録はお使いの端末にのみ保存されます',
     'about.privacyNoCollect': '個人情報を収集しません',
@@ -2161,6 +2177,7 @@ const TRANSLATIONS = {
     'pdf.calendarSummary': '{total}日中 {stars}日達成 ★',
     'pdf.activityMemo': 'メモ',
     'calendar.achievement': '{total}日中 {stars}日達成',
+    'calendar.diamondDesc': '{total}日中 {diamonds}日達成',
     'activityMemo.placeholder': 'この活動についてメモ...',
     'header.stats': '統計', 'stats.weekly': '週間', 'stats.monthly': '月間',
     'stats.period': '期間', 'stats.recordedDays': '記録日',
@@ -2170,7 +2187,7 @@ const TRANSLATIONS = {
     'stats.totalTime': '合計時間', 'stats.avgDesired': '平均達成率', 'stats.avgFlex': '平均自由比率',
     'stats.selectActivity': '活動を選択してください',
     'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
-    'goals.title': '今日の目標', 'goals.manage': '目標管理', 'goals.add': '新しい目標を追加',
+    'goals.title': '今日の目標', 'goals.dateTitle': '{date} 目標達成', 'goals.manage': '目標管理', 'goals.add': '新しい目標を追加',
     'goals.selectActivity': 'アクティビティ選択', 'goals.targetTime': '目標時間',
     'goals.hours': '時間', 'goals.minutes': '分',
     'goals.streak': '{n}日連続達成 🔥', 'goals.achieved': '達成！',
@@ -2245,7 +2262,7 @@ const TRANSLATIONS = {
     'modal.dataManagement': 'Data Management',
     'modal.exportJson': 'Export JSON', 'modal.importJson': 'Import JSON', 'modal.close': 'Close',
     'about.title': 'About MyRoutine',
-    'about.version': 'v1.0 · Bekking Studio',
+    'about.version': 'v1.1 · Bekking Studio',
     'about.privacy': 'Privacy',
     'about.privacyLocal': 'All records are stored only on your device',
     'about.privacyNoCollect': 'We do not collect personal information',
@@ -2291,6 +2308,7 @@ const TRANSLATIONS = {
     'pdf.calendarSummary': '{stars} of {total} days achieved ★',
     'pdf.activityMemo': 'Memo',
     'calendar.achievement': '{stars} of {total} days achieved',
+    'calendar.diamondDesc': '{diamonds} of {total} days achieved',
     'activityMemo.placeholder': 'Leave a note about this activity...',
     'header.stats': 'Stats', 'stats.weekly': 'Weekly', 'stats.monthly': 'Monthly',
     'stats.period': 'Period', 'stats.recordedDays': 'Recorded',
@@ -2300,7 +2318,7 @@ const TRANSLATIONS = {
     'stats.totalTime': 'Total Time', 'stats.avgDesired': 'Avg Achievement', 'stats.avgFlex': 'Avg Flexible',
     'stats.selectActivity': 'Select an activity',
     'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.pdfTitle': 'MyRoutine - Period Stats',
-    'goals.title': "Today's Goals", 'goals.manage': 'Manage Goals', 'goals.add': 'Add New Goal',
+    'goals.title': "Today's Goals", 'goals.dateTitle': '{date} Goals', 'goals.manage': 'Manage Goals', 'goals.add': 'Add New Goal',
     'goals.selectActivity': 'Select Activity', 'goals.targetTime': 'Target Time',
     'goals.hours': 'hours', 'goals.minutes': 'minutes',
     'goals.streak': '{n} day streak 🔥', 'goals.achieved': 'Done!',
@@ -3327,7 +3345,7 @@ function switchTab(tab) {
   const bottomTab = document.querySelector(`.tab[data-tab="${tab}"]`);
   if (bottomTab) bottomTab.classList.add('active');
 
-  if (tab === 'record') renderGoalCards();
+  if (tab === 'record') { renderGoalCards(); renderRecordPastBanner(); }
   if (tab === 'classify') renderClassify();
   if (tab === 'analysis') renderAnalysis();
   if (tab === 'history') renderHistory();
@@ -4180,11 +4198,13 @@ function renderHistory() {
         const preview = dd.entries.slice(0, 3).map(e => displayActivity(e.activity)).join(', ');
         const statusClass = dd.status === 'completed' ? 'completed' : 'recording';
         const statusText = dd.status === 'completed' ? t('history.completed') : t('history.recording');
+        const memoText = dd.memo ? escHtml(dd.memo.length > 30 ? dd.memo.slice(0, 30) + '...' : dd.memo) : '';
         html += `
           <div class="history-item" onclick="loadHistoryDate('${d}')">
             <div>
               <div class="history-date">${formatDateKr(d)}</div>
               <div class="history-preview">${escHtml(preview)}${dd.entries.length > 3 ? '...' : ''}</div>
+              ${memoText ? `<div class="history-memo">${memoText}</div>` : ''}
             </div>
             <span class="history-status ${statusClass}">${statusText}</span>
           </div>`;
@@ -4224,7 +4244,9 @@ function returnToToday() {
   viewingPastDate = false;
   currentDate = getTodayStr();
   calendarMonth = null;
-  switchTab('analysis');
+  const activeSection = document.querySelector('.section.active');
+  const currentTab = activeSection ? activeSection.id.replace('sec-', '') : 'record';
+  switchTab(currentTab);
   renderAll();
 }
 
@@ -4978,7 +5000,12 @@ function renderGoalCards() {
   const sec = document.getElementById('goal-section');
   if (!sec) return;
   const activeGoals = (data.goals || []).filter(g => g.active);
+  const today = getTodayStr();
+  const isPast = currentDate !== today;
+  const dateStr = currentDate;
+
   if (activeGoals.length === 0) {
+    if (isPast) { sec.innerHTML = ''; return; }
     sec.innerHTML = `
       <div class="goal-header">
         <span class="goal-header-title">🎯 ${t('goals.title')}</span>
@@ -4989,13 +5016,12 @@ function renderGoalCards() {
     return;
   }
 
-  const today = getTodayStr();
   const reminderActivities = [];
   let cardsHtml = '';
 
   for (const goal of activeGoals) {
-    const prog = calcGoalProgress(goal, today);
-    const streak = calcGoalStreak(goal);
+    const prog = calcGoalProgress(goal, dateStr);
+    const streak = isPast ? 0 : calcGoalStreak(goal);
     const icon = getIcon(goal.activity);
     const name = displayActivity(goal.activity);
     const presetColor = getPresetColor(goal.activity) || '#7ECEC1';
@@ -5010,9 +5036,9 @@ function renderGoalCards() {
       statusHtml = `<span class="goal-status">${t('goals.remaining', { t: formatMin(remaining) })}</span>`;
     }
 
-    const streakHtml = streak >= 2 ? `<div class="goal-streak">${t('goals.streak', { n: streak })}</div>` : '';
+    const streakHtml = !isPast && streak >= 2 ? `<div class="goal-streak">${t('goals.streak', { n: streak })}</div>` : '';
 
-    if (prog.currentMin === 0) {
+    if (!isPast && prog.currentMin === 0) {
       reminderActivities.push(name);
     }
 
@@ -5033,15 +5059,18 @@ function renderGoalCards() {
   }
 
   let reminderHtml = '';
-  if (reminderActivities.length > 0) {
+  if (!isPast && reminderActivities.length > 0) {
     const msgs = reminderActivities.map(a => t('goals.reminder', { activity: a })).join('<br>');
     reminderHtml = `<div class="goal-reminder">⏰ ${msgs}</div>`;
   }
 
+  const titleText = isPast ? t('goals.dateTitle', { date: formatDateKr(dateStr) }) : t('goals.title');
+  const managerBtn = isPast ? '' : `<button class="icon-btn" onclick="showGoalManager()" style="width:28px;height:28px;font-size:14px;">⚙️</button>`;
+
   sec.innerHTML = `
     <div class="goal-header">
-      <span class="goal-header-title">🎯 ${t('goals.title')}</span>
-      <button class="icon-btn" onclick="showGoalManager()" style="width:28px;height:28px;font-size:14px;">⚙️</button>
+      <span class="goal-header-title">🎯 ${titleText}</span>
+      ${managerBtn}
     </div>
     ${reminderHtml}
     ${cardsHtml}
@@ -5304,6 +5333,7 @@ function renderMonthlyCalendar() {
 
   let totalWithData = 0;
   let starCount = 0;
+  let diamondCount = 0;
 
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
@@ -5315,6 +5345,7 @@ function renderMonthlyCalendar() {
 
     if (hasData) totalWithData++;
     if (starred) starCount++;
+    if (diamond) diamondCount++;
 
     const classes = ['calendar-day'];
     if (hasData) classes.push('has-data');
@@ -5354,7 +5385,7 @@ function renderMonthlyCalendar() {
       <div class="calendar-grid">
         ${dayCells}
       </div>
-      ${totalWithData > 0 ? `<div class="calendar-summary"><span class="star-count">★</span> ${t('calendar.achievement', {total: totalWithData, stars: starCount})}</div>` : ''}
+      ${totalWithData > 0 ? `<div class="calendar-summary"><span class="star-count">★</span> ${t('calendar.achievement', {total: totalWithData, stars: starCount})}${diamondCount > 0 ? `<br><span class="diamond-count">💎</span> ${t('calendar.diamondDesc', {total: totalWithData, diamonds: diamondCount})}` : ''}</div>` : ''}
     </div>
   `;
 }
@@ -5375,11 +5406,28 @@ function changeCalendarMonth(delta) {
   renderMonthlyCalendar();
 }
 
+function renderRecordPastBanner() {
+  const banner = document.getElementById('record-past-banner');
+  if (!banner) return;
+  const today = getTodayStr();
+  if (currentDate === today) {
+    banner.innerHTML = '';
+    return;
+  }
+  banner.innerHTML = `
+    <div class="past-date-banner">
+      <span class="banner-date">${t('analysis.editingDate', {date: formatDateKr(currentDate)})}</span>
+      <button class="btn-back" onclick="returnToToday()">${t('analysis.backToToday')}</button>
+    </div>
+  `;
+}
+
 // ============== Render All ==============
 function renderAll() {
   renderTimeline();
   renderChips();
   renderGoalCards();
+  renderRecordPastBanner();
   renderLoginBanner();
 }
 
