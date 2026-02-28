@@ -3722,8 +3722,8 @@ function renderChips() {
   Object.values(data.dates).forEach(d => {
     d.entries.forEach(e => allActivities.add(e.activity));
   });
-
-  const chips = [...allActivities];
+  const hidden = data.hiddenActivities || [];
+  const chips = [...allActivities].filter(c => !hidden.includes(c));
   const container = document.getElementById('quick-chips');
 
   if (chips.length === 0) {
@@ -3805,7 +3805,12 @@ function showChipContextMenu(chip, touchX, touchY) {
   // Move button
   const moveBtn = document.createElement('button');
   moveBtn.innerHTML = `↕️ ${t('chip.move')}`;
-  moveBtn.onclick = () => { closeChipContextMenu(); enterChipReorderMode(parseInt(chip.dataset.chipIndex)); };
+  moveBtn.onclick = () => {
+    closeChipContextMenu();
+    ensureInCustomPresets(chipName);
+    renderChips();
+    enterChipReorderMode(chipName);
+  };
   menu.appendChild(moveBtn);
 
   // Edit button
@@ -3814,13 +3819,7 @@ function showChipContextMenu(chip, touchX, touchY) {
     editBtn.innerHTML = `✏️ ${t('chip.edit')}`;
     editBtn.onclick = () => {
       closeChipContextMenu();
-      let idx = presetIdx;
-      if (idx < 0) {
-        // 프리셋에 없는 활동 → 자동 추가 후 편집
-        data.customPresets.push({ name: chipName, icon: '📌', category: data.activityPresets[chipName] || 'flexible', color: null });
-        saveData();
-        idx = data.customPresets.length - 1;
-      }
+      const idx = ensureInCustomPresets(chipName);
       showPresetEditor(idx);
     };
     menu.appendChild(editBtn);
@@ -3834,13 +3833,12 @@ function showChipContextMenu(chip, touchX, touchY) {
     delBtn.onclick = () => {
       closeChipContextMenu();
       showConfirm(chipName, () => {
-        if (presetIdx >= 0) {
-          deletePreset(presetIdx);
-        } else {
-          // activityPresets에서 제거
-          delete data.activityPresets[chipName];
-          saveData();
-        }
+        const idx = data.customPresets.findIndex(p => p.name === chipName);
+        if (idx >= 0) data.customPresets.splice(idx, 1);
+        delete data.activityPresets[chipName];
+        if (!data.hiddenActivities) data.hiddenActivities = [];
+        if (!data.hiddenActivities.includes(chipName)) data.hiddenActivities.push(chipName);
+        saveData();
         renderChips();
       });
     };
@@ -3869,7 +3867,18 @@ function closeChipContextMenu() {
   document.getElementById('chip-context-menu')?.remove();
 }
 
-function enterChipReorderMode(fromIdx) {
+function ensureInCustomPresets(name) {
+  initCustomPresets();
+  let idx = data.customPresets.findIndex(p => p.name === name);
+  if (idx < 0) {
+    data.customPresets.push({ name, icon: '📌', category: data.activityPresets[name] || 'flexible', color: null });
+    saveData();
+    idx = data.customPresets.length - 1;
+  }
+  return idx;
+}
+
+function enterChipReorderMode(fromName) {
   closeModal();
   initCustomPresets();
   const container = document.getElementById('quick-chips');
@@ -3877,22 +3886,25 @@ function enterChipReorderMode(fromIdx) {
   container.querySelectorAll('.chip').forEach(c => c.classList.add('dragging'));
   if (navigator.vibrate) navigator.vibrate(30);
 
-  // Pre-select the long-pressed chip
-  let dragFrom = fromIdx != null ? fromIdx : null;
-  if (dragFrom != null) {
-    const srcChip = container.querySelector(`.chip[data-chip-index="${dragFrom}"]`);
+  // Pre-select the long-pressed chip by name
+  let dragFromName = fromName || null;
+  if (dragFromName) {
+    const srcChip = [...container.querySelectorAll('.chip')].find(c => c.dataset.chipName === dragFromName);
     if (srcChip) srcChip.style.outline = '2px solid var(--mint)';
   }
 
   container.querySelectorAll('.chip').forEach(chip => {
     chip.onclick = function(e) {
       e.preventDefault(); e.stopPropagation();
-      const idx = parseInt(this.dataset.chipIndex);
-      if (dragFrom === null) {
-        dragFrom = idx;
+      const name = this.dataset.chipName;
+      if (dragFromName === null) {
+        dragFromName = name;
         this.style.outline = '2px solid var(--mint)';
       } else {
-        if (dragFrom !== idx) reorderChipPreset(dragFrom, idx);
+        if (dragFromName !== name) {
+          ensureInCustomPresets(name);
+          reorderChipPreset(dragFromName, name);
+        }
         exitReorderMode();
       }
     };
@@ -3914,9 +3926,11 @@ function enterChipReorderMode(fromIdx) {
   }
 }
 
-function reorderChipPreset(fromIdx, toIdx) {
+function reorderChipPreset(fromName, toName) {
   initCustomPresets();
-  if (!data.customPresets || fromIdx >= data.customPresets.length || toIdx >= data.customPresets.length) return;
+  const fromIdx = data.customPresets.findIndex(p => p.name === fromName);
+  const toIdx = data.customPresets.findIndex(p => p.name === toName);
+  if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
   const item = data.customPresets.splice(fromIdx, 1)[0];
   data.customPresets.splice(toIdx, 0, item);
   saveData();
