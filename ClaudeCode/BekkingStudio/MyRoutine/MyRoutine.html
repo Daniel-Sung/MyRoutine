@@ -3809,21 +3809,40 @@ function showChipContextMenu(chip, touchX, touchY) {
   menu.appendChild(moveBtn);
 
   // Edit button
-  if (presetIdx >= 0) {
+  if (!isProtected) {
     const editBtn = document.createElement('button');
     editBtn.innerHTML = `✏️ ${t('chip.edit')}`;
-    editBtn.onclick = () => { closeChipContextMenu(); showPresetEditor(presetIdx); };
+    editBtn.onclick = () => {
+      closeChipContextMenu();
+      let idx = presetIdx;
+      if (idx < 0) {
+        // 프리셋에 없는 활동 → 자동 추가 후 편집
+        data.customPresets.push({ name: chipName, icon: '📌', category: data.activityPresets[chipName] || 'flexible', color: null });
+        saveData();
+        idx = data.customPresets.length - 1;
+      }
+      showPresetEditor(idx);
+    };
     menu.appendChild(editBtn);
   }
 
   // Delete button
-  if (presetIdx >= 0 && !isProtected) {
+  if (!isProtected) {
     const delBtn = document.createElement('button');
     delBtn.className = 'danger';
     delBtn.innerHTML = `🗑️ ${t('chip.delete')}`;
     delBtn.onclick = () => {
       closeChipContextMenu();
-      showConfirm(chipName, () => { deletePreset(presetIdx); renderChips(); });
+      showConfirm(chipName, () => {
+        if (presetIdx >= 0) {
+          deletePreset(presetIdx);
+        } else {
+          // activityPresets에서 제거
+          delete data.activityPresets[chipName];
+          saveData();
+        }
+        renderChips();
+      });
     };
     menu.appendChild(delBtn);
   }
