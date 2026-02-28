@@ -276,6 +276,44 @@ body {
   border: none;
   cursor: pointer;
   transition: all var(--transition);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.chip-context-menu {
+  position: fixed;
+  z-index: 10001;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.22);
+  min-width: 160px;
+  overflow: hidden;
+  animation: fadeIn 0.15s;
+}
+.chip-context-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  font-size: 15px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.chip-context-menu button:active {
+  background: var(--mint-bg);
+}
+.chip-context-menu button.danger {
+  color: var(--coral);
+}
+.chip-context-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 10000;
 }
 
 .chip:active {
@@ -2025,6 +2063,7 @@ const TRANSLATIONS = {
     'toast.enterName': '이름을 입력하세요', 'toast.duplicateName': '이미 같은 이름이 있습니다', 'toast.cannotDelete': '기상/취침은 삭제할 수 없습니다',
     'toast.recorded': '✓ {0} 기록했습니다',
     'preset.reordered': '✓ 버튼 순서가 변경되었습니다',
+    'chip.move': '이동', 'chip.edit': '수정', 'chip.delete': '삭제',
     'day.sun': '일', 'day.mon': '월', 'day.tue': '화', 'day.wed': '수',
     'day.thu': '목', 'day.fri': '금', 'day.sat': '토',
     'month.1': '1월', 'month.2': '2월', 'month.3': '3월', 'month.4': '4월',
@@ -2156,6 +2195,7 @@ const TRANSLATIONS = {
     'toast.enterName': '名前を入力してください', 'toast.duplicateName': '同じ名前がすでにあります', 'toast.cannotDelete': '起床/就寝は削除できません',
     'toast.recorded': '✓ {0} 記録しました',
     'preset.reordered': '✓ ボタンの順序を変更しました',
+    'chip.move': '移動', 'chip.edit': '編集', 'chip.delete': '削除',
     'day.sun': '日', 'day.mon': '月', 'day.tue': '火', 'day.wed': '水',
     'day.thu': '木', 'day.fri': '金', 'day.sat': '土',
     'month.1': '1月', 'month.2': '2月', 'month.3': '3月', 'month.4': '4月',
@@ -2287,6 +2327,7 @@ const TRANSLATIONS = {
     'toast.enterName': 'Please enter a name', 'toast.duplicateName': 'This name already exists', 'toast.cannotDelete': 'Wake Up/Bedtime cannot be deleted',
     'toast.recorded': '✓ Recorded {0}',
     'preset.reordered': '✓ Button order changed',
+    'chip.move': 'Move', 'chip.edit': 'Edit', 'chip.delete': 'Delete',
     'day.sun': 'Sun', 'day.mon': 'Mon', 'day.tue': 'Tue', 'day.wed': 'Wed',
     'day.thu': 'Thu', 'day.fri': 'Fri', 'day.sat': 'Sat',
     'month.1': 'Jan', 'month.2': 'Feb', 'month.3': 'Mar', 'month.4': 'Apr',
@@ -3699,8 +3740,8 @@ function renderChips() {
   initChipDragReorder(container);
 }
 
-// ============== Chip Long-Press Drag Reorder ==============
-let chipDragState = null;
+// ============== Chip Long-Press Context Menu ==============
+let chipLongPressState = null;
 
 function initChipDragReorder(container) {
   const chips = container.querySelectorAll('.chip');
@@ -3709,88 +3750,144 @@ function initChipDragReorder(container) {
     chip.addEventListener('touchmove', onChipTouchMove, { passive: false });
     chip.addEventListener('touchend', onChipTouchEnd);
     chip.addEventListener('touchcancel', onChipTouchEnd);
+    chip.addEventListener('contextmenu', e => e.preventDefault());
   });
 }
 
 function onChipTouchStart(e) {
   const chip = e.currentTarget;
-  chipDragState = {
+  chipLongPressState = {
     chip,
     startX: e.touches[0].clientX,
     startY: e.touches[0].clientY,
-    longPressTimer: setTimeout(() => enterChipReorderMode(chip), 500),
-    reordering: false,
-    moved: false
+    longPressTimer: setTimeout(() => showChipContextMenu(chip, e.touches[0].clientX, e.touches[0].clientY), 500),
+    fired: false
   };
 }
 
-function enterChipReorderMode(chip) {
-  if (!chipDragState) return;
-  chipDragState.reordering = true;
-  const container = document.getElementById('quick-chips');
-  container.classList.add('reorder-mode');
-  chip.classList.add('dragging');
-  if (navigator.vibrate) navigator.vibrate(30);
-}
-
 function onChipTouchMove(e) {
-  if (!chipDragState) return;
-
-  const dx = e.touches[0].clientX - chipDragState.startX;
-  const dy = e.touches[0].clientY - chipDragState.startY;
-
-  // Cancel long-press if finger moves too much before reorder activates
-  if (!chipDragState.reordering && (Math.abs(dx) > 10 || Math.abs(dy) > 10)) {
-    clearTimeout(chipDragState.longPressTimer);
-    chipDragState = null;
-    return;
-  }
-
-  if (!chipDragState.reordering) return;
-  e.preventDefault();
-  chipDragState.moved = true;
-
-  // Find which chip is under finger
-  const touch = e.touches[0];
-  const container = document.getElementById('quick-chips');
-  const allChips = container.querySelectorAll('.chip');
-
-  allChips.forEach(c => c.classList.remove('drag-over'));
-
-  const target = document.elementFromPoint(touch.clientX, touch.clientY);
-  const targetChip = target?.closest?.('.chip');
-  if (targetChip && targetChip !== chipDragState.chip) {
-    targetChip.classList.add('drag-over');
-    chipDragState.targetChip = targetChip;
-  } else {
-    chipDragState.targetChip = null;
+  if (!chipLongPressState || chipLongPressState.fired) return;
+  const dx = e.touches[0].clientX - chipLongPressState.startX;
+  const dy = e.touches[0].clientY - chipLongPressState.startY;
+  if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+    clearTimeout(chipLongPressState.longPressTimer);
+    chipLongPressState = null;
   }
 }
 
 function onChipTouchEnd(e) {
-  if (!chipDragState) return;
-  clearTimeout(chipDragState.longPressTimer);
+  if (!chipLongPressState) return;
+  clearTimeout(chipLongPressState.longPressTimer);
+  if (chipLongPressState.fired) e.preventDefault();
+  chipLongPressState = null;
+}
 
+function showChipContextMenu(chip, touchX, touchY) {
+  if (!chipLongPressState) return;
+  chipLongPressState.fired = true;
+  if (navigator.vibrate) navigator.vibrate(30);
+
+  const chipName = chip.dataset.chipName;
+  initCustomPresets();
+  const presetIdx = data.customPresets.findIndex(p => p.name === chipName);
+  const isProtected = isSleepPreset(chipName);
+
+  closeChipContextMenu();
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'chip-context-backdrop';
+  backdrop.onclick = closeChipContextMenu;
+
+  const menu = document.createElement('div');
+  menu.className = 'chip-context-menu';
+  menu.id = 'chip-context-menu';
+
+  // Move button
+  const moveBtn = document.createElement('button');
+  moveBtn.innerHTML = `↕️ ${t('chip.move')}`;
+  moveBtn.onclick = () => { closeChipContextMenu(); enterChipReorderMode(); };
+  menu.appendChild(moveBtn);
+
+  // Edit button
+  if (presetIdx >= 0) {
+    const editBtn = document.createElement('button');
+    editBtn.innerHTML = `✏️ ${t('chip.edit')}`;
+    editBtn.onclick = () => { closeChipContextMenu(); showPresetEditor(presetIdx); };
+    menu.appendChild(editBtn);
+  }
+
+  // Delete button
+  if (presetIdx >= 0 && !isProtected) {
+    const delBtn = document.createElement('button');
+    delBtn.className = 'danger';
+    delBtn.innerHTML = `🗑️ ${t('chip.delete')}`;
+    delBtn.onclick = () => {
+      closeChipContextMenu();
+      showConfirm(chipName, () => { deletePreset(presetIdx); renderChips(); });
+    };
+    menu.appendChild(delBtn);
+  }
+
+  document.body.appendChild(backdrop);
+  document.body.appendChild(menu);
+
+  // Position menu centered above chip, fallback below if no space
+  const chipRect = chip.getBoundingClientRect();
+  const menuW = menu.offsetWidth || 160;
+  const menuH = menu.offsetHeight || menu.childElementCount * 48;
+  const vw = Math.max(window.innerWidth, document.documentElement.clientWidth);
+  let left = chipRect.left + chipRect.width / 2 - menuW / 2;
+  let top = chipRect.top - menuH - 8;
+  if (top < 8) top = chipRect.bottom + 8;
+  if (left + menuW > vw - 8) left = vw - menuW - 8;
+  if (left < 8) left = 8;
+  menu.style.left = left + 'px';
+  menu.style.top = top + 'px';
+}
+
+function closeChipContextMenu() {
+  document.querySelector('.chip-context-backdrop')?.remove();
+  document.getElementById('chip-context-menu')?.remove();
+}
+
+function enterChipReorderMode() {
+  closeModal();
+  initCustomPresets();
   const container = document.getElementById('quick-chips');
-  container.classList.remove('reorder-mode');
-  container.querySelectorAll('.chip').forEach(c => {
-    c.classList.remove('dragging', 'drag-over');
+  container.classList.add('reorder-mode');
+  container.querySelectorAll('.chip').forEach(c => c.classList.add('dragging'));
+  if (navigator.vibrate) navigator.vibrate(30);
+
+  // Enable drag reorder
+  let dragFrom = null;
+  container.querySelectorAll('.chip').forEach(chip => {
+    chip.onclick = function(e) {
+      e.preventDefault(); e.stopPropagation();
+      const idx = parseInt(this.dataset.chipIndex);
+      if (dragFrom === null) {
+        dragFrom = idx;
+        this.style.outline = '2px solid var(--mint)';
+      } else {
+        if (dragFrom !== idx) reorderChipPreset(dragFrom, idx);
+        exitReorderMode();
+      }
+    };
   });
 
-  if (chipDragState.reordering && chipDragState.targetChip) {
-    const fromIdx = parseInt(chipDragState.chip.dataset.chipIndex);
-    const toIdx = parseInt(chipDragState.targetChip.dataset.chipIndex);
-    if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
-      reorderChipPreset(fromIdx, toIdx);
+  // Tap outside to exit
+  const exitHandler = (e) => {
+    if (!e.target.closest('.chip')) {
+      exitReorderMode();
     }
-  }
+  };
+  document.addEventListener('click', exitHandler, { once: true, capture: true });
 
-  // Block the click event if we were reordering
-  if (chipDragState.reordering) {
-    e.preventDefault();
+  function exitReorderMode() {
+    container.classList.remove('reorder-mode');
+    container.querySelectorAll('.chip').forEach(c => c.classList.remove('dragging'));
+    renderChips();
+    document.removeEventListener('click', exitHandler, { capture: true });
   }
-
-  chipDragState = null;
 }
 
 function reorderChipPreset(fromIdx, toIdx) {
