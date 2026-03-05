@@ -3738,10 +3738,12 @@ function renderTimeline() {
     const memoBadge = memo ? '<span class="timeline-memo-badge">📝</span>' : '';
     const hour = parseInt(entry.time.split(':')[0], 10);
     const period = hour < 12 ? 'am' : 'pm';
+    const tlColor = getPresetColor(entry.activity);
+    const tlStyle = tlColor ? `background:${tlColor}12;border-left:3px solid ${tlColor};` : '';
     html += `
       <div class="timeline-item" id="tl-${entry.id}" data-period="${period}" onclick="toggleTimelineMemo('${entry.id}', event)">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
+        <div class="timeline-dot"${tlColor ? ` style="background:${tlColor};border-color:${tlColor}40;"` : ''}></div>
+        <div class="timeline-content" style="${tlStyle}">
           <div class="timeline-info">
             <div class="timeline-time" onclick="editEntryTime('${entry.id}')">${entry.time}</div>
             <div class="timeline-activity">${getIcon(entry.activity)} ${escHtml(displayActivity(entry.activity))}${memoBadge}${dd.status !== 'completed' ? ` <button class="timeline-edit-activity-btn" onclick="editEntryActivity('${entry.id}');event.stopPropagation();">🔄</button>` : ''}</div>
