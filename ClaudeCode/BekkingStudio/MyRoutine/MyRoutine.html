@@ -7781,9 +7781,12 @@ function showTourStep(index) {
 
 function positionTooltip(targetEl, tooltip, position) {
   if (!targetEl || position === 'center') {
-    tooltip.style.top = '50%';
     tooltip.style.left = '50%';
-    tooltip.style.transform = 'translate(-50%, -50%)';
+    tooltip.style.transform = 'translateX(-50%)';
+    // Place in upper-center area to avoid covering bottom tab bar
+    const tipH = tooltip.offsetHeight || 200;
+    const availH = window.innerHeight - 72; // 64px tab bar + 8px margin
+    tooltip.style.top = Math.max(8, (availH - tipH) / 2) + 'px';
     return;
   }
   const rect = targetEl.getBoundingClientRect();
