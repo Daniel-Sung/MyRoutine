@@ -558,22 +558,29 @@ body {
   color: var(--text-sub);
   padding: 2px 4px;
 }
-.plan-big3-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
+.plan-unified-item {
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   margin-bottom: 8px;
   background: var(--bg);
-  cursor: pointer;
   transition: all 0.2s;
 }
-.plan-big3-item.chosen {
-  background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(245,158,11,0.08));
+.plan-unified-item.chosen {
+  background: linear-gradient(135deg, rgba(59,130,246,0.06), rgba(245,158,11,0.06));
   border-left: 3px solid #F59E0B;
 }
-.plan-big3-item .big3-rank {
+.plan-unified-item .unified-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+.plan-unified-item .unified-text {
+  flex: 1;
+  font-size: 14px;
+}
+.plan-unified-item .big3-rank {
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -586,40 +593,21 @@ body {
   justify-content: center;
   flex-shrink: 0;
 }
-.plan-big3-summary-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
+.plan-unified-item .big3-empty-rank {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px dashed var(--border);
+  flex-shrink: 0;
 }
-.plan-big3-summary-item:last-child { border-bottom: none; }
-
-.plan-timebox-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border-radius: var(--radius-sm);
-  margin-bottom: 8px;
-  background: var(--bg);
-}
-.plan-timebox-item .timebox-label {
-  flex: 1;
-  font-size: 14px;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.plan-timebox-item .timebox-time {
+.plan-unified-item .unified-time {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-shrink: 0;
+  padding-left: 34px;
 }
-.plan-timebox-item .timebox-time input[type="time"] {
-  width: 100px;
+.plan-unified-item .unified-time input[type="time"] {
+  width: 95px;
   padding: 4px 6px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -627,11 +615,13 @@ body {
   background: var(--card);
   color: var(--text);
 }
-.plan-timebox-item .timebox-duration {
+.plan-unified-item .unified-duration {
   font-size: 12px;
   color: var(--text-sub);
-  min-width: 40px;
-  text-align: right;
+  margin-left: 4px;
+}
+.plan-note-card textarea {
+  min-height: 80px;
 }
 .plan-schedule-item {
   display: flex;
@@ -2078,20 +2068,9 @@ body {
     </div>
 
     <div class="card" id="plan-big3-card" style="display:none">
-      <h3 style="font-size:16px;margin-bottom:4px">🎯 <span data-i18n="plan.big3Title">Big 3</span></h3>
-      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px" data-i18n="plan.big3Desc">가장 중요한 3가지를 선택하세요</p>
+      <h3 style="font-size:16px;margin-bottom:4px">🎯 <span data-i18n="plan.big3Title">Big 3 + 타임 박싱</span></h3>
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px" data-i18n="plan.big3Desc">⭐ 중요한 3개를 선택하고, 시간을 배정하세요</p>
       <div id="plan-big3-list"></div>
-    </div>
-
-    <div class="card" id="plan-big3-summary" style="display:none">
-      <h3 style="font-size:16px;margin-bottom:12px">⭐ <span data-i18n="plan.big3Today">오늘의 Big 3</span></h3>
-      <div id="plan-big3-summary-list"></div>
-    </div>
-
-    <div class="card" id="plan-timeboxing-card" style="display:none">
-      <h3 style="font-size:16px;margin-bottom:4px">⏰ <span data-i18n="plan.timeboxTitle">타임 박싱</span></h3>
-      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px" data-i18n="plan.timeboxDesc">각 할 일에 시간 블록을 배정하세요</p>
-      <div id="plan-timebox-list"></div>
     </div>
 
     <div class="card" id="plan-schedule-card" style="display:none">
@@ -2099,9 +2078,9 @@ body {
       <div id="plan-schedule-list"></div>
     </div>
 
-    <div class="card">
-      <h3 style="font-size:16px;margin-bottom:8px">📝 <span data-i18n="plan.noteTitle">오늘의 다짐</span></h3>
-      <textarea id="plan-note" class="input" rows="2" data-i18n-placeholder="plan.notePlaceholder" placeholder="오늘의 다짐을 적어보세요..." style="resize:vertical" oninput="savePlanNote()"></textarea>
+    <div class="card plan-note-card">
+      <h3 style="font-size:16px;margin-bottom:10px">📝 <span data-i18n="plan.noteTitle">오늘의 다짐</span></h3>
+      <textarea id="plan-note" class="input" rows="4" data-i18n-placeholder="plan.notePlaceholder" placeholder="오늘의 다짐을 적어보세요..." style="resize:vertical;font-size:15px;line-height:1.6" oninput="savePlanNote()"></textarea>
     </div>
   </div>
 
@@ -2425,7 +2404,7 @@ const TRANSLATIONS = {
     'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '목표', 'tab.stats': '통계',
     'plan.dumpTitle': '브레인 덤프', 'plan.dumpDesc': '오늘 해야 할 일을 모두 적어보세요',
     'plan.dumpPlaceholder': '할 일 입력', 'plan.dumpEmpty': '아직 할 일이 없어요. 위에 입력해 보세요!',
-    'plan.big3Title': 'Big 3', 'plan.big3Desc': '가장 중요한 3가지를 선택하세요',
+    'plan.big3Title': 'Big 3 + 타임 박싱', 'plan.big3Desc': '⭐ 중요한 3개를 선택하고, 시간을 배정하세요',
     'plan.big3Max': '최대 3개까지 선택할 수 있어요', 'plan.big3Today': '오늘의 Big 3',
     'plan.allDone': '모든 할 일을 완료했어요! 🎉',
     'plan.timeboxTitle': '타임 박싱', 'plan.timeboxDesc': '각 할 일에 시간 블록을 배정하세요',
@@ -2581,7 +2560,7 @@ const TRANSLATIONS = {
     'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '目標', 'tab.stats': '統計',
     'plan.dumpTitle': 'ブレインダンプ', 'plan.dumpDesc': '今日やるべきことをすべて書き出しましょう',
     'plan.dumpPlaceholder': 'やること入力', 'plan.dumpEmpty': 'まだやることがありません。上に入力してみましょう！',
-    'plan.big3Title': 'Big 3', 'plan.big3Desc': '最も重要な3つを選んでください',
+    'plan.big3Title': 'Big 3 + タイムボクシング', 'plan.big3Desc': '⭐ 重要な3つを選び、時間を割り当てましょう',
     'plan.big3Max': '最大3つまで選べます', 'plan.big3Today': '今日のBig 3',
     'plan.allDone': 'すべて完了しました！ 🎉',
     'plan.timeboxTitle': 'タイムボクシング', 'plan.timeboxDesc': '各タスクに時間ブロックを割り当てましょう',
@@ -2737,7 +2716,7 @@ const TRANSLATIONS = {
     'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals', 'tab.stats': 'Stats',
     'plan.dumpTitle': 'Brain Dump', 'plan.dumpDesc': 'Write down everything you need to do today',
     'plan.dumpPlaceholder': 'Enter a task', 'plan.dumpEmpty': 'No tasks yet. Add one above!',
-    'plan.big3Title': 'Big 3', 'plan.big3Desc': 'Select the 3 most important tasks',
+    'plan.big3Title': 'Big 3 + Time Boxing', 'plan.big3Desc': '⭐ Select top 3 and assign time blocks',
     'plan.big3Max': 'You can select up to 3', 'plan.big3Today': "Today's Big 3",
     'plan.allDone': 'All tasks done! 🎉',
     'plan.timeboxTitle': 'Time Boxing', 'plan.timeboxDesc': 'Assign time blocks to each task',
@@ -4259,9 +4238,8 @@ function getPlan() {
 function renderPlan() {
   const plan = getPlan();
   renderDumpList(plan);
-  renderBig3Selection(plan);
-  renderBig3Summary(plan);
-  renderTimeboxing(plan);
+  renderBig3Unified(plan);
+  renderSchedule(plan);
   renderPlanNote(plan);
 }
 
@@ -4326,7 +4304,7 @@ function renderDumpList(plan) {
   }).join('');
 }
 
-function renderBig3Selection(plan) {
+function renderBig3Unified(plan) {
   const card = document.getElementById('plan-big3-card');
   const container = document.getElementById('plan-big3-list');
   if (plan.dump.length === 0) {
@@ -4334,59 +4312,17 @@ function renderBig3Selection(plan) {
     return;
   }
   card.style.display = '';
+  if (!plan.blocks) plan.blocks = {};
+
   const undone = plan.dump.map((item, i) => ({ item, i })).filter(x => !x.item.done);
   if (undone.length === 0) {
     container.innerHTML = `<p style="text-align:center;color:var(--text-sub);padding:8px;font-size:13px">${t('plan.allDone')}</p>`;
     return;
   }
+
   container.innerHTML = undone.map(({ item, i }) => {
     const rank = plan.big3.indexOf(i);
     const isChosen = rank >= 0;
-    return `
-      <div class="plan-big3-item ${isChosen ? 'chosen' : ''}" onclick="toggleBig3(${i})">
-        ${isChosen ? `<div class="big3-rank">${rank + 1}</div>` : `<div style="width:24px;height:24px;border-radius:50%;border:2px dashed var(--border);flex-shrink:0"></div>`}
-        <span style="flex:1;font-size:14px">${escHtml(item.text)}</span>
-      </div>
-    `;
-  }).join('');
-}
-
-function renderBig3Summary(plan) {
-  const card = document.getElementById('plan-big3-summary');
-  const container = document.getElementById('plan-big3-summary-list');
-  if (plan.big3.length === 0) {
-    card.style.display = 'none';
-    return;
-  }
-  card.style.display = '';
-  container.innerHTML = plan.big3.map((idx, rank) => {
-    const item = plan.dump[idx];
-    if (!item) return '';
-    return `
-      <div class="plan-big3-summary-item">
-        <div class="big3-rank" style="background:${item.done ? 'var(--mint)' : '#F59E0B'}">${rank + 1}</div>
-        <span style="flex:1;font-size:14px;${item.done ? 'text-decoration:line-through;color:var(--text-sub)' : ''}">${escHtml(item.text)}</span>
-        ${item.done ? '<span style="color:var(--mint)">✓</span>' : ''}
-      </div>
-    `;
-  }).join('');
-}
-
-function renderTimeboxing(plan) {
-  const card = document.getElementById('plan-timeboxing-card');
-  const container = document.getElementById('plan-timebox-list');
-  const undone = plan.dump.filter(item => !item.done);
-  if (undone.length === 0) {
-    card.style.display = 'none';
-    renderSchedule(plan);
-    return;
-  }
-  card.style.display = '';
-  if (!plan.blocks) plan.blocks = {};
-
-  container.innerHTML = plan.dump.map((item, i) => {
-    if (item.done) return '';
-    const isBig3 = plan.big3.includes(i);
     const block = plan.blocks[i] || {};
     const startVal = block.start || '';
     const endVal = block.end || '';
@@ -4401,20 +4337,20 @@ function renderTimeboxing(plan) {
       durationStr = h > 0 ? `${h}h${m > 0 ? m + 'm' : ''}` : `${m}m`;
     }
     return `
-      <div class="plan-timebox-item">
-        ${isBig3 ? '<span style="color:#F59E0B;font-weight:700">★</span>' : '<span style="width:16px"></span>'}
-        <div class="timebox-label">${escHtml(item.text)}</div>
-        <div class="timebox-time">
-          <input type="time" value="${startVal}" onchange="setTimeBlock(${i},'start',this.value)">
-          <span style="color:var(--text-sub)">~</span>
-          <input type="time" value="${endVal}" onchange="setTimeBlock(${i},'end',this.value)">
+      <div class="plan-unified-item ${isChosen ? 'chosen' : ''}">
+        <div class="unified-top" onclick="toggleBig3(${i})">
+          ${isChosen ? `<div class="big3-rank">${rank + 1}</div>` : `<div class="big3-empty-rank"></div>`}
+          <span class="unified-text">${escHtml(item.text)}</span>
         </div>
-        <div class="timebox-duration">${durationStr}</div>
+        <div class="unified-time">
+          <input type="time" value="${startVal}" onclick="event.stopPropagation()" onchange="setTimeBlock(${i},'start',this.value)">
+          <span style="color:var(--text-sub)">~</span>
+          <input type="time" value="${endVal}" onclick="event.stopPropagation()" onchange="setTimeBlock(${i},'end',this.value)">
+          ${durationStr ? `<span class="unified-duration">${durationStr}</span>` : ''}
+        </div>
       </div>
     `;
-  }).filter(Boolean).join('');
-
-  renderSchedule(plan);
+  }).join('');
 }
 
 function setTimeBlock(idx, field, value) {
