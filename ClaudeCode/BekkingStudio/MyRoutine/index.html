@@ -1757,7 +1757,7 @@ body {
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <h1>MyRoutine</h1>
+    <h1 data-i18n="app.name">갓생살기</h1>
     <div class="header-actions">
       <button class="icon-btn" onclick="switchTab('history')" data-i18n-title="header.history" title="히스토리">📅</button>
       <button class="icon-btn" onclick="toggleDarkMode()" data-i18n-title="header.darkMode" title="다크 모드">🌙</button>
@@ -2139,6 +2139,7 @@ const TRANSLATIONS = {
     'month.1': '1월', 'month.2': '2월', 'month.3': '3월', 'month.4': '4월',
     'month.5': '5월', 'month.6': '6월', 'month.7': '7월', 'month.8': '8월',
     'month.9': '9월', 'month.10': '10월', 'month.11': '11월', 'month.12': '12월',
+    'app.name': '갓생살기',
     'tab.record': '기록', 'tab.classify': '분류', 'tab.analysis': '분석', 'tab.goals': '목표', 'tab.stats': '통계',
     'pwa.install': 'MyRoutine 설치', 'pwa.installDesc': '홈 화면에 추가하여 앱처럼 사용하세요', 'pwa.installBtn': '설치',
     'pwa.iosDesc': 'Safari 하단의 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택하세요',
@@ -2283,6 +2284,7 @@ const TRANSLATIONS = {
     'month.1': '1月', 'month.2': '2月', 'month.3': '3月', 'month.4': '4月',
     'month.5': '5月', 'month.6': '6月', 'month.7': '7月', 'month.8': '8月',
     'month.9': '9月', 'month.10': '10月', 'month.11': '11月', 'month.12': '12月',
+    'app.name': '神生活',
     'tab.record': '記録', 'tab.classify': '分類', 'tab.analysis': '分析', 'tab.goals': '目標', 'tab.stats': '統計',
     'pwa.install': 'MyRoutine インストール', 'pwa.installDesc': 'ホーム画面に追加してアプリのように使いましょう', 'pwa.installBtn': 'インストール',
     'pwa.iosDesc': 'Safari下部の共有ボタン(□↑)をタップし「ホーム画面に追加」を選択してください',
@@ -2427,6 +2429,7 @@ const TRANSLATIONS = {
     'month.1': 'Jan', 'month.2': 'Feb', 'month.3': 'Mar', 'month.4': 'Apr',
     'month.5': 'May', 'month.6': 'Jun', 'month.7': 'Jul', 'month.8': 'Aug',
     'month.9': 'Sep', 'month.10': 'Oct', 'month.11': 'Nov', 'month.12': 'Dec',
+    'app.name': 'Live Your Best',
     'tab.record': 'Record', 'tab.classify': 'Classify', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals', 'tab.stats': 'Stats',
     'pwa.install': 'Install MyRoutine', 'pwa.installDesc': 'Add to home screen and use like an app', 'pwa.installBtn': 'Install',
     'pwa.iosDesc': 'Tap the share button (□↑) at the bottom of Safari, then select "Add to Home Screen"',
@@ -2801,6 +2804,7 @@ async function syncToCloud() {
       customPresets: data.customPresets || null,
       settings: data.settings || {},
       goals: data.goals || [],
+      lifeGoals: data.lifeGoals || [],
       lastSync: now
     }, { merge: true });
 
@@ -2846,6 +2850,7 @@ async function syncFromCloud() {
       if (cfg.customPresets !== undefined) data.customPresets = cfg.customPresets;
       if (cfg.settings) data.settings = cfg.settings;
       if (cfg.goals) data.goals = cfg.goals;
+      if (cfg.lifeGoals) data.lifeGoals = cfg.lifeGoals;
     }
 
     // 2. Read all dates
@@ -3311,11 +3316,10 @@ function showLifeGoalDetail(goalId) {
       ${isCompleted ? `<br>${t('lg.completedAt')}: ${goal.completedAt}` : ''}
     </div>
 
-    ${!isCompleted ? `
     <div style="display:flex;gap:8px;margin-bottom:16px;">
-      <button class="btn btn-outline" style="flex:1;font-size:12px;" onclick="showEditLifeGoalModal('${goal.id}')">✏️ ${t('lg.editGoal')}</button>
+      ${!isCompleted ? `<button class="btn btn-outline" style="flex:1;font-size:12px;" onclick="showEditLifeGoalModal('${goal.id}')">✏️ ${t('lg.editGoal')}</button>` : ''}
       <button class="btn btn-outline" style="flex:1;font-size:12px;color:#ef4444;border-color:#ef4444;" onclick="deleteLifeGoal('${goal.id}')">🗑️ ${t('lg.delete')}</button>
-    </div>` : ''}
+    </div>
 
     <div class="card" style="margin-bottom:10px;">
       <h4 style="font-size:14px;margin-bottom:8px;">📋 ${t('lg.tasks')}</h4>
