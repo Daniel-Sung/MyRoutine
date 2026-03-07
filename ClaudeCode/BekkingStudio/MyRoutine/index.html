@@ -1904,6 +1904,36 @@ body {
 }
 
 /* Goal Cards */
+.big3-mini-section { margin: 0 0 12px; }
+.big3-mini-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.big3-mini-item.done { opacity: 0.6; }
+.big3-mini-item .mini-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid #F59E0B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.big3-mini-item.done .mini-check {
+  background: var(--mint);
+  border-color: var(--mint);
+  color: white;
+}
 .goal-section { margin: 0 0 12px; }
 .goal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .goal-header-title { font-size:14px; font-weight:700; color:var(--text-sub); }
@@ -1995,7 +2025,10 @@ body {
     <!-- Record Past Date Banner -->
     <div id="record-past-banner"></div>
 
-    <!-- Goals -->
+    <!-- Big 3 Mini Checklist -->
+    <div id="big3-mini" class="big3-mini-section"></div>
+
+    <!-- Daily Routines -->
     <div id="goal-section" class="goal-section"></div>
 
     <!-- Login Banner -->
@@ -2425,14 +2458,14 @@ const TRANSLATIONS = {
     'stats.totalTime': '총 시간', 'stats.avgDesired': '평균 달성률', 'stats.avgFlex': '평균 유동 비율',
     'stats.selectActivity': '활동을 선택하세요',
     'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
-    'goals.title': '오늘의 목표', 'goals.dateTitle': '{date} 목표 달성', 'goals.manage': '목표 관리', 'goals.add': '새 목표 추가',
+    'goals.title': '일일 루틴', 'goals.dateTitle': '{date} 루틴 달성', 'goals.manage': '루틴 관리', 'goals.add': '새 루틴 추가',
     'goals.selectActivity': '활동 선택', 'goals.targetTime': '목표 시간',
     'goals.hours': '시간', 'goals.minutes': '분',
     'goals.streak': '{n}일 연속 달성 🔥', 'goals.achieved': '달성!',
-    'goals.remaining': '남은 시간: {t}', 'goals.noGoals': '목표를 설정하면 여기에 진행률이 표시됩니다',
+    'goals.remaining': '남은 시간: {t}', 'goals.noGoals': '루틴을 설정하면 여기에 진행률이 표시됩니다',
     'goals.reminder': '오늘 아직 {activity} 기록이 없어요',
-    'goals.delete': '이 목표를 삭제할까요?', 'goals.saved': '목표가 저장되었습니다',
-    'goals.deleted': '목표가 삭제되었습니다', 'goals.active': '활성', 'goals.inactive': '비활성',
+    'goals.delete': '이 루틴을 삭제할까요?', 'goals.saved': '루틴이 저장되었습니다',
+    'goals.deleted': '루틴이 삭제되었습니다', 'goals.active': '활성', 'goals.inactive': '비활성',
     'lg.title': '나의 목표', 'lg.add': '새 목표 추가', 'lg.empty': '브라이언 트레이시의 목표 설정법으로\n인생 목표를 관리해보세요!',
     'lg.goalTitle': '목표 제목', 'lg.description': '구체적인 설명', 'lg.deadline': '기한',
     'lg.tasks': '할 일 목록', 'lg.addTask': '할 일 추가', 'lg.obstacles': '장애물 / 제약 요인',
@@ -2581,14 +2614,14 @@ const TRANSLATIONS = {
     'stats.totalTime': '合計時間', 'stats.avgDesired': '平均達成率', 'stats.avgFlex': '平均自由比率',
     'stats.selectActivity': '活動を選択してください',
     'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
-    'goals.title': '今日の目標', 'goals.dateTitle': '{date} 目標達成', 'goals.manage': '目標管理', 'goals.add': '新しい目標を追加',
+    'goals.title': 'デイリールーティン', 'goals.dateTitle': '{date} ルーティン達成', 'goals.manage': 'ルーティン管理', 'goals.add': '新しいルーティンを追加',
     'goals.selectActivity': 'アクティビティ選択', 'goals.targetTime': '目標時間',
     'goals.hours': '時間', 'goals.minutes': '分',
     'goals.streak': '{n}日連続達成 🔥', 'goals.achieved': '達成！',
-    'goals.remaining': '残り: {t}', 'goals.noGoals': '目標を設定すると進捗が表示されます',
+    'goals.remaining': '残り: {t}', 'goals.noGoals': 'ルーティンを設定すると進捗が表示されます',
     'goals.reminder': '今日まだ{activity}の記録がありません',
-    'goals.delete': 'この目標を削除しますか？', 'goals.saved': '目標が保存されました',
-    'goals.deleted': '目標が削除されました', 'goals.active': '有効', 'goals.inactive': '無効',
+    'goals.delete': 'このルーティンを削除しますか？', 'goals.saved': 'ルーティンが保存されました',
+    'goals.deleted': 'ルーティンが削除されました', 'goals.active': '有効', 'goals.inactive': '無効',
     'lg.title': '目標管理', 'lg.add': '新しい目標を追加', 'lg.empty': 'ブライアン・トレーシーの目標設定法で\n人生の目標を管理しましょう！',
     'lg.goalTitle': '目標タイトル', 'lg.description': '具体的な説明', 'lg.deadline': '期限',
     'lg.tasks': 'やることリスト', 'lg.addTask': 'やることを追加', 'lg.obstacles': '障害物 / 制約要因',
@@ -2737,14 +2770,14 @@ const TRANSLATIONS = {
     'stats.totalTime': 'Total Time', 'stats.avgDesired': 'Avg Achievement', 'stats.avgFlex': 'Avg Flexible',
     'stats.selectActivity': 'Select an activity',
     'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.pdfTitle': 'MyRoutine - Period Stats',
-    'goals.title': "Today's Goals", 'goals.dateTitle': '{date} Goals', 'goals.manage': 'Manage Goals', 'goals.add': 'Add New Goal',
+    'goals.title': 'Daily Routines', 'goals.dateTitle': '{date} Routines', 'goals.manage': 'Manage Routines', 'goals.add': 'Add New Routine',
     'goals.selectActivity': 'Select Activity', 'goals.targetTime': 'Target Time',
     'goals.hours': 'hours', 'goals.minutes': 'minutes',
     'goals.streak': '{n} day streak 🔥', 'goals.achieved': 'Done!',
-    'goals.remaining': '{t} remaining', 'goals.noGoals': 'Set goals to see progress here',
+    'goals.remaining': '{t} remaining', 'goals.noGoals': 'Set routines to see progress here',
     'goals.reminder': 'No {activity} recorded today yet',
-    'goals.delete': 'Delete this goal?', 'goals.saved': 'Goal saved',
-    'goals.deleted': 'Goal deleted', 'goals.active': 'Active', 'goals.inactive': 'Inactive',
+    'goals.delete': 'Delete this routine?', 'goals.saved': 'Routine saved',
+    'goals.deleted': 'Routine deleted', 'goals.active': 'Active', 'goals.inactive': 'Inactive',
     'lg.title': 'My Goals', 'lg.add': 'Add New Goal', 'lg.empty': 'Manage your life goals with\nBrian Tracy\'s goal-setting formula!',
     'lg.goalTitle': 'Goal Title', 'lg.description': 'Specific Description', 'lg.deadline': 'Deadline',
     'lg.tasks': 'Task List', 'lg.addTask': 'Add Task', 'lg.obstacles': 'Obstacles / Limiting Factors',
@@ -4202,7 +4235,7 @@ function switchTab(tab) {
   if (bottomTab) bottomTab.classList.add('active');
 
   if (tab === 'plan') renderPlan();
-  if (tab === 'record') { renderGoalCards(); renderRecordPastBanner(); }
+  if (tab === 'record') { renderBig3Mini(); renderGoalCards(); renderRecordPastBanner(); }
   if (tab === 'analysis') renderAnalysis();
   if (tab === 'history') renderHistory();
   if (tab === 'goals') renderLifeGoals();
@@ -4444,6 +4477,38 @@ function savePlanNote() {
 function renderPlanNote(plan) {
   const el = document.getElementById('plan-note');
   if (el) el.value = plan.note || '';
+}
+
+// ============== Big 3 Mini (Record Tab) ==============
+function renderBig3Mini() {
+  const container = document.getElementById('big3-mini');
+  if (!container) return;
+  const dd = getDateData(currentDate);
+  const plan = dd.plan;
+  const today = getTodayStr();
+
+  if (!plan || !plan.big3 || plan.big3.length === 0 || currentDate !== today) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+    <span style="font-size:13px;font-weight:600;color:var(--text-sub)">⭐ Big 3</span>
+    <button class="icon-btn" onclick="switchTab('plan')" style="width:24px;height:24px;font-size:12px;color:var(--text-sub)">📋</button>
+  </div>`;
+
+  html += plan.big3.map((idx, rank) => {
+    const item = plan.dump[idx];
+    if (!item) return '';
+    return `
+      <div class="big3-mini-item ${item.done ? 'done' : ''}" onclick="toggleDumpDone(${idx});renderBig3Mini()">
+        <div class="mini-check">${item.done ? '✓' : rank + 1}</div>
+        <span style="flex:1;font-size:13px;${item.done ? 'text-decoration:line-through' : ''}">${escHtml(item.text)}</span>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = html;
 }
 
 // ============== Plan vs Actual ==============
@@ -6345,7 +6410,7 @@ function renderGoalCards() {
     if (isPast) { sec.innerHTML = ''; return; }
     sec.innerHTML = `
       <div class="goal-header">
-        <span class="goal-header-title">🎯 ${t('goals.title')}</span>
+        <span class="goal-header-title">🔁 ${t('goals.title')}</span>
         <button class="icon-btn" onclick="showGoalManager()" style="width:28px;height:28px;font-size:14px;">⚙️</button>
       </div>
       <div class="goal-empty">${t('goals.noGoals')}<br><button class="btn btn-primary" onclick="showGoalManager()" style="margin-top:8px;padding:6px 16px;font-size:12px;">+ ${t('goals.add')}</button></div>
@@ -6406,7 +6471,7 @@ function renderGoalCards() {
 
   sec.innerHTML = `
     <div class="goal-header">
-      <span class="goal-header-title">🎯 ${titleText}</span>
+      <span class="goal-header-title">🔁 ${titleText}</span>
       ${managerBtn}
     </div>
     ${reminderHtml}
@@ -6764,6 +6829,7 @@ function renderRecordPastBanner() {
 function renderAll() {
   renderTimeline();
   renderChips();
+  renderBig3Mini();
   renderGoalCards();
   renderRecordPastBanner();
   renderLoginBanner();
