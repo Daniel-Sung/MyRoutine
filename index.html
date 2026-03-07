@@ -1826,6 +1826,32 @@ body {
   width: 100% !important;
   max-height: 220px;
 }
+.book-item {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 12px; border-radius: var(--radius-sm);
+  background: var(--bg); margin-bottom: 6px; cursor: pointer;
+  transition: background var(--transition);
+}
+.book-item:active { opacity: 0.7; }
+.book-title { font-size: 14px; font-weight: 600; }
+.book-author { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
+.book-meta { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.book-done-btn {
+  background: var(--success); color: white; border: none; border-radius: 8px;
+  padding: 4px 10px; font-size: 12px; cursor: pointer; white-space: nowrap;
+}
+.book-stars { color: #F59E0B; font-size: 13px; letter-spacing: 1px; }
+.book-section-title {
+  font-size: 13px; font-weight: 600; color: var(--text-sub);
+  margin: 14px 0 8px; padding-bottom: 4px;
+  border-bottom: 1px solid var(--text-light);
+}
+.book-year-btn {
+  background: none; border: none; color: var(--text-sub); font-size: 14px;
+  cursor: pointer; padding: 4px 8px;
+}
+.book-year-label { font-size: 15px; font-weight: 700; margin: 0 8px; }
+
 .stats-ranking-item {
   display: flex;
   align-items: center;
@@ -2264,6 +2290,17 @@ body {
       <div class="stats-chart-container" style="margin-top:12px"><canvas id="stats-plan-chart"></canvas></div>
     </div>
 
+    <div class="card" id="stats-books-card" style="margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="font-size:15px;margin:0">📚 <span data-i18n="books.title">독서 기록</span></h3>
+        <button class="icon-btn" onclick="showAddBookModal()" style="font-size:18px">+</button>
+      </div>
+      <div id="books-reading-list"></div>
+      <div id="books-completed-section"></div>
+      <div id="books-year-nav" style="text-align:center;margin-top:12px"></div>
+      <div id="books-year-summary" style="text-align:center;margin-top:8px;font-size:13px;color:var(--text-sub)"></div>
+    </div>
+
     <button class="btn btn-coral btn-block" onclick="exportStatsPDF()" style="margin-top:16px" id="stats-export-pdf-btn">
       📄 <span data-i18n="stats.exportPdf">PDF로 내보내기</span>
     </button>
@@ -2379,9 +2416,9 @@ const TRANSLATIONS = {
     'modal.dataManagement': '데이터 관리',
     'modal.exportJson': 'JSON 내보내기', 'modal.importJson': 'JSON 가져오기', 'modal.close': '닫기',
     'about.title': 'MyRoutine 정보',
-    'about.version': 'v2.1 · Bekking Studio',
+    'about.version': 'v2.2 · Bekking Studio',
     'about.updateToggle': '업데이트 내용 확인하기',
-    'about.updateNote': '<strong>v2.1</strong> — 일론 머스크의 시간 관리법 도입! 📋 계획 탭에서 브레인 덤프로 할 일을 꺼내고, Big 3로 우선순위를 정하고, 타임 박싱으로 시간을 배정하세요. 분석 탭에서 계획 vs 실제를 비교할 수 있습니다.<br><br><strong>v2.0</strong> — 브라이언 트레이시의 목표 설정 7단계를 앱에 담았습니다. 목표를 등록하고 기한을 설정하세요. 할 일 체크리스트로 진행 상황을 관리하고, 매일 한 가지 행동을 기록하세요. 달성 시 메달(🥇🥈🥉)을 획득하세요!',
+    'about.updateNote': '<strong>v2.2</strong> — 📚 독서 기록 기능 추가! 통계 탭에서 읽고 있는 책과 완독한 책을 관리하세요. 별점과 한줄 메모를 남기고, 연도별 독서 통계를 확인할 수 있습니다.<br><br><strong>v2.1</strong> — 일론 머스크의 시간 관리법 도입! 📋 계획 탭에서 브레인 덤프로 할 일을 꺼내고, Big 3로 우선순위를 정하고, 타임 박싱으로 시간을 배정하세요. 분석 탭에서 계획 vs 실제를 비교할 수 있습니다.<br><br><strong>v2.0</strong> — 브라이언 트레이시의 목표 설정 7단계를 앱에 담았습니다.',
     'about.privacy': '개인정보 안내',
     'about.privacyLocal': '모든 기록은 사용자 기기에만 저장됩니다',
     'about.privacyNoCollect': '개인정보를 수집하지 않습니다',
@@ -2500,6 +2537,19 @@ const TRANSLATIONS = {
     'tour.closeday.title': '하루 마감', 'tour.closeday.desc': '하루가 끝나면 마감 버튼을 눌러 하루를 정리하세요.',
     'tour.done.title': '준비 완료!', 'tour.done.desc': '지금 바로 시작해 보세요!',
     'tour.next': '다음', 'tour.skip': '건너뛰기', 'tour.start': '시작하기', 'tour.replay': '사용법 다시 보기',
+    'books.title': '독서 기록', 'books.reading': '읽는 중', 'books.completed': '완독',
+    'books.addTitle': '새 책 등록', 'books.editTitle': '책 정보 수정',
+    'books.bookTitle': '책 제목', 'books.author': '저자', 'books.startDate': '시작일',
+    'books.endDate': '완독일', 'books.rating': '별점', 'books.memo': '한줄 메모',
+    'books.memoPlaceholder': '이 책에 대한 한줄 감상...',
+    'books.register': '등록', 'books.save': '저장', 'books.cancel': '취소',
+    'books.markDone': '완독', 'books.congrats': '완독 축하!',
+    'books.delete': '삭제', 'books.deleteConfirm': '이 책을 삭제할까요?',
+    'books.dayCount': '{n}일째', 'books.readDays': '{n}일',
+    'books.yearSummary': '올해 총 {n}권 완독 · 평균 {avg}일/권',
+    'books.yearSummaryReading': '{r}권 읽는 중',
+    'books.noBooks': '읽고 있는 책을 추가해보세요',
+    'books.readingTime': '총 독서 시간', 'books.notReading': '미완독',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2541,9 +2591,9 @@ const TRANSLATIONS = {
     'modal.dataManagement': 'データ管理',
     'modal.exportJson': 'JSONエクスポート', 'modal.importJson': 'JSONインポート', 'modal.close': '閉じる',
     'about.title': 'MyRoutine について',
-    'about.version': 'v2.1 · Bekking Studio',
+    'about.version': 'v2.2 · Bekking Studio',
     'about.updateToggle': 'アップデート内容を確認',
-    'about.updateNote': '<strong>v2.1</strong> — イーロン・マスクの時間管理法を導入！📋 計画タブでブレインダンプ、Big 3で優先順位を決め、タイムボクシングで時間を割り当て。分析タブで計画vs実際を比較できます。<br><br><strong>v2.0</strong> — ブライアン・トレーシーの目標設定7ステップを搭載。目標を登録し期限を設定、やることリストで進捗管理、毎日の行動を記録。達成時にメダル(🥇🥈🥉)を獲得！',
+    'about.updateNote': '<strong>v2.2</strong> — 📚 読書記録機能を追加！統計タブで読書中の本と読了した本を管理できます。評価とひとこと感想を残し、年度別の読書統計を確認しましょう。<br><br><strong>v2.1</strong> — イーロン・マスクの時間管理法を導入！📋 計画タブでブレインダンプ、Big 3、タイムボクシング。<br><br><strong>v2.0</strong> — ブライアン・トレーシーの目標設定7ステップを搭載。',
     'about.privacy': 'プライバシー',
     'about.privacyLocal': 'すべての記録はお使いの端末にのみ保存されます',
     'about.privacyNoCollect': '個人情報を収集しません',
@@ -2662,6 +2712,19 @@ const TRANSLATIONS = {
     'tour.closeday.title': '一日の締め', 'tour.closeday.desc': '一日の終わりに締めボタンで整理しましょう。',
     'tour.done.title': '準備完了！', 'tour.done.desc': 'さあ始めましょう！',
     'tour.next': '次へ', 'tour.skip': 'スキップ', 'tour.start': '始める', 'tour.replay': '使い方を見る',
+    'books.title': '読書記録', 'books.reading': '読書中', 'books.completed': '読了',
+    'books.addTitle': '新しい本を登録', 'books.editTitle': '本の情報を編集',
+    'books.bookTitle': '本のタイトル', 'books.author': '著者', 'books.startDate': '開始日',
+    'books.endDate': '読了日', 'books.rating': '評価', 'books.memo': 'ひとこと感想',
+    'books.memoPlaceholder': 'この本についてのひとこと...',
+    'books.register': '登録', 'books.save': '保存', 'books.cancel': 'キャンセル',
+    'books.markDone': '読了', 'books.congrats': '読了おめでとう！',
+    'books.delete': '削除', 'books.deleteConfirm': 'この本を削除しますか？',
+    'books.dayCount': '{n}日目', 'books.readDays': '{n}日',
+    'books.yearSummary': '今年の読了 {n}冊 · 平均 {avg}日/冊',
+    'books.yearSummaryReading': '{r}冊 読書中',
+    'books.noBooks': '読んでいる本を追加しましょう',
+    'books.readingTime': '読書時間合計', 'books.notReading': '未読了',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -2703,9 +2766,9 @@ const TRANSLATIONS = {
     'modal.dataManagement': 'Data Management',
     'modal.exportJson': 'Export JSON', 'modal.importJson': 'Import JSON', 'modal.close': 'Close',
     'about.title': 'About MyRoutine',
-    'about.version': 'v2.1 · Bekking Studio',
+    'about.version': 'v2.2 · Bekking Studio',
     'about.updateToggle': 'View update details',
-    'about.updateNote': "<strong>v2.1</strong> — Elon Musk's time management method! 📋 Brain Dump tasks in the Plan tab, pick Big 3 priorities, Time Box them. Compare Plan vs Actual in Analysis.<br><br><strong>v2.0</strong> — Brian Tracy's 7-step goal setting formula. Register goals with deadlines, manage tasks with checklists, log daily actions. Earn medals (🥇🥈🥉) when you achieve them!",
+    'about.updateNote': "<strong>v2.2</strong> — 📚 Reading Log! Track books you're reading and completed in the Stats tab. Rate books, leave notes, and view yearly reading statistics.<br><br><strong>v2.1</strong> — Elon Musk's time management: Brain Dump, Big 3, Time Boxing in Plan tab.<br><br><strong>v2.0</strong> — Brian Tracy's 7-step goal setting formula.",
     'about.privacy': 'Privacy',
     'about.privacyLocal': 'All records are stored only on your device',
     'about.privacyNoCollect': 'We do not collect personal information',
@@ -2824,6 +2887,19 @@ const TRANSLATIONS = {
     'tour.closeday.title': 'Close Day', 'tour.closeday.desc': 'Tap the close button to wrap up your day.',
     'tour.done.title': 'All Set!', 'tour.done.desc': 'Start recording now!',
     'tour.next': 'Next', 'tour.skip': 'Skip', 'tour.start': 'Get Started', 'tour.replay': 'Replay Tour',
+    'books.title': 'Reading Log', 'books.reading': 'Reading', 'books.completed': 'Completed',
+    'books.addTitle': 'Add New Book', 'books.editTitle': 'Edit Book',
+    'books.bookTitle': 'Book Title', 'books.author': 'Author', 'books.startDate': 'Start Date',
+    'books.endDate': 'Finish Date', 'books.rating': 'Rating', 'books.memo': 'Note',
+    'books.memoPlaceholder': 'A short note about this book...',
+    'books.register': 'Add', 'books.save': 'Save', 'books.cancel': 'Cancel',
+    'books.markDone': 'Done', 'books.congrats': 'Congratulations!',
+    'books.delete': 'Delete', 'books.deleteConfirm': 'Delete this book?',
+    'books.dayCount': 'Day {n}', 'books.readDays': '{n} days',
+    'books.yearSummary': '{n} books completed · avg {avg} days/book',
+    'books.yearSummaryReading': '{r} reading',
+    'books.noBooks': 'Add a book you\'re reading',
+    'books.readingTime': 'Total reading time', 'books.notReading': 'Not finished',
   }
 };
 
@@ -2949,7 +3025,7 @@ function getPresetColor(activity) {
   }
   return null;
 }
-let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [] };
+let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [], books: [] };
 let currentDate = getTodayStr();
 let donutChart = null;
 let calendarMonth = null;
@@ -3129,6 +3205,7 @@ async function syncToCloud() {
       settings: data.settings || {},
       goals: data.goals || [],
       lifeGoals: data.lifeGoals || [],
+      books: data.books || [],
       lastSync: now
     }, { merge: true });
 
@@ -3175,6 +3252,7 @@ async function syncFromCloud() {
       if (cfg.settings) data.settings = cfg.settings;
       if (cfg.goals) data.goals = cfg.goals;
       if (cfg.lifeGoals) data.lifeGoals = cfg.lifeGoals;
+      if (cfg.books) data.books = cfg.books;
     }
 
     // 2. Read all dates
@@ -3376,6 +3454,7 @@ function loadData() {
       data = { ...data, ...parsed };
     }
     if (!data.goals) data.goals = [];
+    if (!data.books) data.books = [];
   } catch(e) { console.warn('localStorage load error', e); }
 }
 
@@ -3868,6 +3947,7 @@ function renderStats() {
     if (pdfBtn) pdfBtn.style.display = 'none';
     if (shareBtn) shareBtn.style.display = 'none';
     renderStatsLifeGoals();
+    renderBooks();
     return;
   }
   chartsArea.style.display = '';
@@ -3883,6 +3963,7 @@ function renderStats() {
   renderStatsActivityTrend(days, dates);
   renderStatsLifeGoals();
   renderStatsPlan(dates);
+  renderBooks();
 }
 
 function renderStatsSummaryCards(days) {
@@ -4262,6 +4343,341 @@ function renderStatsPlan(dates) {
       }
     }
   });
+}
+
+// ============== Books (Reading Log) ==============
+let booksYear = new Date().getFullYear();
+
+function renderBooks() {
+  if (!data.books) data.books = [];
+  const readingList = document.getElementById('books-reading-list');
+  const completedSection = document.getElementById('books-completed-section');
+  const yearNav = document.getElementById('books-year-nav');
+  const yearSummary = document.getElementById('books-year-summary');
+  if (!readingList) return;
+
+  // Currently reading (no endDate)
+  const reading = data.books.filter(b => !b.endDate).sort((a, b) => b.startDate.localeCompare(a.startDate));
+  // Completed this year
+  const completed = data.books.filter(b => b.endDate && b.endDate.startsWith(String(booksYear)))
+    .sort((a, b) => b.endDate.localeCompare(a.endDate));
+
+  // Reading list
+  if (reading.length === 0 && completed.length === 0) {
+    readingList.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:16px;font-size:13px">${t('books.noBooks')}</div>`;
+  } else if (reading.length === 0) {
+    readingList.innerHTML = '';
+  } else {
+    const today = new Date();
+    readingList.innerHTML = `<div class="book-section-title">📖 ${t('books.reading')} (${reading.length})</div>` +
+      reading.map(b => {
+        const start = new Date(b.startDate);
+        const dayCount = Math.max(1, Math.ceil((today - start) / 86400000) + 1);
+        const dayStr = t('books.dayCount').replace('{n}', dayCount);
+        return `<div class="book-item" onclick="showEditBookModal('${escAttr(b.id)}')">
+          <div>
+            <div class="book-title">${escHtml(b.title)}</div>
+            ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
+            <div class="book-meta">${b.startDate.slice(5).replace('-','/')}~ · ${dayStr} 📖</div>
+          </div>
+          <button class="book-done-btn" onclick="event.stopPropagation();showFinishBookModal('${escAttr(b.id)}')">✅ ${t('books.markDone')}</button>
+        </div>`;
+      }).join('');
+  }
+
+  // Completed list
+  if (completed.length > 0) {
+    completedSection.innerHTML = `<div class="book-section-title">📗 ${t('books.completed')} ${booksYear} (${completed.length})</div>` +
+      completed.map(b => {
+        const start = new Date(b.startDate);
+        const end = new Date(b.endDate);
+        const days = Math.max(1, Math.ceil((end - start) / 86400000) + 1);
+        const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
+        return `<div class="book-item" onclick="showEditBookModal('${escAttr(b.id)}')">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              ${stars ? `<span class="book-stars">${stars}</span>` : ''}
+              <span class="book-title">${escHtml(b.title)}</span>
+            </div>
+            ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
+            <div class="book-meta">${b.startDate.slice(5).replace('-','/')} → ${b.endDate.slice(5).replace('-','/')} (${t('books.readDays').replace('{n}', days)})</div>
+            ${b.memo ? `<div style="font-size:12px;color:var(--text-sub);margin-top:3px;font-style:italic">"${escHtml(b.memo)}"</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+  } else {
+    completedSection.innerHTML = '';
+  }
+
+  // Year nav
+  const allYears = [...new Set(data.books.map(b => {
+    const y = b.endDate ? parseInt(b.endDate.slice(0,4)) : new Date().getFullYear();
+    return y;
+  }).concat([new Date().getFullYear()]))].sort();
+  const minYear = Math.min(...allYears);
+  const maxYear = Math.max(...allYears);
+
+  yearNav.innerHTML = `
+    <button class="book-year-btn" onclick="changeBookYear(-1)" ${booksYear <= minYear ? 'disabled style="opacity:0.3"' : ''}>◀</button>
+    <span class="book-year-label">${booksYear}</span>
+    <button class="book-year-btn" onclick="changeBookYear(1)" ${booksYear >= maxYear ? 'disabled style="opacity:0.3"' : ''}>▶</button>
+  `;
+
+  // Year summary
+  const yearCompleted = data.books.filter(b => b.endDate && b.endDate.startsWith(String(booksYear)));
+  const yearReading = data.books.filter(b => !b.endDate);
+  if (yearCompleted.length > 0) {
+    const totalDays = yearCompleted.reduce((s, b) => {
+      const d = Math.max(1, Math.ceil((new Date(b.endDate) - new Date(b.startDate)) / 86400000) + 1);
+      return s + d;
+    }, 0);
+    const avgDays = Math.round(totalDays / yearCompleted.length);
+    let summary = t('books.yearSummary').replace('{n}', yearCompleted.length).replace('{avg}', avgDays);
+    if (booksYear === new Date().getFullYear() && yearReading.length > 0) {
+      summary += ' · ' + t('books.yearSummaryReading').replace('{r}', yearReading.length);
+    }
+    // Reading time from activity tracking
+    const readingTime = calcBookReadingTime(booksYear);
+    if (readingTime > 0) {
+      summary += `<br>${t('books.readingTime')}: ${formatMin(readingTime)}`;
+    }
+    yearSummary.innerHTML = summary;
+  } else {
+    const readingTime = calcBookReadingTime(booksYear);
+    let summary = '';
+    if (booksYear === new Date().getFullYear() && yearReading.length > 0) {
+      summary = t('books.yearSummaryReading').replace('{r}', yearReading.length);
+    }
+    if (readingTime > 0) {
+      summary += (summary ? '<br>' : '') + `${t('books.readingTime')}: ${formatMin(readingTime)}`;
+    }
+    yearSummary.innerHTML = summary;
+  }
+}
+
+function calcBookReadingTime(year) {
+  // Sum up time spent on 독서/読書/Reading activities for given year
+  let totalMin = 0;
+  const yearStr = String(year);
+  for (const [dateStr, dd] of Object.entries(data.dates)) {
+    if (!dateStr.startsWith(yearStr) || !dd.entries || dd.entries.length === 0) continue;
+    for (let i = 0; i < dd.entries.length; i++) {
+      const entry = dd.entries[i];
+      const name = entry.activity || '';
+      const isReading = name === '독서' || name === '読書' || name.toLowerCase() === 'reading' ||
+        name.includes('독서') || name.includes('読書');
+      if (!isReading) continue;
+      const [h, m] = entry.time.split(':').map(Number);
+      const start = h * 60 + m;
+      let end;
+      if (i < dd.entries.length - 1) {
+        const [nh, nm] = dd.entries[i + 1].time.split(':').map(Number);
+        end = nh * 60 + nm;
+      } else if (dd.closedAt) {
+        const [ch, cm] = dd.closedAt.split(':').map(Number);
+        end = ch * 60 + cm;
+      } else {
+        end = start + 30;
+      }
+      if (end > start) totalMin += end - start;
+    }
+  }
+  return totalMin;
+}
+
+function changeBookYear(delta) {
+  booksYear += delta;
+  renderBooks();
+}
+
+function showAddBookModal() {
+  const today = getTodayStr();
+  const modal = document.getElementById('modal-container');
+  modal.innerHTML = `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:360px">
+        <h3>📚 ${t('books.addTitle')}</h3>
+        <div style="margin-top:12px">
+          <label style="font-size:13px;font-weight:600">${t('books.bookTitle')} *</label>
+          <input type="text" id="book-input-title" class="time-input" style="width:100%;font-size:15px;padding:8px;margin-top:4px" autofocus>
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.author')}</label>
+          <input type="text" id="book-input-author" class="time-input" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.startDate')}</label>
+          <input type="date" id="book-input-start" class="time-input" value="${today}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn" onclick="closeModal()" style="flex:1">${t('books.cancel')}</button>
+          <button class="btn" onclick="addBook()" style="flex:1;background:var(--mint);color:white">${t('books.register')}</button>
+        </div>
+      </div>
+    </div>`;
+  setTimeout(() => document.getElementById('book-input-title')?.focus(), 100);
+}
+
+function addBook() {
+  const title = document.getElementById('book-input-title').value.trim();
+  if (!title) return;
+  const author = document.getElementById('book-input-author').value.trim();
+  const startDate = document.getElementById('book-input-start').value || getTodayStr();
+
+  if (!data.books) data.books = [];
+  data.books.push({
+    id: 'b_' + Date.now(),
+    title, author, startDate,
+    endDate: null, rating: 0, memo: ''
+  });
+  saveData();
+  closeModal();
+  renderBooks();
+}
+
+function showFinishBookModal(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  const today = getTodayStr();
+  const modal = document.getElementById('modal-container');
+  modal.innerHTML = `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:360px">
+        <h3>📗 ${t('books.congrats')} 🎉</h3>
+        <p style="margin-top:8px;font-size:15px;font-weight:600">「${escHtml(book.title)}」</p>
+        <div style="margin-top:12px">
+          <label style="font-size:13px;font-weight:600">${t('books.endDate')}</label>
+          <input type="date" id="book-finish-date" class="time-input" value="${today}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.rating')}</label>
+          <div id="book-rating-stars" style="font-size:28px;margin-top:6px;cursor:pointer;letter-spacing:4px" data-rating="0">
+            ${'☆'.repeat(5)}
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.memo')}</label>
+          <input type="text" id="book-finish-memo" class="time-input" placeholder="${t('books.memoPlaceholder')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn" onclick="closeModal()" style="flex:1">${t('books.cancel')}</button>
+          <button class="btn" onclick="finishBook('${escAttr(bookId)}')" style="flex:1;background:var(--success);color:white">${t('books.save')}</button>
+        </div>
+      </div>
+    </div>`;
+  // Star rating click handler
+  const starsEl = document.getElementById('book-rating-stars');
+  starsEl.addEventListener('click', (e) => {
+    const rect = starsEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const rating = Math.min(5, Math.max(1, Math.ceil(x / (rect.width / 5))));
+    starsEl.dataset.rating = rating;
+    starsEl.textContent = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+  });
+}
+
+function finishBook(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book.endDate = document.getElementById('book-finish-date').value || getTodayStr();
+  book.rating = parseInt(document.getElementById('book-rating-stars').dataset.rating) || 0;
+  book.memo = document.getElementById('book-finish-memo').value.trim();
+  saveData();
+  closeModal();
+  renderBooks();
+}
+
+function showEditBookModal(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  const modal = document.getElementById('modal-container');
+  modal.innerHTML = `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:360px">
+        <h3>📖 ${t('books.editTitle')}</h3>
+        <div style="margin-top:12px">
+          <label style="font-size:13px;font-weight:600">${t('books.bookTitle')}</label>
+          <input type="text" id="book-edit-title" class="time-input" value="${escAttr(book.title)}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.author')}</label>
+          <input type="text" id="book-edit-author" class="time-input" value="${escAttr(book.author || '')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.startDate')}</label>
+          <input type="date" id="book-edit-start" class="time-input" value="${book.startDate}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.endDate')}</label>
+          <input type="date" id="book-edit-end" class="time-input" value="${book.endDate || ''}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+          ${!book.endDate ? `<span style="font-size:11px;color:var(--text-light)">${t('books.notReading')}</span>` : ''}
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.rating')}</label>
+          <div id="book-edit-stars" style="font-size:28px;margin-top:6px;cursor:pointer;letter-spacing:4px" data-rating="${book.rating || 0}">
+            ${'⭐'.repeat(book.rating || 0) + '☆'.repeat(5 - (book.rating || 0))}
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">${t('books.memo')}</label>
+          <input type="text" id="book-edit-memo" class="time-input" value="${escAttr(book.memo || '')}" placeholder="${t('books.memoPlaceholder')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn" onclick="deleteBook('${escAttr(bookId)}')" style="color:var(--danger)">🗑️ ${t('books.delete')}</button>
+          <button class="btn" onclick="closeModal()" style="flex:1">${t('books.cancel')}</button>
+          <button class="btn" onclick="saveEditBook('${escAttr(bookId)}')" style="flex:1;background:var(--mint);color:white">${t('books.save')}</button>
+        </div>
+      </div>
+    </div>`;
+  // Star rating click handler
+  const starsEl = document.getElementById('book-edit-stars');
+  starsEl.addEventListener('click', (e) => {
+    const rect = starsEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const rating = Math.min(5, Math.max(1, Math.ceil(x / (rect.width / 5))));
+    starsEl.dataset.rating = rating;
+    starsEl.textContent = '⭐'.repeat(rating) + '☆'.repeat(5 - rating);
+  });
+}
+
+function saveEditBook(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  const title = document.getElementById('book-edit-title').value.trim();
+  if (!title) return;
+  book.title = title;
+  book.author = document.getElementById('book-edit-author').value.trim();
+  book.startDate = document.getElementById('book-edit-start').value || book.startDate;
+  book.endDate = document.getElementById('book-edit-end').value || null;
+  book.rating = parseInt(document.getElementById('book-edit-stars').dataset.rating) || 0;
+  book.memo = document.getElementById('book-edit-memo').value.trim();
+  saveData();
+  closeModal();
+  renderBooks();
+}
+
+function deleteBook(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  const modal = document.getElementById('modal-container');
+  modal.innerHTML = `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:320px">
+        <h3>🗑️ ${t('books.deleteConfirm')}</h3>
+        <p style="margin-top:8px">「${escHtml(book.title)}」</p>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button class="btn" onclick="closeModal()" style="flex:1">${t('books.cancel')}</button>
+          <button class="btn" onclick="confirmDeleteBook('${escAttr(bookId)}')" style="flex:1;background:var(--coral);color:white">${t('books.delete')}</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function confirmDeleteBook(bookId) {
+  data.books = data.books.filter(b => b.id !== bookId);
+  saveData();
+  closeModal();
+  renderBooks();
 }
 
 function exportStatsPDF() {
