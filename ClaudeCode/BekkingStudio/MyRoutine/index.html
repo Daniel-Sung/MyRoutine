@@ -620,8 +620,23 @@ body {
   color: var(--text-sub);
   margin-left: 4px;
 }
+.plan-note-card {
+  padding: 16px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
 .plan-note-card textarea {
-  min-height: 80px;
+  min-height: 100px;
+}
+.plan-credit {
+  padding: 12px 16px;
+  font-size: 12px;
+  color: var(--text-sub);
+  line-height: 1.6;
+  text-align: center;
+  opacity: 0.8;
 }
 .plan-schedule-item {
   display: flex;
@@ -2058,7 +2073,10 @@ body {
   <!-- Section: Plan -->
   <div id="sec-plan" class="section">
     <div class="card">
-      <h3 style="font-size:16px;margin-bottom:4px">🧠 <span data-i18n="plan.dumpTitle">브레인 덤프</span></h3>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <h3 style="font-size:16px;margin:0">🧠 <span data-i18n="plan.dumpTitle">브레인 덤프</span></h3>
+        <button class="icon-btn" onclick="resetPlan()" style="width:28px;height:28px;font-size:14px;" data-i18n-title="plan.reset" title="초기화">🗑️</button>
+      </div>
       <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px" data-i18n="plan.dumpDesc">오늘 해야 할 일을 모두 적어보세요</p>
       <div style="display:flex;gap:8px;margin-bottom:12px">
         <input type="text" id="plan-dump-input" class="input" data-i18n-placeholder="plan.dumpPlaceholder" placeholder="할 일 입력" style="flex:1" onkeydown="if(event.key==='Enter')addDumpItem()">
@@ -2078,9 +2096,13 @@ body {
       <div id="plan-schedule-list"></div>
     </div>
 
-    <div class="card plan-note-card">
+    <div class="plan-note-card">
       <h3 style="font-size:16px;margin-bottom:10px">📝 <span data-i18n="plan.noteTitle">오늘의 다짐</span></h3>
-      <textarea id="plan-note" class="input" rows="4" data-i18n-placeholder="plan.notePlaceholder" placeholder="오늘의 다짐을 적어보세요..." style="resize:vertical;font-size:15px;line-height:1.6" oninput="savePlanNote()"></textarea>
+      <textarea id="plan-note" class="input" rows="5" data-i18n-placeholder="plan.notePlaceholder" placeholder="오늘의 다짐을 적어보세요..." style="resize:vertical;font-size:16px;line-height:1.7;width:100%;box-sizing:border-box;padding:14px" oninput="savePlanNote()"></textarea>
+    </div>
+
+    <div class="plan-credit">
+      <p data-i18n-html="plan.credit">💡 일론 머스크의 시간 관리법 — <strong>브레인 덤프</strong>로 할 일을 꺼내고, <strong>Big 3</strong>로 우선순위를 정하고, <strong>타임 박싱</strong>으로 시간을 배정하세요.</p>
     </div>
   </div>
 
@@ -2409,6 +2431,9 @@ const TRANSLATIONS = {
     'plan.allDone': '모든 할 일을 완료했어요! 🎉',
     'plan.timeboxTitle': '타임 박싱', 'plan.timeboxDesc': '각 할 일에 시간 블록을 배정하세요',
     'plan.scheduleTitle': '오늘의 타임테이블', 'plan.noteTitle': '오늘의 다짐', 'plan.notePlaceholder': '오늘의 다짐을 적어보세요...',
+    'plan.reset': '초기화', 'plan.resetConfirm': '계획을 초기화할까요? 모든 할 일이 삭제됩니다.', 'plan.resetDone': '계획이 초기화되었습니다',
+    'plan.tapToSet': '탭하여 시간 설정',
+    'plan.credit': '💡 일론 머스크의 시간 관리법 — <strong>브레인 덤프</strong>로 할 일을 꺼내고, <strong>Big 3</strong>로 우선순위를 정하고, <strong>타임 박싱</strong>으로 시간을 배정하세요.',
     'plan.vsActualTitle': '계획 vs 실제', 'plan.big3Result': 'Big 3 달성: {done}/{total}',
     'plan.timeCompare': '시간 비교', 'plan.planned': '계획', 'plan.actual': '실제',
     'plan.accuracy': '계획 실행률', 'plan.taskCompletion': '전체 할 일 완료',
@@ -2565,6 +2590,9 @@ const TRANSLATIONS = {
     'plan.allDone': 'すべて完了しました！ 🎉',
     'plan.timeboxTitle': 'タイムボクシング', 'plan.timeboxDesc': '各タスクに時間ブロックを割り当てましょう',
     'plan.scheduleTitle': '今日のタイムテーブル', 'plan.noteTitle': '今日の意気込み', 'plan.notePlaceholder': '今日の意気込みを書いてみましょう...',
+    'plan.reset': 'リセット', 'plan.resetConfirm': '計画をリセットしますか？すべてのタスクが削除されます。', 'plan.resetDone': '計画がリセットされました',
+    'plan.tapToSet': 'タップして時間設定',
+    'plan.credit': '💡 イーロン・マスクの時間管理法 — <strong>ブレインダンプ</strong>でタスクを出し、<strong>Big 3</strong>で優先順位を決め、<strong>タイムボクシング</strong>で時間を割り当てましょう。',
     'plan.vsActualTitle': '計画 vs 実際', 'plan.big3Result': 'Big 3 達成: {done}/{total}',
     'plan.timeCompare': '時間比較', 'plan.planned': '計画', 'plan.actual': '実際',
     'plan.accuracy': '計画実行率', 'plan.taskCompletion': '全タスク完了',
@@ -2721,6 +2749,9 @@ const TRANSLATIONS = {
     'plan.allDone': 'All tasks done! 🎉',
     'plan.timeboxTitle': 'Time Boxing', 'plan.timeboxDesc': 'Assign time blocks to each task',
     'plan.scheduleTitle': "Today's Timetable", 'plan.noteTitle': "Today's Resolution", 'plan.notePlaceholder': 'Write your resolution for today...',
+    'plan.reset': 'Reset', 'plan.resetConfirm': 'Reset your plan? All tasks will be deleted.', 'plan.resetDone': 'Plan has been reset',
+    'plan.tapToSet': 'Tap to set time',
+    'plan.credit': "💡 Elon Musk's time management — <strong>Brain Dump</strong> all tasks, pick your <strong>Big 3</strong> priorities, then <strong>Time Box</strong> them into your schedule.",
     'plan.vsActualTitle': 'Plan vs Actual', 'plan.big3Result': 'Big 3 achieved: {done}/{total}',
     'plan.timeCompare': 'Time Comparison', 'plan.planned': 'Planned', 'plan.actual': 'Actual',
     'plan.accuracy': 'Plan Accuracy', 'plan.taskCompletion': 'Task Completion',
@@ -4231,7 +4262,29 @@ function switchDate(d) {
 // ============== Plan ==============
 function getPlan() {
   const dd = getDateData(currentDate);
-  if (!dd.plan) dd.plan = { dump: [], big3: [] };
+  if (!dd.plan) {
+    // Carry over from most recent previous day's plan
+    const dates = Object.keys(data.dates).filter(d => d < currentDate).sort().reverse();
+    let carried = null;
+    for (const d of dates) {
+      const prev = data.dates[d];
+      if (prev.plan && prev.plan.dump && prev.plan.dump.length > 0) {
+        carried = prev.plan;
+        break;
+      }
+    }
+    if (carried) {
+      // Copy plan but reset done status and blocks
+      dd.plan = {
+        dump: carried.dump.map(item => ({ text: item.text, done: false })),
+        big3: [...carried.big3],
+        blocks: {},
+        note: ''
+      };
+    } else {
+      dd.plan = { dump: [], big3: [], blocks: {}, note: '' };
+    }
+  }
   return dd.plan;
 }
 
@@ -4241,6 +4294,15 @@ function renderPlan() {
   renderBig3Unified(plan);
   renderSchedule(plan);
   renderPlanNote(plan);
+}
+
+function resetPlan() {
+  if (!confirm(t('plan.resetConfirm'))) return;
+  const dd = getDateData(currentDate);
+  dd.plan = { dump: [], big3: [], blocks: {}, note: '' };
+  saveData();
+  renderPlan();
+  showToast(t('plan.resetDone'));
 }
 
 function addDumpItem() {
@@ -4342,11 +4404,13 @@ function renderBig3Unified(plan) {
           ${isChosen ? `<div class="big3-rank">${rank + 1}</div>` : `<div class="big3-empty-rank"></div>`}
           <span class="unified-text">${escHtml(item.text)}</span>
         </div>
-        <div class="unified-time">
-          <input type="time" value="${startVal}" onclick="event.stopPropagation()" onchange="setTimeBlock(${i},'start',this.value)">
-          <span style="color:var(--text-sub)">~</span>
-          <input type="time" value="${endVal}" onclick="event.stopPropagation()" onchange="setTimeBlock(${i},'end',this.value)">
-          ${durationStr ? `<span class="unified-duration">${durationStr}</span>` : ''}
+        <div class="unified-time" ${!startVal ? `onclick="event.stopPropagation();initTimeBlock(${i})"` : ''}>
+          ${startVal ? `
+            <input type="time" value="${startVal}" onclick="event.stopPropagation()" onchange="setTimeBlock(${i},'start',this.value)">
+            <span style="color:var(--text-sub)">~</span>
+            <input type="time" value="${endVal}" onclick="event.stopPropagation()" onchange="setTimeBlock(${i},'end',this.value)">
+            ${durationStr ? `<span class="unified-duration">${durationStr}</span>` : ''}
+          ` : `<span class="timebox-tap-hint" style="font-size:12px;color:var(--text-sub);cursor:pointer">⏰ ${t('plan.tapToSet')}</span>`}
         </div>
       </div>
     `;
@@ -4358,8 +4422,33 @@ function setTimeBlock(idx, field, value) {
   if (!plan.blocks) plan.blocks = {};
   if (!plan.blocks[idx]) plan.blocks[idx] = {};
   plan.blocks[idx][field] = value;
+  // Auto-set end = start + 1hr when start is set
+  if (field === 'start' && value) {
+    const [h, m] = value.split(':').map(Number);
+    const endH = (h + 1) % 24;
+    plan.blocks[idx].end = String(endH).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  }
   saveData();
-  renderTimeboxing(plan);
+  renderBig3Unified(plan);
+  renderSchedule(plan);
+}
+
+function initTimeBlock(idx) {
+  const plan = getPlan();
+  if (!plan.blocks) plan.blocks = {};
+  if (plan.blocks[idx] && plan.blocks[idx].start) return; // already set
+  const now = new Date();
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const startStr = String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  const endH = (h + 1) % 24;
+  const endStr = String(endH).padStart(2,'0') + ':' + String(m).padStart(2,'0');
+  if (!plan.blocks[idx]) plan.blocks[idx] = {};
+  plan.blocks[idx].start = startStr;
+  plan.blocks[idx].end = endStr;
+  saveData();
+  renderBig3Unified(plan);
+  renderSchedule(plan);
 }
 
 function renderSchedule(plan) {
