@@ -2449,6 +2449,7 @@ const TRANSLATIONS = {
     'toast.enterName': '이름을 입력하세요', 'toast.duplicateName': '이미 같은 이름이 있습니다', 'toast.cannotDelete': '기상/취침은 삭제할 수 없습니다',
     'toast.recorded': '✓ {0} 기록했습니다',
     'preset.reordered': '✓ 버튼 순서가 변경되었습니다',
+    'notify.title': '갓생살기 알림', 'notify.body': '오늘 하루를 아직 마감하지 않았어요! 기록을 완성해보세요.',
     'chip.move': '이동', 'chip.edit': '수정', 'chip.delete': '삭제',
     'day.sun': '일', 'day.mon': '월', 'day.tue': '화', 'day.wed': '수',
     'day.thu': '목', 'day.fri': '금', 'day.sat': '토',
@@ -2628,6 +2629,7 @@ const TRANSLATIONS = {
     'toast.enterName': '名前を入力してください', 'toast.duplicateName': '同じ名前がすでにあります', 'toast.cannotDelete': '起床/就寝は削除できません',
     'toast.recorded': '✓ {0} 記録しました',
     'preset.reordered': '✓ ボタンの順序を変更しました',
+    'notify.title': 'MyRoutine リマインダー', 'notify.body': '今日のまとめがまだです！記録を完成させましょう。',
     'chip.move': '移動', 'chip.edit': '編集', 'chip.delete': '削除',
     'day.sun': '日', 'day.mon': '月', 'day.tue': '火', 'day.wed': '水',
     'day.thu': '木', 'day.fri': '金', 'day.sat': '土',
@@ -2807,6 +2809,7 @@ const TRANSLATIONS = {
     'toast.enterName': 'Please enter a name', 'toast.duplicateName': 'This name already exists', 'toast.cannotDelete': 'Wake Up/Bedtime cannot be deleted',
     'toast.recorded': '✓ Recorded {0}',
     'preset.reordered': '✓ Button order changed',
+    'notify.title': 'MyRoutine Reminder', 'notify.body': "You haven't closed today yet! Complete your daily record.",
     'chip.move': 'Move', 'chip.edit': 'Edit', 'chip.delete': 'Delete',
     'day.sun': 'Sun', 'day.mon': 'Mon', 'day.tue': 'Tue', 'day.wed': 'Wed',
     'day.thu': 'Thu', 'day.fri': 'Fri', 'day.sat': 'Sat',
@@ -3403,6 +3406,47 @@ function init() {
   const entries = dd ? dd.entries : [];
   if (!localStorage.getItem('tourCompleted') && entries.length === 0) {
     setTimeout(() => startTour(), 500);
+  }
+  scheduleReminders();
+}
+
+// --- Daily close reminder notifications ---
+let reminderTimers = [];
+function scheduleReminders() {
+  // Clear any existing timers
+  reminderTimers.forEach(id => clearTimeout(id));
+  reminderTimers = [];
+  // Request notification permission on first load
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  const REMINDER_HOURS = [19, 21, 22]; // 7PM, 9PM, 10PM
+  const now = new Date();
+  REMINDER_HOURS.forEach(hour => {
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 0, 0);
+    const ms = target.getTime() - now.getTime();
+    if (ms > 0) {
+      const id = setTimeout(() => showReminderNotification(), ms);
+      reminderTimers.push(id);
+    }
+  });
+}
+
+function showReminderNotification() {
+  const today = getTodayStr();
+  const dd = data.dates[today];
+  // Only notify if today has entries but is not yet closed
+  if (!dd || dd.entries.length === 0 || dd.status === 'completed') return;
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const title = t('notify.title');
+    const body = t('notify.body');
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, { body, icon: 'https://daniel-sung.github.io/MyRoutine/icon-192.png', tag: 'daily-reminder' });
+      });
+    } else {
+      new Notification(title, { body });
+    }
   }
 }
 
