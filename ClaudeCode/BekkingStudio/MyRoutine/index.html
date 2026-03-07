@@ -2258,6 +2258,12 @@ body {
       <div id="stats-life-goals-content"></div>
     </div>
 
+    <div class="card" id="stats-plan-card" style="margin-top:16px;display:none;">
+      <h3 style="font-size:15px;margin-bottom:12px">📋 <span data-i18n="stats.planTitle">계획 실행 통계</span></h3>
+      <div id="stats-plan-content"></div>
+      <div class="stats-chart-container" style="margin-top:12px"><canvas id="stats-plan-chart"></canvas></div>
+    </div>
+
     <button class="btn btn-coral btn-block" onclick="exportStatsPDF()" style="margin-top:16px" id="stats-export-pdf-btn">
       📄 <span data-i18n="stats.exportPdf">PDF로 내보내기</span>
     </button>
@@ -2447,6 +2453,8 @@ const TRANSLATIONS = {
     'stats.totalTime': '총 시간', 'stats.avgDesired': '평균 달성률', 'stats.avgFlex': '평균 유동 비율',
     'stats.selectActivity': '활동을 선택하세요',
     'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
+    'stats.planTitle': '계획 실행 통계', 'stats.planTaskAvg': '할 일 완료율', 'stats.planBig3Avg': 'Big 3 달성률',
+    'stats.planBig3Total': 'Big 3 달성', 'stats.planTimeAccuracy': '시간 정확도', 'stats.planTaskLine': '할 일 완료',
     'goals.title': '일일 루틴', 'goals.dateTitle': '{date} 루틴 달성', 'goals.manage': '루틴 관리', 'goals.add': '새 루틴 추가',
     'goals.selectActivity': '활동 선택', 'goals.targetTime': '목표 시간',
     'goals.hours': '시간', 'goals.minutes': '분',
@@ -2607,6 +2615,8 @@ const TRANSLATIONS = {
     'stats.totalTime': '合計時間', 'stats.avgDesired': '平均達成率', 'stats.avgFlex': '平均自由比率',
     'stats.selectActivity': '活動を選択してください',
     'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
+    'stats.planTitle': '計画実行統計', 'stats.planTaskAvg': 'タスク完了率', 'stats.planBig3Avg': 'Big 3 達成率',
+    'stats.planBig3Total': 'Big 3 達成', 'stats.planTimeAccuracy': '時間精度', 'stats.planTaskLine': 'タスク完了',
     'goals.title': 'デイリールーティン', 'goals.dateTitle': '{date} ルーティン達成', 'goals.manage': 'ルーティン管理', 'goals.add': '新しいルーティンを追加',
     'goals.selectActivity': 'アクティビティ選択', 'goals.targetTime': '目標時間',
     'goals.hours': '時間', 'goals.minutes': '分',
@@ -2767,6 +2777,8 @@ const TRANSLATIONS = {
     'stats.totalTime': 'Total Time', 'stats.avgDesired': 'Avg Achievement', 'stats.avgFlex': 'Avg Flexible',
     'stats.selectActivity': 'Select an activity',
     'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.pdfTitle': 'MyRoutine - Period Stats',
+    'stats.planTitle': 'Plan Execution Stats', 'stats.planTaskAvg': 'Task Completion', 'stats.planBig3Avg': 'Big 3 Rate',
+    'stats.planBig3Total': 'Big 3 Done', 'stats.planTimeAccuracy': 'Time Accuracy', 'stats.planTaskLine': 'Task Completion',
     'goals.title': 'Daily Routines', 'goals.dateTitle': '{date} Routines', 'goals.manage': 'Manage Routines', 'goals.add': 'Add New Routine',
     'goals.selectActivity': 'Select Activity', 'goals.targetTime': 'Target Time',
     'goals.hours': 'hours', 'goals.minutes': 'minutes',
@@ -2947,6 +2959,7 @@ let statsPeriod = null;
 let statsDesiredChart = null;
 let statsRatioChart = null;
 let statsActivityChart = null;
+let statsPlanChart = null;
 let statsSelectedActivity = null;
 let statsExcludeFixed = false;
 let statsCachedDays = [];
@@ -3869,6 +3882,7 @@ function renderStats() {
   renderStatsRanking(days);
   renderStatsActivityTrend(days, dates);
   renderStatsLifeGoals();
+  renderStatsPlan(dates);
 }
 
 function renderStatsSummaryCards(days) {
@@ -4114,6 +4128,140 @@ function renderStatsLifeGoals() {
   }
 
   content.innerHTML = html;
+}
+
+function renderStatsPlan(dates) {
+  const card = document.getElementById('stats-plan-card');
+  const content = document.getElementById('stats-plan-content');
+  if (!card || !content) return;
+
+  // Collect plan data for period
+  const planDays = [];
+  for (const dateStr of dates) {
+    const dd = data.dates[dateStr];
+    if (!dd || !dd.plan || !dd.plan.dump || dd.plan.dump.length === 0) continue;
+    const plan = dd.plan;
+    const totalTasks = plan.dump.length;
+    const doneTasks = plan.dump.filter(d => d.done).length;
+    const big3Total = plan.big3.length;
+    const big3Done = plan.big3.filter(i => plan.dump[i] && plan.dump[i].done).length;
+
+    // Plan accuracy (time)
+    let plannedMin = 0, actualMin = 0;
+    if (plan.blocks && dd.entries && dd.entries.length > 0) {
+      Object.keys(plan.blocks).forEach(i => {
+        const block = plan.blocks[i];
+        if (!block || !block.start || !block.end) return;
+        const [sh, sm] = block.start.split(':').map(Number);
+        const [eh, em] = block.end.split(':').map(Number);
+        let p = (eh * 60 + em) - (sh * 60 + sm);
+        if (p < 0) p += 24 * 60;
+        plannedMin += p;
+        const blockStart = sh * 60 + sm;
+        const blockEnd = blockStart + p;
+        dd.entries.forEach((entry, ei) => {
+          const [ech, ecm] = entry.time.split(':').map(Number);
+          const entryStart = ech * 60 + ecm;
+          let entryEnd;
+          if (ei < dd.entries.length - 1) {
+            const [nch, ncm] = dd.entries[ei + 1].time.split(':').map(Number);
+            entryEnd = nch * 60 + ncm;
+          } else {
+            entryEnd = dd.closedAt ? (() => { const [ch2, cm2] = dd.closedAt.split(':').map(Number); return ch2 * 60 + cm2; })() : entryStart + 30;
+          }
+          const os = Math.max(blockStart, entryStart);
+          const oe = Math.min(blockEnd, entryEnd);
+          if (oe > os) actualMin += oe - os;
+        });
+      });
+    }
+
+    planDays.push({
+      date: dateStr,
+      taskPct: totalTasks > 0 ? Math.round(doneTasks / totalTasks * 100) : 0,
+      big3Pct: big3Total > 0 ? Math.round(big3Done / big3Total * 100) : 0,
+      timePct: plannedMin > 0 ? Math.min(100, Math.round(actualMin / plannedMin * 100)) : 0,
+      totalTasks, doneTasks, big3Total, big3Done
+    });
+  }
+
+  if (planDays.length === 0) {
+    card.style.display = 'none';
+    return;
+  }
+  card.style.display = '';
+
+  // Summary stats
+  const avgTask = Math.round(planDays.reduce((s, d) => s + d.taskPct, 0) / planDays.length);
+  const avgBig3 = Math.round(planDays.reduce((s, d) => s + d.big3Pct, 0) / planDays.length);
+  const totalBig3Done = planDays.reduce((s, d) => s + d.big3Done, 0);
+  const totalBig3 = planDays.reduce((s, d) => s + d.big3Total, 0);
+  const daysWithTime = planDays.filter(d => d.timePct > 0);
+  const avgTime = daysWithTime.length > 0 ? Math.round(daysWithTime.reduce((s, d) => s + d.timePct, 0) / daysWithTime.length) : 0;
+
+  content.innerHTML = `
+    <div class="lg-stats-row">
+      <div class="lg-stats-box">
+        <div class="lg-stats-num" style="color:#3B82F6">${avgTask}%</div>
+        <div class="lg-stats-label">${t('stats.planTaskAvg')}</div>
+      </div>
+      <div class="lg-stats-box">
+        <div class="lg-stats-num" style="color:#F59E0B">${avgBig3}%</div>
+        <div class="lg-stats-label">${t('stats.planBig3Avg')}</div>
+      </div>
+      <div class="lg-stats-box">
+        <div class="lg-stats-num" style="color:#10b981">${totalBig3Done}/${totalBig3}</div>
+        <div class="lg-stats-label">${t('stats.planBig3Total')}</div>
+      </div>
+    </div>
+    ${avgTime > 0 ? `<div style="text-align:center;font-size:12px;color:var(--text-sub);margin-top:8px">${t('stats.planTimeAccuracy')}: ${avgTime}%</div>` : ''}
+  `;
+
+  // Chart: task completion + big3 trend
+  const ctx = document.getElementById('stats-plan-chart').getContext('2d');
+  if (statsPlanChart) statsPlanChart.destroy();
+
+  const labels = planDays.map(d => {
+    const parts = d.date.split('-');
+    return parseInt(parts[1]) + '/' + parseInt(parts[2]);
+  });
+
+  statsPlanChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: t('stats.planTaskLine'),
+          data: planDays.map(d => d.taskPct),
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59,130,246,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3
+        },
+        {
+          label: 'Big 3',
+          data: planDays.map(d => d.big3Pct),
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { min: 0, max: 100, ticks: { callback: v => v + '%' } }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+      }
+    }
+  });
 }
 
 function exportStatsPDF() {
