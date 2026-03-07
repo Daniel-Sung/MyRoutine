@@ -673,6 +673,54 @@ body {
   max-width: 120px;
 }
 
+/* Plan vs Actual */
+.pva-big3-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pva-big3-item:last-child { border-bottom: none; }
+.pva-big3-item .pva-status {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.pva-big3-item .pva-status.done { background: var(--mint); color: white; }
+.pva-big3-item .pva-status.miss { background: var(--coral); color: white; }
+.pva-compare-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.pva-compare-row:last-child { border-bottom: none; }
+.pva-compare-row .pva-task { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pva-bar-group { display: flex; flex-direction: column; gap: 3px; width: 120px; flex-shrink: 0; }
+.pva-bar { height: 8px; border-radius: 4px; min-width: 2px; }
+.pva-bar.planned { background: #3B82F6; }
+.pva-bar.actual { background: #F59E0B; }
+.pva-score {
+  text-align: center;
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  margin-top: 12px;
+}
+.pva-score .score-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: #3B82F6;
+}
+
 /* Classification */
 .classify-item {
   display: flex;
@@ -2065,6 +2113,8 @@ body {
 
     <div id="encourage-msg"></div>
 
+    <div id="plan-vs-actual" style="display:none"></div>
+
     <div id="daily-memo"></div>
 
     <div id="monthly-calendar"></div>
@@ -2347,6 +2397,9 @@ const TRANSLATIONS = {
     'plan.allDone': '모든 할 일을 완료했어요! 🎉',
     'plan.timeboxTitle': '타임 박싱', 'plan.timeboxDesc': '각 할 일에 시간 블록을 배정하세요',
     'plan.scheduleTitle': '오늘의 타임테이블', 'plan.noteTitle': '오늘의 다짐', 'plan.notePlaceholder': '오늘의 다짐을 적어보세요...',
+    'plan.vsActualTitle': '계획 vs 실제', 'plan.big3Result': 'Big 3 달성: {done}/{total}',
+    'plan.timeCompare': '시간 비교', 'plan.planned': '계획', 'plan.actual': '실제',
+    'plan.accuracy': '계획 실행률', 'plan.taskCompletion': '전체 할 일 완료',
     'pwa.install': 'MyRoutine 설치', 'pwa.installDesc': '홈 화면에 추가하여 앱처럼 사용하세요', 'pwa.installBtn': '설치',
     'pwa.iosDesc': 'Safari 하단의 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택하세요',
     'memo.title': '오늘의 메모', 'memo.placeholder': '오늘 하루를 돌아보며 간단한 메모를 남겨보세요...',
@@ -2500,6 +2553,9 @@ const TRANSLATIONS = {
     'plan.allDone': 'すべて完了しました！ 🎉',
     'plan.timeboxTitle': 'タイムボクシング', 'plan.timeboxDesc': '各タスクに時間ブロックを割り当てましょう',
     'plan.scheduleTitle': '今日のタイムテーブル', 'plan.noteTitle': '今日の意気込み', 'plan.notePlaceholder': '今日の意気込みを書いてみましょう...',
+    'plan.vsActualTitle': '計画 vs 実際', 'plan.big3Result': 'Big 3 達成: {done}/{total}',
+    'plan.timeCompare': '時間比較', 'plan.planned': '計画', 'plan.actual': '実際',
+    'plan.accuracy': '計画実行率', 'plan.taskCompletion': '全タスク完了',
     'pwa.install': 'MyRoutine インストール', 'pwa.installDesc': 'ホーム画面に追加してアプリのように使いましょう', 'pwa.installBtn': 'インストール',
     'pwa.iosDesc': 'Safari下部の共有ボタン(□↑)をタップし「ホーム画面に追加」を選択してください',
     'memo.title': '今日のメモ', 'memo.placeholder': '今日一日を振り返りながら簡単なメモを残してみましょう...',
@@ -2653,6 +2709,9 @@ const TRANSLATIONS = {
     'plan.allDone': 'All tasks done! 🎉',
     'plan.timeboxTitle': 'Time Boxing', 'plan.timeboxDesc': 'Assign time blocks to each task',
     'plan.scheduleTitle': "Today's Timetable", 'plan.noteTitle': "Today's Resolution", 'plan.notePlaceholder': 'Write your resolution for today...',
+    'plan.vsActualTitle': 'Plan vs Actual', 'plan.big3Result': 'Big 3 achieved: {done}/{total}',
+    'plan.timeCompare': 'Time Comparison', 'plan.planned': 'Planned', 'plan.actual': 'Actual',
+    'plan.accuracy': 'Plan Accuracy', 'plan.taskCompletion': 'Task Completion',
     'pwa.install': 'Install MyRoutine', 'pwa.installDesc': 'Add to home screen and use like an app', 'pwa.installBtn': 'Install',
     'pwa.iosDesc': 'Tap the share button (□↑) at the bottom of Safari, then select "Add to Home Screen"',
     'memo.title': "Today's Memo", 'memo.placeholder': 'Reflect on your day and leave a quick note...',
@@ -4387,6 +4446,129 @@ function renderPlanNote(plan) {
   if (el) el.value = plan.note || '';
 }
 
+// ============== Plan vs Actual ==============
+function renderPlanVsActual() {
+  const container = document.getElementById('plan-vs-actual');
+  if (!container) return;
+  const dd = getDateData(currentDate);
+  const plan = dd.plan;
+  if (!plan || !plan.dump || plan.dump.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = '';
+  let html = '<div class="card">';
+  html += `<h3 style="font-size:16px;margin-bottom:12px">📋 <span>${t('plan.vsActualTitle')}</span></h3>`;
+
+  // Big 3 achievement
+  if (plan.big3.length > 0) {
+    const doneCount = plan.big3.filter(i => plan.dump[i] && plan.dump[i].done).length;
+    html += `<p style="font-size:13px;color:var(--text-sub);margin-bottom:8px">${t('plan.big3Result', { done: doneCount, total: plan.big3.length })}</p>`;
+    html += plan.big3.map((idx, rank) => {
+      const item = plan.dump[idx];
+      if (!item) return '';
+      return `
+        <div class="pva-big3-item">
+          <div class="pva-status ${item.done ? 'done' : 'miss'}">${item.done ? '✓' : '✕'}</div>
+          <span style="flex:1;font-size:14px;${item.done ? '' : 'color:var(--text-sub)'}">${escHtml(item.text)}</span>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Time comparison: planned blocks vs actual
+  if (plan.blocks && Object.keys(plan.blocks).length > 0) {
+    html += `<h4 style="font-size:14px;margin:16px 0 8px;color:var(--text-sub)">${t('plan.timeCompare')}</h4>`;
+    html += `<div style="display:flex;gap:12px;margin-bottom:8px;font-size:11px;color:var(--text-sub)">
+      <span><span class="pva-bar planned" style="display:inline-block;width:12px;height:8px;vertical-align:middle"></span> ${t('plan.planned')}</span>
+      <span><span class="pva-bar actual" style="display:inline-block;width:12px;height:8px;vertical-align:middle"></span> ${t('plan.actual')}</span>
+    </div>`;
+
+    let totalPlanned = 0;
+    let totalActual = 0;
+    const maxBlock = 180; // scale max
+
+    Object.keys(plan.blocks).forEach(i => {
+      const idx = parseInt(i);
+      const block = plan.blocks[i];
+      const item = plan.dump[idx];
+      if (!item || !block.start || !block.end) return;
+
+      const [sh, sm] = block.start.split(':').map(Number);
+      const [eh, em] = block.end.split(':').map(Number);
+      let planned = (eh * 60 + em) - (sh * 60 + sm);
+      if (planned < 0) planned += 24 * 60;
+      totalPlanned += planned;
+
+      // Find actual time spent in that block
+      let actual = 0;
+      if (dd.entries.length > 0) {
+        const blockStart = sh * 60 + sm;
+        const blockEnd = blockStart + planned;
+        dd.entries.forEach((entry, ei) => {
+          const [ech, ecm] = entry.time.split(':').map(Number);
+          const entryStart = ech * 60 + ecm;
+          let entryEnd;
+          if (ei < dd.entries.length - 1) {
+            const [nch, ncm] = dd.entries[ei + 1].time.split(':').map(Number);
+            entryEnd = nch * 60 + ncm;
+          } else {
+            entryEnd = dd.closedAt ? (() => { const [ch, cm] = dd.closedAt.split(':').map(Number); return ch * 60 + cm; })() : entryStart + 30;
+          }
+          // Overlap between block and entry
+          const overlapStart = Math.max(blockStart, entryStart);
+          const overlapEnd = Math.min(blockEnd, entryEnd);
+          if (overlapEnd > overlapStart) actual += overlapEnd - overlapStart;
+        });
+      }
+      totalActual += actual;
+
+      const maxVal = Math.max(planned, actual, 1);
+      const pW = Math.round(planned / maxVal * 100);
+      const aW = Math.round(actual / maxVal * 100);
+      const pLabel = planned >= 60 ? `${Math.floor(planned/60)}h${planned%60 > 0 ? planned%60+'m':''}` : `${planned}m`;
+      const aLabel = actual >= 60 ? `${Math.floor(actual/60)}h${actual%60 > 0 ? actual%60+'m':''}` : `${actual}m`;
+
+      html += `
+        <div class="pva-compare-row">
+          <div class="pva-task">${plan.big3.includes(idx) ? '★ ' : ''}${escHtml(item.text)}</div>
+          <div class="pva-bar-group">
+            <div class="pva-bar planned" style="width:${pW}%" title="${pLabel}"></div>
+            <div class="pva-bar actual" style="width:${aW}%" title="${aLabel}"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-sub);width:35px;text-align:right">${aLabel}</div>
+        </div>
+      `;
+    });
+
+    // Planning accuracy score
+    if (totalPlanned > 0) {
+      const accuracy = Math.min(100, Math.round(totalActual / totalPlanned * 100));
+      const emoji = accuracy >= 80 ? '🎯' : accuracy >= 50 ? '👍' : '💪';
+      html += `
+        <div class="pva-score">
+          <div style="font-size:12px;color:var(--text-sub);margin-bottom:4px">${t('plan.accuracy')}</div>
+          <div class="score-value">${accuracy}%</div>
+          <div style="font-size:20px;margin-top:4px">${emoji}</div>
+        </div>
+      `;
+    }
+  }
+
+  // Overall task completion
+  const totalTasks = plan.dump.length;
+  const doneTasks = plan.dump.filter(d => d.done).length;
+  html += `
+    <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-sub)">
+      ${t('plan.taskCompletion')}: ${doneTasks}/${totalTasks} (${totalTasks > 0 ? Math.round(doneTasks/totalTasks*100) : 0}%)
+    </div>
+  `;
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
 // ============== Mission 1: Record ==============
 function addEntry(activityName) {
   const input = document.getElementById('activity-input');
@@ -5002,6 +5184,7 @@ function renderAnalysis() {
   renderDesiredList(dd, stats);
   renderFinalSummary(dd, stats);
   renderEncouragement(stats);
+  renderPlanVsActual();
   renderDailyMemo();
 }
 
