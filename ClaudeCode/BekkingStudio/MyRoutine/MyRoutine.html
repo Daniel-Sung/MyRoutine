@@ -20,6 +20,7 @@
   gtag('config', 'G-HJVMWV011Z');
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -2332,6 +2333,9 @@ body {
     <button class="btn btn-share btn-block" onclick="shareStats()" style="margin-top:8px" id="stats-share-btn">
       📤 <span data-i18n="share.stats">통계 공유하기</span>
     </button>
+    <button class="btn btn-block" onclick="exportExcel()" style="margin-top:8px;background:#217346;color:white" id="stats-export-excel-btn">
+      📊 <span data-i18n="stats.exportExcel">엑셀로 내보내기</span>
+    </button>
   </div>
 </div>
 
@@ -2516,7 +2520,7 @@ const TRANSLATIONS = {
     'stats.fixedFlexTrend': '고정/유동 시간 비율', 'stats.activityTrend': '활동별 시간 추이',
     'stats.totalTime': '총 시간', 'stats.avgDesired': '평균 달성률', 'stats.avgFlex': '평균 유동 비율',
     'stats.selectActivity': '활동을 선택하세요',
-    'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
+    'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.exportExcel': '엑셀로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
     'stats.planTitle': '계획 실행 통계', 'stats.planTaskAvg': '할 일 완료율', 'stats.planBig3Avg': 'Big 3 달성률',
     'stats.planBig3Total': 'Big 3 달성', 'stats.planTimeAccuracy': '시간 정확도', 'stats.planTaskLine': '할 일 완료',
     'goals.title': '일일 루틴', 'goals.dateTitle': '{date} 루틴 달성', 'goals.manage': '루틴 관리', 'goals.add': '새 루틴 추가',
@@ -2697,7 +2701,7 @@ const TRANSLATIONS = {
     'stats.fixedFlexTrend': '固定/自由時間の割合', 'stats.activityTrend': '活動別時間の推移',
     'stats.totalTime': '合計時間', 'stats.avgDesired': '平均達成率', 'stats.avgFlex': '平均自由比率',
     'stats.selectActivity': '活動を選択してください',
-    'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
+    'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.exportExcel': 'Excelにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
     'stats.planTitle': '計画実行統計', 'stats.planTaskAvg': 'タスク完了率', 'stats.planBig3Avg': 'Big 3 達成率',
     'stats.planBig3Total': 'Big 3 達成', 'stats.planTimeAccuracy': '時間精度', 'stats.planTaskLine': 'タスク完了',
     'goals.title': 'デイリールーティン', 'goals.dateTitle': '{date} ルーティン達成', 'goals.manage': 'ルーティン管理', 'goals.add': '新しいルーティンを追加',
@@ -2878,7 +2882,7 @@ const TRANSLATIONS = {
     'stats.fixedFlexTrend': 'Fixed/Flexible Ratio', 'stats.activityTrend': 'Activity Time Trend',
     'stats.totalTime': 'Total Time', 'stats.avgDesired': 'Avg Achievement', 'stats.avgFlex': 'Avg Flexible',
     'stats.selectActivity': 'Select an activity',
-    'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.pdfTitle': 'MyRoutine - Period Stats',
+    'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.exportExcel': 'Export as Excel', 'stats.pdfTitle': 'MyRoutine - Period Stats',
     'stats.planTitle': 'Plan Execution Stats', 'stats.planTaskAvg': 'Task Completion', 'stats.planBig3Avg': 'Big 3 Rate',
     'stats.planBig3Total': 'Big 3 Done', 'stats.planTimeAccuracy': 'Time Accuracy', 'stats.planTaskLine': 'Task Completion',
     'goals.title': 'Daily Routines', 'goals.dateTitle': '{date} Routines', 'goals.manage': 'Manage Routines', 'goals.add': 'Add New Routine',
@@ -6811,6 +6815,192 @@ async function shareDaily() {
   } catch (e) {
     showToast(t('share.failed'));
   }
+}
+
+// ============== Excel Export ==============
+function exportExcel() {
+  const dates = getStatsPeriodDates();
+  const periodLabel = formatStatsPeriodLabel();
+  if (!dates || dates.length === 0) { showToast(t('analysis.noData')); return; }
+
+  const wb = XLSX.utils.book_new();
+
+  // ---- Sheet 1: Weekly Timetable ----
+  const dayNames = getDayNames();
+  // Build header rows: time | day1 activity | day1 memo | day2 activity | day2 memo | ...
+  const headerRow1 = [''];
+  const headerRow2 = [t('stats.exportExcel') === 'Export as Excel' ? 'Time' : '시간'];
+  dates.forEach(dateStr => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const dayLabel = `${m}/${d} (${dayNames[dt.getDay()]})`;
+    headerRow1.push(dayLabel, '');
+    headerRow2.push(currentLang === 'ja' ? '活動' : currentLang === 'en' ? 'Activity' : '활동',
+                     currentLang === 'ja' ? 'メモ' : currentLang === 'en' ? 'Memo' : '메모');
+  });
+
+  const rows = [headerRow1, headerRow2];
+
+  // Build hour map for each date: hour -> { activity, category, memo, isDesired }
+  const dateHourMaps = dates.map(dateStr => {
+    const dd = data.dates[dateStr];
+    const hourMap = {};
+    if (dd && dd.entries && dd.entries.length > 0) {
+      dd.entries.forEach((entry, i) => {
+        const startMin = timeToMin(entry.time);
+        let endMin;
+        if (i < dd.entries.length - 1) {
+          endMin = timeToMin(dd.entries[i + 1].time);
+        } else {
+          endMin = dd.closedAt ? timeToMin(dd.closedAt) : startMin;
+        }
+        const startHour = Math.floor(startMin / 60);
+        const endHour = Math.min(23, Math.floor((endMin > startMin ? endMin - 1 : startMin) / 60));
+        for (let h = startHour; h <= endHour; h++) {
+          const catLabel = entry.category === 'fixed'
+            ? (currentLang === 'ja' ? '固定' : currentLang === 'en' ? 'Fixed' : '고정')
+            : entry.category === 'flexible'
+              ? (currentLang === 'ja' ? '自由' : currentLang === 'en' ? 'Flex' : '유동')
+              : '';
+          const desired = entry.isDesiredLife ? ' ★' : '';
+          hourMap[h] = {
+            activity: `${getIcon(entry.activity)} ${displayActivity(entry.activity)}${desired} [${catLabel}]`,
+            memo: entry.memo || ''
+          };
+        }
+      });
+    }
+    return { dateStr, dd, hourMap };
+  });
+
+  // 0~23 hour rows
+  for (let h = 0; h < 24; h++) {
+    const row = [String(h).padStart(2, '0') + ':00'];
+    dateHourMaps.forEach(({ hourMap }) => {
+      const cell = hourMap[h];
+      row.push(cell ? cell.activity : '', cell ? cell.memo : '');
+    });
+    rows.push(row);
+  }
+
+  // Summary rows
+  const emptyLabel = '';
+  const summaryLabels = [
+    currentLang === 'ja' ? 'ステータス' : currentLang === 'en' ? 'Status' : '상태',
+    currentLang === 'ja' ? '固定時間' : currentLang === 'en' ? 'Fixed' : '고정시간',
+    currentLang === 'ja' ? '自由時間' : currentLang === 'en' ? 'Flexible' : '유동시간',
+    currentLang === 'ja' ? '睡眠' : currentLang === 'en' ? 'Sleep' : '수면',
+    currentLang === 'ja' ? '理想の人生' : currentLang === 'en' ? 'Desired Life' : '원하는 삶',
+    currentLang === 'ja' ? '意気込み' : currentLang === 'en' ? 'Resolution' : '다짐',
+    currentLang === 'ja' ? 'メモ' : currentLang === 'en' ? 'Memo' : '메모'
+  ];
+
+  rows.push([]); // blank row
+  summaryLabels.forEach((label, idx) => {
+    const row = [label];
+    dateHourMaps.forEach(({ dd }) => {
+      if (!dd || !dd.entries || dd.entries.length === 0) { row.push('', ''); return; }
+      const stats = calcStats(dd);
+      switch (idx) {
+        case 0: row.push(dd.status === 'completed' ? '✓' : '...', ''); break;
+        case 1: row.push(formatMin(stats.fixedMin), ''); break;
+        case 2: row.push(formatMin(stats.flexMin), ''); break;
+        case 3: row.push(formatMin(stats.sleepMin), ''); break;
+        case 4: {
+          const pct = stats.flexMin > 0 ? Math.round(stats.desiredMin / stats.flexMin * 100) : 0;
+          row.push(`${formatMin(stats.desiredMin)} (${pct}%)`, '');
+          break;
+        }
+        case 5: row.push(dd.plan && dd.plan.note ? dd.plan.note : '', ''); break;
+        case 6: row.push(dd.memo || '', ''); break;
+      }
+    });
+    rows.push(row);
+  });
+
+  const ws1 = XLSX.utils.aoa_to_sheet(rows);
+  // Set column widths
+  const colWidths = [{ wch: 6 }];
+  dates.forEach(() => { colWidths.push({ wch: 28 }, { wch: 20 }); });
+  ws1['!cols'] = colWidths;
+  // Merge header row1 cells (each date spans 2 columns)
+  ws1['!merges'] = dates.map((_, i) => ({ s: { r: 0, c: 1 + i * 2 }, e: { r: 0, c: 2 + i * 2 } }));
+  XLSX.utils.book_append_sheet(wb, ws1, periodLabel.replace(/[\/\\?*[\]]/g, '_'));
+
+  // ---- Sheet 2: Plan (Big 3) ----
+  const planHeader = [
+    currentLang === 'ja' ? '日付' : currentLang === 'en' ? 'Date' : '날짜',
+    currentLang === 'ja' ? 'タスク' : currentLang === 'en' ? 'Task' : '할 일',
+    currentLang === 'ja' ? '完了' : currentLang === 'en' ? 'Done' : '완료',
+    'Big 3',
+    currentLang === 'ja' ? '開始' : currentLang === 'en' ? 'Start' : '시작',
+    currentLang === 'ja' ? '終了' : currentLang === 'en' ? 'End' : '종료'
+  ];
+  const planRows = [planHeader];
+  dates.forEach(dateStr => {
+    const dd = data.dates[dateStr];
+    if (!dd || !dd.plan || !dd.plan.dump || dd.plan.dump.length === 0) return;
+    dd.plan.dump.forEach(item => {
+      const big3Idx = dd.plan.big3 ? dd.plan.big3.indexOf(item.text) : -1;
+      const big3Label = big3Idx >= 0 ? `★${big3Idx + 1}` : '';
+      const block = dd.plan.blocks && dd.plan.blocks[item.text] ? dd.plan.blocks[item.text] : {};
+      planRows.push([
+        dateStr, item.text, item.done ? '✓' : '', big3Label,
+        block.start || '', block.end || ''
+      ]);
+    });
+  });
+  const ws2 = XLSX.utils.aoa_to_sheet(planRows);
+  ws2['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 5 }, { wch: 6 }, { wch: 8 }, { wch: 8 }];
+  const planSheetName = currentLang === 'ja' ? '計画' : currentLang === 'en' ? 'Plan' : '계획';
+  XLSX.utils.book_append_sheet(wb, ws2, planSheetName);
+
+  // ---- Sheet 3: Books ----
+  const bookHeader = [
+    currentLang === 'ja' ? '状態' : currentLang === 'en' ? 'Status' : '상태',
+    currentLang === 'ja' ? 'タイトル' : currentLang === 'en' ? 'Title' : '제목',
+    currentLang === 'ja' ? '著者' : currentLang === 'en' ? 'Author' : '저자',
+    currentLang === 'ja' ? '開始日' : currentLang === 'en' ? 'Start' : '시작일',
+    currentLang === 'ja' ? '読了日' : currentLang === 'en' ? 'End' : '완독일',
+    currentLang === 'ja' ? '日数' : currentLang === 'en' ? 'Days' : '소요일',
+    currentLang === 'ja' ? '評価' : currentLang === 'en' ? 'Rating' : '별점',
+    currentLang === 'ja' ? 'メモ' : currentLang === 'en' ? 'Memo' : '메모'
+  ];
+  const bookRows = [bookHeader];
+  if (data.books) {
+    const reading = data.books.filter(b => !b.endDate).sort((a, b) => b.startDate.localeCompare(a.startDate));
+    const completed = data.books.filter(b => b.endDate).sort((a, b) => b.endDate.localeCompare(a.endDate));
+    const statusReading = currentLang === 'ja' ? '読書中' : currentLang === 'en' ? 'Reading' : '읽는중';
+    const statusDone = currentLang === 'ja' ? '読了' : currentLang === 'en' ? 'Done' : '완독';
+    reading.forEach(b => {
+      const days = Math.max(1, Math.ceil((new Date() - new Date(b.startDate)) / 86400000) + 1);
+      bookRows.push([statusReading, b.title, b.author || '', b.startDate, '', days, '', '']);
+    });
+    completed.forEach(b => {
+      const days = Math.max(1, Math.ceil((new Date(b.endDate) - new Date(b.startDate)) / 86400000) + 1);
+      const stars = b.rating ? '★'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
+      bookRows.push([statusDone, b.title, b.author || '', b.startDate, b.endDate, days, stars, b.memo || '']);
+    });
+  }
+  const ws3 = XLSX.utils.aoa_to_sheet(bookRows);
+  ws3['!cols'] = [{ wch: 8 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 6 }, { wch: 12 }, { wch: 30 }];
+  const bookSheetName = currentLang === 'ja' ? '読書記録' : currentLang === 'en' ? 'Books' : '독서 기록';
+  XLSX.utils.book_append_sheet(wb, ws3, bookSheetName);
+
+  // ---- Download or Share ----
+  const fileName = `MyRoutine_${periodLabel.replace(/[\s\/~]/g, '_')}.xlsx`;
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], fileName)] })) {
+    navigator.share({ files: [new File([blob], fileName, { type: blob.type })], title: 'MyRoutine' }).catch(() => {});
+  } else {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+  }
+  if (typeof gtag === 'function') gtag('event', 'export_excel');
 }
 
 async function shareStats() {
