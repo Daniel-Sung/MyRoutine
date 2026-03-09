@@ -6818,10 +6818,9 @@ async function shareDaily() {
 }
 
 // ============== Excel Export ==============
-function exportExcel() {
+async function exportExcel() {
   if (typeof XLSX === 'undefined') {
     showToast('Excel 라이브러리 로딩 중... 잠시 후 다시 시도해주세요.');
-    // Try to load SheetJS dynamically
     const s = document.createElement('script');
     s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
     s.onload = () => showToast('로딩 완료! 다시 버튼을 눌러주세요.');
@@ -7008,18 +7007,23 @@ function exportExcel() {
   const downloadFile = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = fileName; a.click();
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     showToast(currentLang === 'ja' ? 'ダウンロード完了' : currentLang === 'en' ? 'Download complete' : '다운로드 완료');
   };
+  let shared = false;
   if (navigator.share && navigator.canShare) {
     try {
       const file = new File([blob], fileName, { type: blob.type });
       if (navigator.canShare({ files: [file] })) {
-        navigator.share({ files: [file], title: 'MyRoutine' }).catch(() => downloadFile());
-      } else { downloadFile(); }
-    } catch(_) { downloadFile(); }
-  } else { downloadFile(); }
+        await navigator.share({ files: [file], title: 'MyRoutine' });
+        shared = true;
+        showToast(currentLang === 'ja' ? '共有完了' : currentLang === 'en' ? 'Shared!' : '공유 완료');
+      }
+    } catch(_) { /* share cancelled or failed, fall through to download */ }
+  }
+  if (!shared) { downloadFile(); }
   if (typeof gtag === 'function') gtag('event', 'export_excel');
   } catch (e) {
     console.error('Excel export error:', e);
