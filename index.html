@@ -4995,10 +4995,11 @@ function getPlan() {
       }
     }
     if (carried) {
-      // Copy plan but reset done status and blocks
+      // Carry over only uncompleted items (done items = finished, deleted items = already removed)
+      const undone = carried.dump.filter(item => !item.done);
       dd.plan = {
-        dump: carried.dump.map(item => ({ text: item.text, done: false })),
-        big3: [...carried.big3],
+        dump: undone.map(item => ({ text: item.text, done: false })),
+        big3: [],
         blocks: {},
         note: ''
       };
