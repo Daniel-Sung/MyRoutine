@@ -4138,7 +4138,7 @@ function render168Chart(days, dates) {
       maintainAspectRatio: true,
       plugins: {
         legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true, pointStyleWidth: 8, padding: 8 } },
-        tooltip: { callbacks: { label: ctx => ctx.label + ': ' + formatMin(ctx.raw) + ' (' + Math.round(ctx.raw / totalWeekMin * 100) + '%)' } }
+        tooltip: { position: 'nearest', callbacks: { label: ctx => ctx.label + ': ' + formatMin(ctx.raw) + ' (' + Math.round(ctx.raw / totalWeekMin * 100) + '%)' } }
       }
     }
   });
