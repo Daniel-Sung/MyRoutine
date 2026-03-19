@@ -2047,6 +2047,11 @@ body {
       </div>
     </div>
 
+    <!-- Life Counter -->
+    <div id="life-counter" style="display:none;text-align:center;padding:8px 12px;margin-bottom:8px;font-size:12px;color:var(--text-sub);cursor:pointer" onclick="showLifeSetup()">
+      <span style="opacity:0.7">⏳</span> <span id="life-counter-text"></span>
+    </div>
+
     <!-- Record Past Date Banner -->
     <div id="record-past-banner"></div>
 
@@ -2579,6 +2584,12 @@ const TRANSLATIONS = {
     'auth.downloadComplete': '클라우드 데이터 적용 완료',
     'auth.syncNow': '지금 동기화', 'auth.never': '없음',
     'support.coffee': '개발자 응원하기',
+    'life.setup': '남은 시간 설정', 'life.birthDate': '생년월일', 'life.gender': '성별',
+    'life.male': '남성', 'life.female': '여성',
+    'life.save': '저장', 'life.reset': '초기화',
+    'life.remaining': '남은 시간',
+    'life.tapToSet': '⏳ 터치하여 남은 시간 설정',
+    'life.years': '년', 'life.days': '일', 'life.hours': '시간', 'life.minutes': '분', 'life.seconds': '초',
     'share.daily': '공유하기', 'share.stats': '통계 공유하기',
     'share.shareText': 'MyRoutine으로 분석한 나의 하루',
     'share.generating': '이미지 생성 중...', 'share.shared': '공유 완료!',
@@ -2764,6 +2775,12 @@ const TRANSLATIONS = {
     'auth.downloadComplete': 'ダウンロード完了',
     'auth.syncNow': '今すぐ同期', 'auth.never': 'なし',
     'support.coffee': '開発者を応援する',
+    'life.setup': '残り時間設定', 'life.birthDate': '生年月日', 'life.gender': '性別',
+    'life.male': '男性', 'life.female': '女性',
+    'life.save': '保存', 'life.reset': 'リセット',
+    'life.remaining': '残り時間',
+    'life.tapToSet': '⏳ タップして残り時間を設定',
+    'life.years': '年', 'life.days': '日', 'life.hours': '時間', 'life.minutes': '分', 'life.seconds': '秒',
     'share.daily': 'シェアする', 'share.stats': '統計をシェアする',
     'share.shareText': 'MyRoutineで分析した一日',
     'share.generating': '画像を生成中...', 'share.shared': 'シェア完了！',
@@ -2949,6 +2966,12 @@ const TRANSLATIONS = {
     'auth.downloadComplete': 'Download complete',
     'auth.syncNow': 'Sync now', 'auth.never': 'Never',
     'support.coffee': 'Buy us a coffee',
+    'life.setup': 'Life Timer Setup', 'life.birthDate': 'Date of birth', 'life.gender': 'Gender',
+    'life.male': 'Male', 'life.female': 'Female',
+    'life.save': 'Save', 'life.reset': 'Reset',
+    'life.remaining': 'Time remaining',
+    'life.tapToSet': '⏳ Tap to set your life timer',
+    'life.years': 'y', 'life.days': 'd', 'life.hours': 'h', 'life.minutes': 'm', 'life.seconds': 's',
     'share.daily': 'Share', 'share.stats': 'Share Stats',
     'share.shareText': 'My day analyzed with MyRoutine',
     'share.generating': 'Generating image...', 'share.shared': 'Shared!',
@@ -3467,6 +3490,7 @@ function init() {
     setTimeout(() => startTour(), 500);
   }
   scheduleReminders();
+  startLifeCounter();
 }
 
 // --- Daily close reminder notifications ---
@@ -7241,12 +7265,124 @@ function showAboutModal() {
       📧 ${t('about.feedback')}<br>
       <a href="mailto:info.bekking@gmail.com" style="color:var(--mint);text-decoration:none;font-weight:600;">info.bekking@gmail.com</a>
     </p>
-    <a href="https://buymeacoffee.com/bekkingstudio" target="_blank" rel="noopener" class="btn btn-block" style="background:#FFDD00;color:#000;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">☕ ${t('support.coffee')}</a>
+    <button class="btn btn-block" onclick="closeModal();showLifeSetup();" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;font-weight:700">⏳ ${t('life.setup')}</button>
+    <a href="https://buymeacoffee.com/bekkingstudio" target="_blank" rel="noopener" class="btn btn-block" style="margin-top:8px;background:#FFDD00;color:#000;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">☕ ${t('support.coffee')}</a>
     <button class="btn btn-outline btn-block" onclick="closeModal();localStorage.removeItem('tourCompleted');startTour();" style="margin-top:8px">📖 ${t('tour.replay')}</button>
     <div class="modal-actions" style="margin-top:8px">
       <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
     </div>
   `);
+}
+
+// ============== Life Counter ==============
+const LIFE_EXPECTANCY = {
+  ko: { male: 80.6, female: 86.6 },
+  ja: { male: 81.5, female: 87.6 },
+  en: { male: 76.3, female: 81.4 },
+};
+
+let lifeCounterInterval = null;
+
+function getLifeExpectancy() {
+  const lang = currentLang || 'en';
+  return LIFE_EXPECTANCY[lang] || LIFE_EXPECTANCY.en;
+}
+
+function showLifeSetup() {
+  const bd = data.birthDate || '';
+  const gen = data.gender || 'male';
+  const le = getLifeExpectancy();
+  showModal(`
+    <h3>⏳ ${t('life.setup')}</h3>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:14px;line-height:1.6;text-align:center">
+      ${currentLang === 'ja' ? '平均寿命: 男性 ' + le.male + '歳 / 女性 ' + le.female + '歳' :
+        currentLang === 'en' ? 'Life expectancy: M ' + le.male + 'y / F ' + le.female + 'y' :
+        '평균 수명: 남성 ' + le.male + '세 / 여성 ' + le.female + '세'}
+    </p>
+    <div style="margin-bottom:14px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('life.birthDate')}</label>
+      <input type="date" id="life-birth-input" class="input" value="${bd}" style="width:100%">
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('life.gender')}</label>
+      <div style="display:flex;gap:8px">
+        <button id="life-gender-male" class="btn ${gen === 'male' ? '' : 'btn-outline'}" onclick="document.getElementById('life-gender-male').className='btn';document.getElementById('life-gender-female').className='btn btn-outline'" style="flex:1">${t('life.male')}</button>
+        <button id="life-gender-female" class="btn ${gen === 'female' ? '' : 'btn-outline'}" onclick="document.getElementById('life-gender-female').className='btn';document.getElementById('life-gender-male').className='btn btn-outline'" style="flex:1">${t('life.female')}</button>
+      </div>
+    </div>
+    <button class="btn btn-block" onclick="saveLifeSetup()" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;font-weight:700">${t('life.save')}</button>
+    <button class="btn btn-outline btn-block" onclick="resetLifeSetup()" style="margin-top:8px;color:var(--coral)">${t('life.reset')}</button>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
+    </div>
+  `);
+}
+
+function saveLifeSetup() {
+  const bd = document.getElementById('life-birth-input').value;
+  if (!bd) return;
+  const isFemale = document.getElementById('life-gender-female').className === 'btn';
+  data.birthDate = bd;
+  data.gender = isFemale ? 'female' : 'male';
+  saveData();
+  closeModal();
+  startLifeCounter();
+}
+
+function resetLifeSetup() {
+  delete data.birthDate;
+  delete data.gender;
+  saveData();
+  closeModal();
+  stopLifeCounter();
+  const el = document.getElementById('life-counter');
+  if (el) el.style.display = 'none';
+}
+
+function startLifeCounter() {
+  stopLifeCounter();
+  if (!data.birthDate) {
+    const el = document.getElementById('life-counter');
+    if (el) { el.style.display = 'block'; el.querySelector('#life-counter-text').textContent = t('life.tapToSet'); }
+    return;
+  }
+  updateLifeCounter();
+  lifeCounterInterval = setInterval(updateLifeCounter, 1000);
+}
+
+function stopLifeCounter() {
+  if (lifeCounterInterval) { clearInterval(lifeCounterInterval); lifeCounterInterval = null; }
+}
+
+function updateLifeCounter() {
+  const el = document.getElementById('life-counter');
+  if (!el) return;
+  el.style.display = 'block';
+
+  const birth = new Date(data.birthDate);
+  const le = getLifeExpectancy();
+  const expectancy = data.gender === 'female' ? le.female : le.male;
+  const deathDate = new Date(birth);
+  deathDate.setFullYear(deathDate.getFullYear() + Math.floor(expectancy));
+  deathDate.setMonth(deathDate.getMonth() + Math.round((expectancy % 1) * 12));
+
+  const now = new Date();
+  const diff = deathDate.getTime() - now.getTime();
+  if (diff <= 0) {
+    el.querySelector('#life-counter-text').textContent = t('life.remaining') + ': --';
+    return;
+  }
+
+  const totalSec = Math.floor(diff / 1000);
+  const years = Math.floor(totalSec / (365.25 * 24 * 3600));
+  const remAfterYears = totalSec - years * Math.floor(365.25 * 24 * 3600);
+  const days = Math.floor(remAfterYears / (24 * 3600));
+  const hours = Math.floor((remAfterYears % (24 * 3600)) / 3600);
+  const minutes = Math.floor((remAfterYears % 3600) / 60);
+  const seconds = totalSec % 60;
+
+  const text = `${t('life.remaining')}: ${years}${t('life.years')} ${days}${t('life.days')} ${hours}${t('life.hours')} ${minutes}${t('life.minutes')} ${String(seconds).padStart(2,'0')}${t('life.seconds')}`;
+  el.querySelector('#life-counter-text').textContent = text;
 }
 
 // ============== Helpers ==============
