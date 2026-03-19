@@ -2048,8 +2048,9 @@ body {
     </div>
 
     <!-- Life Counter -->
-    <div id="life-counter" style="display:none;text-align:center;padding:8px 12px;margin-bottom:8px;font-size:12px;color:var(--text-sub);cursor:pointer" onclick="showLifeSetup()">
-      <span style="opacity:0.7">⏳</span> <span id="life-counter-text"></span>
+    <div id="life-counter" style="display:none;text-align:center;padding:10px 14px;margin-bottom:8px;cursor:pointer;border-radius:var(--radius-sm)" onclick="showLifeSetup()">
+      <div style="font-size:11px;color:var(--text-sub);margin-bottom:4px;letter-spacing:0.5px" id="life-counter-label">⏳</div>
+      <div id="life-counter-text" style="font-size:16px;font-weight:700;color:var(--coral);font-variant-numeric:tabular-nums;letter-spacing:0.3px"></div>
     </div>
 
     <!-- Record Past Date Banner -->
@@ -7386,7 +7387,13 @@ function startLifeCounter() {
   stopLifeCounter();
   if (!data.birthDate) {
     const el = document.getElementById('life-counter');
-    if (el) { el.style.display = 'block'; el.querySelector('#life-counter-text').textContent = t('life.tapToSet'); }
+    if (el) {
+      el.style.display = 'block';
+      el.querySelector('#life-counter-label').textContent = '';
+      el.querySelector('#life-counter-text').style.fontSize = '13px';
+      el.querySelector('#life-counter-text').style.color = 'var(--text-sub)';
+      el.querySelector('#life-counter-text').textContent = t('life.tapToSet');
+    }
     return;
   }
   updateLifeCounter();
@@ -7402,6 +7409,11 @@ function updateLifeCounter() {
   if (!el) return;
   el.style.display = 'block';
 
+  const labelEl = el.querySelector('#life-counter-label');
+  const textEl = el.querySelector('#life-counter-text');
+  textEl.style.fontSize = '16px';
+  textEl.style.color = 'var(--coral)';
+
   const birth = new Date(data.birthDate);
   const le = getLifeExpectancy();
   const expectancy = data.gender === 'female' ? le.female : le.male;
@@ -7412,7 +7424,8 @@ function updateLifeCounter() {
   const now = new Date();
   const diff = deathDate.getTime() - now.getTime();
   if (diff <= 0) {
-    el.querySelector('#life-counter-text').textContent = t('life.remaining') + ': --';
+    labelEl.textContent = '⏳ ' + t('life.remaining');
+    textEl.textContent = '--';
     return;
   }
 
@@ -7424,8 +7437,8 @@ function updateLifeCounter() {
   const minutes = Math.floor((remAfterYears % 3600) / 60);
   const seconds = totalSec % 60;
 
-  const text = `${t('life.remaining')}: ${years}${t('life.years')} ${days}${t('life.days')} ${hours}${t('life.hours')} ${minutes}${t('life.minutes')} ${String(seconds).padStart(2,'0')}${t('life.seconds')}`;
-  el.querySelector('#life-counter-text').textContent = text;
+  labelEl.textContent = '⏳ ' + t('life.remaining');
+  textEl.textContent = `${years}${t('life.years')} ${days}${t('life.days')} ${hours}${t('life.hours')} ${minutes}${t('life.minutes')} ${String(seconds).padStart(2,'0')}${t('life.seconds')}`;
 }
 
 // ============== Helpers ==============
