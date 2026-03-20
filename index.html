@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>よくあるご質問（FAQ） | eformsign</title>
+  <meta name="description" content="eformsign（イーフォームサイン）の有料オプションに関するよくあるご質問をまとめたページです。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', 'Noto Sans', sans-serif;
+      font-size: 15px;
+      color: #333;
+      background: #fff;
+      line-height: 1.8;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: #FF874B; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Navbar ── */
+    .navbar {
+      background: #fff;
+      border-bottom: 1px solid #e5e5e5;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .navbar-brand img {
+      height: 28px;
+      width: auto;
+    }
+
+    .navbar-brand span {
+      color: #9d9d9d;
+      font-size: 14px;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: #f5f5f5;
+      text-align: center;
+      padding: 56px 24px 48px;
+    }
+
+    .hero h1 {
+      font-size: 38px;
+      font-weight: 500;
+      color: #4D515C;
+      margin-bottom: 12px;
+    }
+
+    .hero .breadcrumb {
+      font-size: 13px;
+      color: #9d9d9d;
+    }
+
+    .hero .breadcrumb a { color: #9d9d9d; }
+    .hero .breadcrumb a:hover { color: #FF874B; }
+
+    /* ── Main Layout ── */
+    .main-wrapper {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      display: flex;
+      gap: 40px;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar { width: 240px; flex-shrink: 0; }
+
+    .sidebar-box {
+      background: #f5f5f5;
+      border-radius: 4px;
+      padding: 24px 20px;
+      position: sticky;
+      top: 72px;
+    }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #363D40;
+      margin-bottom: 16px;
+    }
+
+    .sidebar-list { list-style: none; }
+    .sidebar-list li { margin-bottom: 8px; }
+
+    .sidebar-list li a {
+      font-size: 14px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+
+    .sidebar-list li a::before {
+      content: '';
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      background: #ccc;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-list li a:hover { color: #FF874B; text-decoration: none; }
+    .sidebar-list li a.active { color: #333; font-weight: 700; }
+
+    /* ── Content ── */
+    .content { flex: 1; min-width: 0; }
+
+    /* ── Toggle All ── */
+    .toggle-all {
+      display: inline-block;
+      background: #FF874B;
+      color: #fff;
+      border: 1px solid #FF874B;
+      border-radius: 4px;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-family: inherit;
+      cursor: pointer;
+      margin-bottom: 28px;
+      transition: opacity 0.2s;
+    }
+
+    .toggle-all:hover { opacity: 0.85; }
+
+    /* ── Category ── */
+    .category { margin-bottom: 36px; }
+
+    .category-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #363D40;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    /* ── FAQ Accordion ── */
+    .faq-item { border-bottom: 1px solid #eee; }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 18px 40px 18px 0;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 700;
+      color: #363D40;
+      cursor: pointer;
+      font-family: inherit;
+      line-height: 1.7;
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: color 0.2s;
+    }
+
+    .faq-question:hover { color: #FF874B; }
+
+    .faq-question .q-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #FF874B;
+      color: #fff;
+      border-radius: 50%;
+      font-size: 14px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .faq-question::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 22px;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid #999;
+      border-bottom: 2px solid #999;
+      transform: rotate(45deg);
+      transition: transform 0.3s;
+    }
+
+    .faq-item.open .faq-question::after {
+      transform: rotate(-135deg);
+      top: 26px;
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+
+    .faq-item.open .faq-answer { max-height: 5000px; }
+
+    .faq-answer-inner {
+      padding: 0 0 24px 40px;
+      color: #555;
+      font-size: 15px;
+      line-height: 1.9;
+    }
+
+    .faq-answer-inner .a-label {
+      color: #FF874B;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .faq-answer-inner table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+
+    .faq-answer-inner table th {
+      background: #363D40;
+      color: #fff;
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .faq-answer-inner table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+      vertical-align: top;
+    }
+
+    .faq-answer-inner table tr:nth-child(even) td {
+      background: #fafafa;
+    }
+
+    .faq-answer-inner .note {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: #fff8f3;
+      border-left: 3px solid #FF874B;
+      font-size: 13px;
+      color: #666;
+      line-height: 1.7;
+    }
+
+    .faq-answer-inner .steps {
+      margin: 12px 0;
+      padding-left: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .faq-answer-inner .steps li {
+      position: relative;
+      padding-left: 36px;
+      margin-bottom: 10px;
+    }
+
+    .faq-answer-inner .steps li::before {
+      counter-increment: step;
+      content: 'Step ' counter(step);
+      position: absolute;
+      left: 0;
+      font-size: 12px;
+      font-weight: 700;
+      color: #FF874B;
+    }
+
+    .faq-answer-inner ul {
+      margin: 8px 0 4px 8px;
+      list-style: none;
+    }
+
+    .faq-answer-inner ul li {
+      position: relative;
+      padding-left: 16px;
+      margin-bottom: 4px;
+    }
+
+    .faq-answer-inner ul li::before {
+      content: '・';
+      position: absolute;
+      left: 0;
+      color: #FF874B;
+    }
+
+    .faq-answer-inner img {
+      display: block;
+      max-width: 100%;
+      margin: 16px 0 8px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+
+    .faq-answer-inner .img-caption {
+      font-size: 13px;
+      color: #999;
+      margin-bottom: 12px;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      background: #363D40;
+      color: #aaa;
+      padding: 40px 24px;
+      font-size: 13px;
+      line-height: 2;
+    }
+
+    .footer-inner {
+      max-width: 960px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 40px;
+    }
+
+    .footer-brand img {
+      height: 24px;
+      margin-bottom: 12px;
+      filter: brightness(0) invert(1);
+    }
+
+    .footer-info { font-size: 12px; color: #999; line-height: 1.8; }
+    .footer-info a { color: #ccc; }
+    .footer-info a:hover { color: #FF874B; }
+
+    .footer-links { text-align: right; }
+    .footer-links a {
+      color: #ccc;
+      font-size: 13px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .footer-links a:hover { color: #FF874B; }
+
+    .footer-bottom {
+      max-width: 960px;
+      margin: 24px auto 0;
+      padding-top: 16px;
+      border-top: 1px solid #4a5054;
+      text-align: center;
+      font-size: 12px;
+      color: #777;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .main-wrapper {
+        flex-direction: column;
+        padding: 24px 16px 60px;
+        gap: 24px;
+      }
+      .sidebar { width: 100%; order: 2; }
+      .sidebar-box { position: static; }
+      .content { order: 1; }
+      .hero { padding: 40px 16px 32px; }
+      .hero h1 { font-size: 26px; }
+      .faq-question { font-size: 14px; padding: 14px 36px 14px 0; }
+      .faq-answer-inner { font-size: 14px; padding-left: 40px; }
+      .faq-question .q-icon { width: 24px; height: 24px; font-size: 12px; }
+      .footer-inner { flex-direction: column; gap: 20px; }
+      .footer-links { text-align: left; }
+      .faq-answer-inner table { font-size: 12px; }
+      .faq-answer-inner table th,
+      .faq-answer-inner table td { padding: 8px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a class="navbar-brand" href="https://www.eformsign.com/jp/index.html" target="_blank" rel="noopener">
+      <img src="images/eformsign_logo.png" alt="eformsign">
+      <span>オンラインサポート</span>
+    </a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>よくあるご質問（FAQ）</h1>
+    <div class="breadcrumb">
+      <a href="https://www.eformsign.com/jp/index.html" target="_blank" rel="noopener">eformsign</a>
+      &nbsp;/&nbsp;
+      <a href="https://www.eformsign.com/jp/support/" target="_blank" rel="noopener">オンラインサポート</a>
+      &nbsp;/&nbsp; FAQ
+    </div>
+  </section>
+
+  <!-- Main -->
+  <div class="main-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-box">
+        <h3 class="sidebar-title">FAQ カテゴリー</h3>
+        <ul class="sidebar-list">
+          <li><a href="#cat-overview" class="active">有料オプション概要</a></li>
+          <li><a href="#cat-payment">お支払い方法</a></li>
+          <li><a href="#cat-esign">電子署名の設定</a></li>
+          <li><a href="#cat-timestamp">認定タイムスタンプ</a></li>
+          <li><a href="#cat-sms">SMS通知・認証</a></li>
+          <li><a href="#cat-restrict">利用制限の設定</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content">
+      <button class="toggle-all" id="toggleAll">展開する / 折りたたむ</button>
+
+      <!-- 有料オプション概要 -->
+      <section class="category" id="cat-overview">
+        <h2 class="category-title">有料オプション概要</h2>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            eformsignの有料オプションにはどのようなものがありますか？
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              eformsignでは、以下の機能を利用した場合に追加料金が発生します。
+              <table>
+                <tr>
+                  <th>オプション内容</th>
+                  <th>料金</th>
+                  <th>課金されるタイミング</th>
+                </tr>
+                <tr>
+                  <td>電子署名 ※</td>
+                  <td>100円 / 文書1件</td>
+                  <td>電子署名を有効にした場合</td>
+                </tr>
+                <tr>
+                  <td>完了文書への認定タイムスタンプ ※</td>
+                  <td>50円 / 文書1件</td>
+                  <td>完了文書にタイムスタンプを付与した場合</td>
+                </tr>
+                <tr>
+                  <td>SMS通知 / 認証</td>
+                  <td>30円 / 1通</td>
+                  <td>文書の送信先が携帯番号（SMS）の場合、または文書の閲覧・送信前にSMSによる本人認証を行う場合</td>
+                </tr>
+                <tr>
+                  <td>対面窓口署名</td>
+                  <td>50円 / 1件</td>
+                  <td>行政機関などで対面署名機能をご利用いただく場合</td>
+                </tr>
+              </table>
+              <div class="note">
+                ※ 電子署名および完了文書への認定タイムスタンプは、未使用でも電子契約としての法的効力に影響はありません。ただし、第三者機関への提出や重要な契約など、より高い証明力が求められる場面ではご利用をお勧めします。
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- お支払い方法 -->
+      <section class="category" id="cat-payment">
+        <h2 class="category-title">お支払い方法</h2>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            有料オプションの支払い方法を教えてください。
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              有料オプションのご利用には、事前に「クレジット」をチャージしていただく必要があります。クレジットは文書の利用方式（チャージ型／サブスクリプション型）とは別に管理されており、有料オプションの利用時にのみ消費されます。
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 電子署名の設定 -->
+      <section class="category" id="cat-esign">
+        <h2 class="category-title">電子署名の設定</h2>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            電子署名はどのように設定しますか？
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              以下の手順で設定できます。
+              <ol class="steps">
+                <li>eformsignにログイン後、画面左上のメニュー（☰）から「テンプレート管理」または「マイファイルトレイ」に移動します。</li>
+                <li>対象のテンプレートまたはファイル名をクリックします。</li>
+                <li>テンプレートの場合は「設定する」タブ →「ワークフローの設定」をクリック。マイファイルトレイの場合は「受信先を指定する」タブをクリックします。</li>
+                <li>各参加者（送信者やご自身のアカウントID、参加者1など）をクリックし、右側の「属性」を確認します。</li>
+                <li>「電子認証による電子署名の設定」内の「事業者署名型（立会人型）電子署名を適用する」のチェック項目を確認します。</li>
+              </ol>
+              <img src="images/fig1_page2.jpeg" alt="マイファイルの電子署名機能のチェック箇所">
+              <p class="img-caption">図1: マイファイルの電子署名機能のチェック箇所</p>
+              <img src="images/fig2_page3.jpeg" alt="テンプレートの電子署名機能のチェック箇所">
+              <p class="img-caption">図2: テンプレートの電子署名機能のチェック箇所</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 認定タイムスタンプ -->
+      <section class="category" id="cat-timestamp">
+        <h2 class="category-title">認定タイムスタンプ</h2>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            完了文書に認定タイムスタンプを付与する方法を教えてください。
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              以下の手順で設定できます。
+              <ol class="steps">
+                <li>eformsignにログイン後、画面左上のメニュー（☰）から「マイファイルトレイ」または「テンプレート管理」に移動します。</li>
+                <li>対象のファイルまたはテンプレートを選択します。（マイファイルトレイの場合は「開く」をクリック）</li>
+                <li>マイファイルトレイの場合は「オプション」タブをクリック。テンプレートの場合は「設定する」タブ →「ワークフローの設定」をクリックします。</li>
+                <li>マイファイルトレイの場合は画面下部までスクロール。テンプレートの場合は参加者一覧の一番下にある「完了」をクリックし、右側の「属性」を確認します。</li>
+                <li>「電子署名と認定タイムスタンプを適用」のチェック項目を確認します。（不要な場合はチェックを外してください）</li>
+              </ol>
+              <img src="images/fig3_page4.jpeg" alt="マイファイルでの完了文書への認定スタンプ機能のチェック箇所">
+              <p class="img-caption">図3: マイファイルでの完了文書への認定スタンプ機能のチェック箇所</p>
+              <img src="images/fig4_page4.jpeg" alt="テンプレートでの完了文書への認定スタンプ機能のチェック箇所">
+              <p class="img-caption">図4: テンプレートでの完了文書への認定スタンプ機能のチェック箇所</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SMS通知・認証 -->
+      <section class="category" id="cat-sms">
+        <h2 class="category-title">SMS通知・認証</h2>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            SMS通知が有料になるのはどのような場合ですか？
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              以下の場合にSMS通知の料金（30円/1通）が発生します。
+              <ul>
+                <li>文書送信時に、SMS送信のチェック項目がオンになっている場合</li>
+                <li>一括送信時に、携帯番号欄にデータが入力されている場合</li>
+              </ul>
+              <img src="images/fig5_page5.jpeg" alt="文書の送信時にSMSチェック項目">
+              <p class="img-caption">図5: 文書の送信時にSMSチェック項目</p>
+              <img src="images/fig7_page6.jpeg" alt="一括文書の送信時にSMSチェック項目">
+              <p class="img-caption">図6: 一括文書の送信時にSMSチェック項目</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            SMS認証（本人確認）はどのように設定しますか？
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              以下の手順で設定できます。
+              <ol class="steps">
+                <li>eformsignにログイン後、画面左上のメニュー（☰）から「テンプレート管理」または「マイファイルトレイ」に移動し、対象のテンプレートまたはファイル名をクリックします。テンプレートの場合は「設定する」タブ →「ワークフローの設定」、マイファイルトレイの場合は「受信先を指定する」タブをクリックします。</li>
+                <li>文書を受信する各参加者をクリックした状態で、右側の「属性」画面下部にある「文書の閲覧前に本人確認する」を設定します。</li>
+              </ol>
+              <img src="images/fig10_page8.jpeg" alt="マイファイル 受信先を指定する 本人確認設定箇所">
+              <p class="img-caption">図7: マイファイル > 受信先を指定する > 本人確認設定箇所</p>
+              <img src="images/fig11_page9.jpeg" alt="テンプレート 設定する 本人確認設定箇所">
+              <p class="img-caption">図8: テンプレート > 設定する > 本人確認設定箇所</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 利用制限の設定 -->
+      <section class="category" id="cat-restrict">
+        <h2 class="category-title">利用制限の設定</h2>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="q-icon">Q</span>
+            有料オプションの利用を制限することはできますか？
+          </button>
+          <div class="faq-answer" role="region">
+            <div class="faq-answer-inner">
+              <span class="a-label">A.</span>
+              はい、可能です。有料オプションの利用制限は、代表管理者または会社管理者のみが設定可能です。設定内容は会社全体およびすべてのメンバーに適用されます。
+              <ol class="steps">
+                <li>eformsignにログイン後、画面左上のメニュー（☰）から「会社管理」＞「付加機能設定」に移動します。</li>
+                <li>左側メニューの「有料オプション」から、各機能の利用制限を設定します。</li>
+              </ol>
+              <img src="images/fig12_page10.jpeg" alt="会社管理 付加機能設定 有料オプションの各項目へ制限を設定">
+              <p class="img-caption">図9: 会社管理 > 付加機能設定 > 有料オプションの各項目へ制限を設定</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <img src="images/eformsign_logo.png" alt="eformsign">
+        <div class="footer-info">
+          <strong style="color:#ccc;">FORCS Japan</strong><br>
+          〒107-0052 東京都港区赤坂五丁目２番３３号<br>
+          TEL: +81-03-5251-8205<br>
+          E-MAIL: <a href="mailto:eformsign@forcs.com">eformsign@forcs.com</a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <a href="https://www.eformsign.com/jp/index.html" target="_blank" rel="noopener">eformsign トップ</a>
+        <a href="https://www.eformsign.com/jp/support/" target="_blank" rel="noopener">オンラインサポート</a>
+        <a href="https://www.eformsign.com/jp/e-document-pricing.html" target="_blank" rel="noopener">料金プラン</a>
+        <a href="https://www.eformsign.com/jp/how-to-use/ready.html" target="_blank" rel="noopener">スタートガイド</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      Copyright &copy; FORCS CO., LTD. All rights reserved.
+    </div>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    // Accordion
+    document.querySelectorAll('.faq-question').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var item = this.closest('.faq-item');
+        var isOpen = item.classList.contains('open');
+        item.classList.toggle('open');
+        this.setAttribute('aria-expanded', !isOpen);
+      });
+    });
+
+    // Toggle All
+    document.getElementById('toggleAll').addEventListener('click', function() {
+      var items = document.querySelectorAll('.faq-item');
+      var anyOpen = Array.from(items).some(function(el) { return el.classList.contains('open'); });
+      items.forEach(function(el) {
+        if (anyOpen) {
+          el.classList.remove('open');
+          el.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+        } else {
+          el.classList.add('open');
+          el.querySelector('.faq-question').setAttribute('aria-expanded', 'true');
+        }
+      });
+    });
+
+    // Sidebar active on scroll
+    var categories = document.querySelectorAll('.category');
+    var sidebarLinks = document.querySelectorAll('.sidebar-list a');
+
+    window.addEventListener('scroll', function() {
+      var scrollPos = window.scrollY + 120;
+      categories.forEach(function(cat) {
+        var top = cat.offsetTop;
+        var bottom = top + cat.offsetHeight;
+        var id = cat.getAttribute('id');
+        if (scrollPos >= top && scrollPos < bottom) {
+          sidebarLinks.forEach(function(link) {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    });
+
+    // Smooth scroll
+    sidebarLinks.forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        var target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          window.scrollTo({ top: target.offsetTop - 80, behavior: 'smooth' });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
