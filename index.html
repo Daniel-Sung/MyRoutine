@@ -5349,6 +5349,7 @@ function showBookDetailModal(bookId) {
         </div>
 
         ${!book.endDate ? `<button onclick="closeModal();showFinishBookModal('${escAttr(bookId)}')" class="btn btn-block" style="margin-top:16px;background:var(--success);color:white">☐ ${t('books.markDone')} (${readLabels[book.readCount - 1]})</button>` : ''}
+        <button onclick="closeModal();renderBooks()" class="btn btn-block" style="margin-top:8px;background:var(--mint);color:white">${t('books.save')}</button>
       </div>
     </div>`;
 }
