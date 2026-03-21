@@ -4730,13 +4730,13 @@ function renderBooks() {
         return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              ${b.lifeBook ? '<span style="font-size:13px" title="인생책">❤️</span>' : ''}
               ${stars ? `<span class="book-stars">${stars}</span>` : ''}
               <span class="book-title">${escHtml(b.title)}</span>
             </div>
             ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
             <div class="book-meta">${b.startDate.slice(5).replace('-','/')} → ${b.endDate.slice(5).replace('-','/')} (${t('books.readDays').replace('{n}', days)}) ${renderStepDots(b)}</div>
           </div>
+          ${b.lifeBook ? '<span style="font-size:16px;flex-shrink:0">❤️</span>' : ''}
         </div>`;
       }).join('') + '</div>';
   } else {
