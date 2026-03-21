@@ -2650,6 +2650,7 @@ const TRANSLATIONS = {
     'books.startNextReading': '다음 읽기 시작', 'books.chewComplete': '씹어먹기 완료',
     'books.stepProgress': '{n}/5', 'books.lifeBook': '인생책',
     'books.coverImage': '책 표지', 'books.coverUrlPlaceholder': '이미지 URL 붙여넣기', 'books.coverFile': '파일',
+    'books.goalDate': '독서 목표일', 'books.goalOverdue': '목표일 초과!', 'books.goalToday': '오늘이 목표일!', 'books.goalTomorrow': '내일이 목표일!',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2850,6 +2851,7 @@ const TRANSLATIONS = {
     'books.startNextReading': '次の読書を開始', 'books.chewComplete': '噛み砕き完了',
     'books.stepProgress': '{n}/5', 'books.lifeBook': '人生の一冊',
     'books.coverImage': '表紙画像', 'books.coverUrlPlaceholder': '画像URLを貼り付け', 'books.coverFile': 'ファイル',
+    'books.goalDate': '読書目標日', 'books.goalOverdue': '目標日超過！', 'books.goalToday': '今日が目標日！', 'books.goalTomorrow': '明日が目標日！',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -3050,6 +3052,7 @@ const TRANSLATIONS = {
     'books.startNextReading': 'Start Next Reading', 'books.chewComplete': 'Fully Digested',
     'books.stepProgress': '{n}/5', 'books.lifeBook': 'Life-changing Book',
     'books.coverImage': 'Cover Image', 'books.coverUrlPlaceholder': 'Paste image URL', 'books.coverFile': 'File',
+    'books.goalDate': 'Reading Goal', 'books.goalOverdue': 'Overdue!', 'books.goalToday': 'Due today!', 'books.goalTomorrow': 'Due tomorrow!',
   }
 };
 
@@ -4711,12 +4714,20 @@ function renderBooks() {
         const start = new Date(b.startDate); start.setHours(0,0,0,0);
         const dayCount = Math.max(1, Math.floor((today - start) / 86400000) + 1);
         const dayStr = t('books.dayCount').replace('{n}', dayCount);
+        let goalIcon = '';
+        if (b.goalDate) {
+          const goal = new Date(b.goalDate); goal.setHours(0,0,0,0);
+          const daysLeft = Math.floor((goal - today) / 86400000);
+          if (daysLeft < 0) goalIcon = '<span style="color:var(--danger)" title="' + t('books.goalOverdue') + '">🔥</span>';
+          else if (daysLeft === 0) goalIcon = '<span style="color:var(--danger)" title="' + t('books.goalToday') + '">⏰</span>';
+          else if (daysLeft === 1) goalIcon = '<span style="color:#F59E0B" title="' + t('books.goalTomorrow') + '">⏰</span>';
+        }
         return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
           ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">` : ''}
           <div style="flex:1;min-width:0">
-            <div class="book-title">${escHtml(b.title)}</div>
+            <div class="book-title">${escHtml(b.title)} ${goalIcon}</div>
             ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
-            <div class="book-meta">${b.startDate.slice(5).replace('-','/')}~ · ${dayStr} 📖 ${renderStepDots(b)}</div>
+            <div class="book-meta">${b.startDate.slice(5).replace('-','/')}~ · ${dayStr} 📖${b.goalDate ? ' · 🎯' + b.goalDate.slice(5).replace('-','/') : ''} ${renderStepDots(b)}</div>
           </div>
           <button class="book-done-btn" onclick="event.stopPropagation();showFinishBookModal('${escAttr(b.id)}')">☐ ${t('books.markDone')}</button>
         </div>`;
@@ -4941,6 +4952,10 @@ function showAddBookModal() {
           <input type="date" id="book-input-start" class="time-input" value="${today}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
         </div>
         <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">🎯 ${t('books.goalDate')}</label>
+          <input type="date" id="book-input-goal" class="time-input" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
           <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
             <input type="text" id="book-input-image-url" class="time-input" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
@@ -4988,6 +5003,28 @@ function handleBookCoverFile(event) {
   reader.readAsDataURL(file);
 }
 
+function handleBookEditCoverFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 200;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _pendingBookCover = canvas.toDataURL('image/jpeg', 0.8);
+      const preview = document.getElementById('book-edit-cover-preview');
+      if (preview) preview.innerHTML = `<img src="${_pendingBookCover}" style="max-height:80px;border-radius:4px;box-shadow:var(--shadow)">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function addBook() {
   const title = document.getElementById('book-input-title').value.trim();
   if (!title) return;
@@ -4996,12 +5033,13 @@ function addBook() {
   const question = (document.getElementById('book-input-question')?.value || '').trim();
   const imageUrl = (document.getElementById('book-input-image-url')?.value || '').trim();
   const coverImage = _pendingBookCover || imageUrl || '';
+  const goalDate = (document.getElementById('book-input-goal')?.value || '');
   _pendingBookCover = null;
 
   if (!data.books) data.books = [];
   data.books.push({
     id: 'b_' + Date.now(),
-    title, author, startDate,
+    title, author, startDate, goalDate,
     endDate: null, rating: 0, memo: '', coverImage,
     question, notes: [], shared: false, shareNote: '',
     actionItem: '', actionDone: false, readCount: 1, readings: []
@@ -5025,6 +5063,7 @@ function migrateBookData(book) {
   if (!book.readings) book.readings = book.endDate ? [{ endDate: book.endDate, rating: book.rating }] : [];
   if (book.lifeBook === undefined) book.lifeBook = false;
   if (book.coverImage === undefined) book.coverImage = '';
+  if (book.goalDate === undefined) book.goalDate = '';
 }
 
 function getBookStepProgress(book) {
@@ -5149,6 +5188,23 @@ function showEditBookModal(bookId) {
           ${!book.endDate ? `<span style="font-size:11px;color:var(--text-light)">${t('books.notReading')}</span>` : ''}
         </div>
         <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">🎯 ${t('books.goalDate')}</label>
+          <input type="date" id="book-edit-goal" class="time-input" value="${book.goalDate || ''}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+            <input type="text" id="book-edit-image-url" class="time-input" value="${escAttr(book.coverImage && !book.coverImage.startsWith('data:') ? book.coverImage : '')}" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap">
+              ${t('books.coverFile')}
+              <input type="file" accept="image/*" onchange="handleBookEditCoverFile(event)" style="display:none">
+            </label>
+          </div>
+          <div id="book-edit-cover-preview" style="margin-top:6px;text-align:center">
+            ${book.coverImage ? `<img src="${escAttr(book.coverImage)}" style="max-height:80px;border-radius:4px;box-shadow:var(--shadow)">` : ''}
+          </div>
+        </div>
+        <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.rating')}</label>
           <div id="book-edit-stars" style="font-size:28px;margin-top:6px;cursor:pointer;letter-spacing:4px" data-rating="${book.rating || 0}">
             ${'⭐'.repeat(book.rating || 0) + '☆'.repeat(5 - (book.rating || 0))}
@@ -5185,6 +5241,10 @@ function saveEditBook(bookId) {
   book.author = document.getElementById('book-edit-author').value.trim();
   book.startDate = document.getElementById('book-edit-start').value || book.startDate;
   book.endDate = document.getElementById('book-edit-end').value || null;
+  book.goalDate = document.getElementById('book-edit-goal')?.value || '';
+  const editImageUrl = (document.getElementById('book-edit-image-url')?.value || '').trim();
+  if (_pendingBookCover) { book.coverImage = _pendingBookCover; _pendingBookCover = null; }
+  else if (editImageUrl) { book.coverImage = editImageUrl; }
   book.rating = parseInt(document.getElementById('book-edit-stars').dataset.rating) || 0;
   book.memo = document.getElementById('book-edit-memo').value.trim();
   saveData();
