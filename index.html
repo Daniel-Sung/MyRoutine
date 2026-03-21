@@ -3352,14 +3352,21 @@ async function syncToCloud() {
     const userRef = db.collection('users').doc(uid);
     const now = firebase.firestore.FieldValue.serverTimestamp();
 
-    // 1. Upload config document
+    // 1. Upload config document (strip Base64 images from books to stay under 1MB)
+    const booksForCloud = (data.books || []).map(b => {
+      if (b.coverImage && b.coverImage.startsWith('data:')) {
+        const { coverImage, ...rest } = b;
+        return rest;
+      }
+      return b;
+    });
     await userRef.set({
       activityPresets: data.activityPresets || {},
       customPresets: data.customPresets || null,
       settings: data.settings || {},
       goals: data.goals || [],
       lifeGoals: data.lifeGoals || [],
-      books: data.books || [],
+      books: booksForCloud,
       lastSync: now
     }, { merge: true });
 
@@ -3406,7 +3413,15 @@ async function syncFromCloud() {
       if (cfg.settings) data.settings = cfg.settings;
       if (cfg.goals) data.goals = cfg.goals;
       if (cfg.lifeGoals) data.lifeGoals = cfg.lifeGoals;
-      if (cfg.books) data.books = cfg.books;
+      if (cfg.books) {
+        // Preserve local Base64 cover images that were stripped during cloud sync
+        const localCovers = {};
+        (data.books || []).forEach(b => { if (b.coverImage && b.coverImage.startsWith('data:')) localCovers[b.id] = b.coverImage; });
+        data.books = cfg.books.map(b => {
+          if (!b.coverImage && localCovers[b.id]) b.coverImage = localCovers[b.id];
+          return b;
+        });
+      }
     }
 
     // 2. Read all dates
