@@ -2648,7 +2648,7 @@ const TRANSLATIONS = {
     'books.actionLabel': '이번 주 실행할 한 가지', 'books.actionPlaceholder': '이 책에서 바로 실행할 것...', 'books.actionDone': '실행 완료',
     'books.threeReadings': '3회 만남', 'books.reading1': '1차 읽기', 'books.reading2': '2차 복습', 'books.reading3': '3차 재독',
     'books.startNextReading': '다음 읽기 시작', 'books.chewComplete': '씹어먹기 완료',
-    'books.stepProgress': '{n}/5',
+    'books.stepProgress': '{n}/5', 'books.lifeBook': '인생책',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2847,7 +2847,7 @@ const TRANSLATIONS = {
     'books.actionLabel': '今週実行する一つ', 'books.actionPlaceholder': 'この本からすぐ実行すること...', 'books.actionDone': '実行済み',
     'books.threeReadings': '3回の出会い', 'books.reading1': '1回目', 'books.reading2': '2回目（復習）', 'books.reading3': '3回目（再読）',
     'books.startNextReading': '次の読書を開始', 'books.chewComplete': '噛み砕き完了',
-    'books.stepProgress': '{n}/5',
+    'books.stepProgress': '{n}/5', 'books.lifeBook': '人生の一冊',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -3046,7 +3046,7 @@ const TRANSLATIONS = {
     'books.actionLabel': 'One action this week', 'books.actionPlaceholder': 'One thing to execute from this book...', 'books.actionDone': 'Done',
     'books.threeReadings': '3 Readings', 'books.reading1': '1st Read', 'books.reading2': '2nd Review', 'books.reading3': '3rd Re-read',
     'books.startNextReading': 'Start Next Reading', 'books.chewComplete': 'Fully Digested',
-    'books.stepProgress': '{n}/5',
+    'books.stepProgress': '{n}/5', 'books.lifeBook': 'Life-changing Book',
   }
 };
 
@@ -4692,7 +4692,7 @@ function renderBooks() {
     periodLabel = `${booksYear}.${String(booksMonth).padStart(2,'0')}`;
   } else {
     completed = data.books.filter(b => b.endDate && b.endDate.startsWith(String(booksYear)))
-      .sort((a, b) => (b.rating || 0) - (a.rating || 0) || b.endDate.localeCompare(a.endDate));
+      .sort((a, b) => (b.lifeBook ? 1 : 0) - (a.lifeBook ? 1 : 0) || (b.rating || 0) - (a.rating || 0) || b.endDate.localeCompare(a.endDate));
     periodLabel = String(booksYear);
   }
 
@@ -4730,6 +4730,7 @@ function renderBooks() {
         return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              ${b.lifeBook ? '<span style="font-size:13px" title="인생책">❤️</span>' : ''}
               ${stars ? `<span class="book-stars">${stars}</span>` : ''}
               <span class="book-title">${escHtml(b.title)}</span>
             </div>
@@ -4949,6 +4950,7 @@ function migrateBookData(book) {
   if (book.actionDone === undefined) book.actionDone = false;
   if (book.readCount === undefined) book.readCount = book.endDate ? 1 : 1;
   if (!book.readings) book.readings = book.endDate ? [{ endDate: book.endDate, rating: book.rating }] : [];
+  if (book.lifeBook === undefined) book.lifeBook = false;
 }
 
 function getBookStepProgress(book) {
@@ -5268,6 +5270,10 @@ function showBookDetailModal(bookId) {
           <div style="font-size:18px;font-weight:800">「${escHtml(book.title)}」</div>
           ${book.author ? `<div style="font-size:13px;color:var(--text-sub);margin-top:4px">${escHtml(book.author)}</div>` : ''}
           ${book.rating ? `<div style="margin-top:4px">${'⭐'.repeat(book.rating)}${'☆'.repeat(5-book.rating)}</div>` : ''}
+          <label onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;cursor:pointer;font-size:13px;color:${book.lifeBook ? 'var(--coral)' : 'var(--text-light)'}">
+            <input type="checkbox" ${book.lifeBook ? 'checked' : ''} onchange="toggleLifeBook('${escAttr(book.id)}',this.checked)" style="accent-color:var(--coral);width:16px;height:16px">
+            ❤️ ${t('books.lifeBook')}
+          </label>
           <div style="margin-top:8px;display:flex;justify-content:center;align-items:center;gap:6px">
             ${renderStepDots(book)}
             <span style="font-size:12px;color:var(--text-sub)">${t('books.stepProgress').replace('{n}', doneCount)}</span>
@@ -5350,6 +5356,14 @@ function toggleBookShare(bookId, checked) {
   if (!book) return;
   book.shared = checked;
   saveData();
+}
+
+function toggleLifeBook(bookId, checked) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book.lifeBook = checked;
+  saveData();
+  showBookDetailModal(bookId);
 }
 
 function toggleBookAction(bookId, checked) {
