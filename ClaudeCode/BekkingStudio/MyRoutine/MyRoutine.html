@@ -4733,7 +4733,6 @@ function renderBooks() {
     const renderLifeBookItem = (b) => {
       const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
       return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
-        <span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             ${stars ? `<span class="book-stars">${stars}</span>` : ''}
@@ -4741,6 +4740,7 @@ function renderBooks() {
           </div>
           ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
         </div>
+        <span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>
       </div>`;
     };
     lifeBooksSection.innerHTML = `<div class="book-section-title">❤️ ${t('books.lifeBook')} (${lifeBooks.length})</div><div class="book-list-scroll">${lifeBooks.map(renderLifeBookItem).join('')}</div>`;
@@ -4757,7 +4757,6 @@ function renderBooks() {
         const days = Math.max(1, Math.ceil((end - start) / 86400000) + 1);
         const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
         return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
-          ${b.lifeBook ? '<span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>' : ''}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
               ${stars ? `<span class="book-stars">${stars}</span>` : ''}
@@ -4766,6 +4765,7 @@ function renderBooks() {
             ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
             <div class="book-meta">${b.startDate.slice(5).replace('-','/')} → ${b.endDate.slice(5).replace('-','/')} (${t('books.readDays').replace('{n}', days)}) ${renderStepDots(b)}</div>
           </div>
+          ${b.lifeBook ? '<span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>' : ''}
         </div>`;
       }).join('') + '</div>';
   } else {
