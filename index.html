@@ -4719,6 +4719,35 @@ function renderBooks() {
       }).join('') + '</div>';
   }
 
+  // Life books (always shown, max 10, excluding those already in completed list)
+  const completedIds = new Set(completed.map(b => b.id));
+  const lifeBooks = data.books.filter(b => b.lifeBook && b.endDate && !completedIds.has(b.id))
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10);
+  const lifeBooksSection = document.getElementById('books-lifebooks-section') || (() => {
+    const el = document.createElement('div');
+    el.id = 'books-lifebooks-section';
+    completedSection.parentNode.insertBefore(el, completedSection);
+    return el;
+  })();
+  if (lifeBooks.length > 0) {
+    const renderLifeBookItem = (b) => {
+      const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
+      return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
+        <span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${stars ? `<span class="book-stars">${stars}</span>` : ''}
+            <span class="book-title">${escHtml(b.title)}</span>
+          </div>
+          ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
+        </div>
+      </div>`;
+    };
+    lifeBooksSection.innerHTML = `<div class="book-section-title">❤️ ${t('books.lifeBook')} (${lifeBooks.length})</div><div class="book-list-scroll">${lifeBooks.map(renderLifeBookItem).join('')}</div>`;
+  } else {
+    lifeBooksSection.innerHTML = '';
+  }
+
   // Completed list
   if (completed.length > 0) {
     completedSection.innerHTML = `<div class="book-section-title">📗 ${t('books.completed')} (${completed.length})</div><div class="book-list-scroll">` +
