@@ -2649,6 +2649,7 @@ const TRANSLATIONS = {
     'books.threeReadings': '3회 만남', 'books.reading1': '1차 읽기', 'books.reading2': '2차 복습', 'books.reading3': '3차 재독',
     'books.startNextReading': '다음 읽기 시작', 'books.chewComplete': '씹어먹기 완료',
     'books.stepProgress': '{n}/5', 'books.lifeBook': '인생책',
+    'books.coverImage': '책 표지', 'books.coverUrlPlaceholder': '이미지 URL 붙여넣기', 'books.coverFile': '파일',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2848,6 +2849,7 @@ const TRANSLATIONS = {
     'books.threeReadings': '3回の出会い', 'books.reading1': '1回目', 'books.reading2': '2回目（復習）', 'books.reading3': '3回目（再読）',
     'books.startNextReading': '次の読書を開始', 'books.chewComplete': '噛み砕き完了',
     'books.stepProgress': '{n}/5', 'books.lifeBook': '人生の一冊',
+    'books.coverImage': '表紙画像', 'books.coverUrlPlaceholder': '画像URLを貼り付け', 'books.coverFile': 'ファイル',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -3047,6 +3049,7 @@ const TRANSLATIONS = {
     'books.threeReadings': '3 Readings', 'books.reading1': '1st Read', 'books.reading2': '2nd Review', 'books.reading3': '3rd Re-read',
     'books.startNextReading': 'Start Next Reading', 'books.chewComplete': 'Fully Digested',
     'books.stepProgress': '{n}/5', 'books.lifeBook': 'Life-changing Book',
+    'books.coverImage': 'Cover Image', 'books.coverUrlPlaceholder': 'Paste image URL', 'books.coverFile': 'File',
   }
 };
 
@@ -4709,7 +4712,8 @@ function renderBooks() {
         const dayCount = Math.max(1, Math.floor((today - start) / 86400000) + 1);
         const dayStr = t('books.dayCount').replace('{n}', dayCount);
         return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
-          <div>
+          ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">` : ''}
+          <div style="flex:1;min-width:0">
             <div class="book-title">${escHtml(b.title)}</div>
             ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
             <div class="book-meta">${b.startDate.slice(5).replace('-','/')}~ · ${dayStr} 📖 ${renderStepDots(b)}</div>
@@ -4733,6 +4737,7 @@ function renderBooks() {
     const renderLifeBookItem = (b) => {
       const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
       return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
+        ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">` : ''}
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             ${stars ? `<span class="book-stars">${stars}</span>` : ''}
@@ -4757,6 +4762,7 @@ function renderBooks() {
         const days = Math.max(1, Math.ceil((end - start) / 86400000) + 1);
         const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
         return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
+          ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15)">` : ''}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
               ${stars ? `<span class="book-stars">${stars}</span>` : ''}
@@ -4935,6 +4941,17 @@ function showAddBookModal() {
           <input type="date" id="book-input-start" class="time-input" value="${today}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
         </div>
         <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+            <input type="text" id="book-input-image-url" class="time-input" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap">
+              ${t('books.coverFile')}
+              <input type="file" accept="image/*" onchange="handleBookCoverFile(event)" style="display:none">
+            </label>
+          </div>
+          <div id="book-cover-preview" style="margin-top:6px;text-align:center"></div>
+        </div>
+        <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">❓ ${t('books.questionLabel')}</label>
           <textarea id="book-input-question" class="time-input" placeholder="${t('books.questionPlaceholder')}" style="width:100%;font-size:14px;padding:8px;margin-top:4px;min-height:60px;resize:vertical"></textarea>
         </div>
@@ -4947,18 +4964,45 @@ function showAddBookModal() {
   setTimeout(() => document.getElementById('book-input-title')?.focus(), 100);
 }
 
+let _pendingBookCover = null;
+
+function handleBookCoverFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 200;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _pendingBookCover = canvas.toDataURL('image/jpeg', 0.8);
+      const preview = document.getElementById('book-cover-preview');
+      if (preview) preview.innerHTML = `<img src="${_pendingBookCover}" style="max-height:80px;border-radius:4px;box-shadow:var(--shadow)">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function addBook() {
   const title = document.getElementById('book-input-title').value.trim();
   if (!title) return;
   const author = document.getElementById('book-input-author').value.trim();
   const startDate = document.getElementById('book-input-start').value || getTodayStr();
   const question = (document.getElementById('book-input-question')?.value || '').trim();
+  const imageUrl = (document.getElementById('book-input-image-url')?.value || '').trim();
+  const coverImage = _pendingBookCover || imageUrl || '';
+  _pendingBookCover = null;
 
   if (!data.books) data.books = [];
   data.books.push({
     id: 'b_' + Date.now(),
     title, author, startDate,
-    endDate: null, rating: 0, memo: '',
+    endDate: null, rating: 0, memo: '', coverImage,
     question, notes: [], shared: false, shareNote: '',
     actionItem: '', actionDone: false, readCount: 1, readings: []
   });
@@ -4980,6 +5024,7 @@ function migrateBookData(book) {
   if (book.readCount === undefined) book.readCount = book.endDate ? 1 : 1;
   if (!book.readings) book.readings = book.endDate ? [{ endDate: book.endDate, rating: book.rating }] : [];
   if (book.lifeBook === undefined) book.lifeBook = false;
+  if (book.coverImage === undefined) book.coverImage = '';
 }
 
 function getBookStepProgress(book) {
@@ -5296,6 +5341,7 @@ function showBookDetailModal(bookId) {
           <button onclick="closeModal();showEditBookModal('${escAttr(bookId)}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--mint)">✏️</button>
         </div>
         <div style="text-align:center;margin-bottom:16px">
+          ${book.coverImage ? `<img src="${escAttr(book.coverImage)}" style="max-height:120px;border-radius:6px;box-shadow:var(--shadow);margin-bottom:8px">` : ''}
           <div style="font-size:18px;font-weight:800">「${escHtml(book.title)}」</div>
           ${book.author ? `<div style="font-size:13px;color:var(--text-sub);margin-top:4px">${escHtml(book.author)}</div>` : ''}
           ${book.rating ? `<div style="margin-top:4px">${'⭐'.repeat(book.rating)}${'☆'.repeat(5-book.rating)}</div>` : ''}
