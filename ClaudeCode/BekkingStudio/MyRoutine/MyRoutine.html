@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#7ECEC1">
+<meta name="theme-color" content="#5B8DEF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyRoutine">
@@ -28,24 +28,24 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 :root {
-  --mint: #7ECEC1;
-  --mint-light: #B8E6DE;
-  --mint-bg: #E8F6F3;
-  --coral: #FF7F7F;
-  --coral-light: #FFB3B3;
-  --coral-bg: #FFF0F0;
+  --mint: #5B8DEF;
+  --mint-light: #A3C1F7;
+  --mint-bg: #EBF0FB;
+  --coral: #9B6DD7;
+  --coral-light: #C4A6E8;
+  --coral-bg: #F3EEFB;
   --blue-gray: #8E9AAF;
   --blue-gray-light: #BCC5D3;
   --blue-gray-bg: #EEF1F6;
-  --bg: #F7F9FC;
+  --bg: #F5F6FA;
   --card: #FFFFFF;
-  --text: #2D3436;
-  --text-sub: #636E72;
-  --text-light: #B2BEC3;
+  --text: #2D2B3A;
+  --text-sub: #636072;
+  --text-light: #B2AEC3;
   --danger: #E17055;
   --success: #00B894;
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+  --shadow: 0 2px 12px rgba(40,30,80,0.08);
+  --shadow-lg: 0 4px 24px rgba(40,30,80,0.12);
   --radius: 16px;
   --radius-sm: 10px;
   --tab-height: 64px;
@@ -60,8 +60,8 @@
   --text-light: #555570;
   --shadow: 0 2px 12px rgba(0,0,0,0.3);
   --shadow-lg: 0 4px 24px rgba(0,0,0,0.4);
-  --mint-bg: #1A3A35;
-  --coral-bg: #3A1A1A;
+  --mint-bg: #1A2240;
+  --coral-bg: #2A1A3A;
   --blue-gray-bg: #1A1A3A;
 }
 
@@ -95,7 +95,7 @@ body {
 .header h1 {
   font-size: 22px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--mint), var(--coral));
+  background: linear-gradient(135deg, #3B6BE8, #8B5CF6, #D946A8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -2023,7 +2023,7 @@ body {
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <h1 data-i18n="app.name">갓생살기</h1>
+    <h1 data-i18n="app.name">GOD+生</h1>
     <div class="header-actions">
       <button class="icon-btn" onclick="switchTab('history')" data-i18n-title="header.history" title="히스토리">📅</button>
       <button class="icon-btn" onclick="toggleDarkMode()" data-i18n-title="header.darkMode" title="다크 모드">🌙</button>
@@ -2508,14 +2508,14 @@ const TRANSLATIONS = {
     'toast.enterName': '이름을 입력하세요', 'toast.duplicateName': '이미 같은 이름이 있습니다', 'toast.cannotDelete': '기상/취침은 삭제할 수 없습니다',
     'toast.recorded': '✓ {0} 기록했습니다',
     'preset.reordered': '✓ 버튼 순서가 변경되었습니다',
-    'notify.title': '갓생살기 알림', 'notify.body': '오늘 하루를 아직 마감하지 않았어요! 기록을 완성해보세요.',
+    'notify.title': 'GOD+生 알림', 'notify.body': '오늘 하루를 아직 마감하지 않았어요! 기록을 완성해보세요.',
     'chip.move': '이동', 'chip.edit': '수정', 'chip.delete': '삭제',
     'day.sun': '일', 'day.mon': '월', 'day.tue': '화', 'day.wed': '수',
     'day.thu': '목', 'day.fri': '금', 'day.sat': '토',
     'month.1': '1월', 'month.2': '2월', 'month.3': '3월', 'month.4': '4월',
     'month.5': '5월', 'month.6': '6월', 'month.7': '7월', 'month.8': '8월',
     'month.9': '9월', 'month.10': '10월', 'month.11': '11월', 'month.12': '12월',
-    'app.name': '갓생살기',
+    'app.name': 'GOD+生',
     'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '목표/독서', 'tab.stats': '통계',
     'plan.mottoTitle': '나의 모토', 'plan.mottoPlaceholder': '인생 모토나 좋은 글귀를 적어보세요...', 'plan.mottoPhoto': '사진 추가',
     'plan.dumpTitle': '브레인 덤프', 'plan.dumpDesc': '오늘 해야 할 일을 모두 적어보세요',
@@ -2707,7 +2707,7 @@ const TRANSLATIONS = {
     'month.1': '1月', 'month.2': '2月', 'month.3': '3月', 'month.4': '4月',
     'month.5': '5月', 'month.6': '6月', 'month.7': '7月', 'month.8': '8月',
     'month.9': '9月', 'month.10': '10月', 'month.11': '11月', 'month.12': '12月',
-    'app.name': '神生活',
+    'app.name': 'GOD+生',
     'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '目標/読書', 'tab.stats': '統計',
     'plan.mottoTitle': '私のモットー', 'plan.mottoPlaceholder': '人生のモットーや良い言葉を書いてみましょう...', 'plan.mottoPhoto': '写真を追加',
     'plan.dumpTitle': 'ブレインダンプ', 'plan.dumpDesc': '今日やるべきことをすべて書き出しましょう',
@@ -2899,7 +2899,7 @@ const TRANSLATIONS = {
     'month.1': 'Jan', 'month.2': 'Feb', 'month.3': 'Mar', 'month.4': 'Apr',
     'month.5': 'May', 'month.6': 'Jun', 'month.7': 'Jul', 'month.8': 'Aug',
     'month.9': 'Sep', 'month.10': 'Oct', 'month.11': 'Nov', 'month.12': 'Dec',
-    'app.name': 'Live Your Best',
+    'app.name': 'GOD+生',
     'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals/Books', 'tab.stats': 'Stats',
     'plan.mottoTitle': 'My Motto', 'plan.mottoPlaceholder': 'Write your life motto or favorite quotes...', 'plan.mottoPhoto': 'Add photo',
     'plan.dumpTitle': 'Brain Dump', 'plan.dumpDesc': 'Write down everything you need to do today',

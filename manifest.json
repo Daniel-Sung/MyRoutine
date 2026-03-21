@@ -1,11 +1,11 @@
 {
-  "name": "MyRoutine - 나의 하루 분석",
-  "short_name": "MyRoutine",
+  "name": "GOD+生 - 나의 하루 분석",
+  "short_name": "GOD+生",
   "description": "하루 활동을 기록하고 고정/유동 시간을 분석하는 앱",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#F7F9FC",
-  "theme_color": "#7ECEC1",
+  "background_color": "#F5F6FA",
+  "theme_color": "#5B8DEF",
   "orientation": "portrait",
   "icons": [
     {
