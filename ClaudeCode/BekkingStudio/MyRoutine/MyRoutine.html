@@ -2263,7 +2263,10 @@ body {
     <div class="card" id="books-card" style="margin-top:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <h3 style="margin:0">📚 <span data-i18n="books.title">독서 기록</span></h3>
-        <button class="icon-btn" id="books-add-btn" onclick="showAddBookModal()" style="font-size:18px">+</button>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button class="icon-btn" onclick="showChewGuideModal()" style="font-size:14px" title="씹어먹기 독서법">📖</button>
+          <button class="icon-btn" id="books-add-btn" onclick="showAddBookModal()" style="font-size:18px">+</button>
+        </div>
       </div>
       <div id="books-mode-toggle" style="display:flex;gap:4px;margin-bottom:12px">
         <button class="stats-mode-btn active" onclick="setBookMode('month')" data-bmode="month" data-i18n="books.monthly">월간</button>
@@ -5135,6 +5138,86 @@ function confirmDeleteBook(bookId) {
   saveData();
   closeModal();
   renderBooks();
+}
+
+function showChewGuideModal() {
+  const guide = currentLang === 'ja' ? `
+    <h3 style="text-align:center;margin-bottom:16px">📖 噛み砕き読書法</h3>
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;text-align:center">本を100冊読んでも変わらなかった人が、<br>3冊で変わる5ステップ</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">❓ 1. 読む前に質問する</strong><br>
+        <span style="font-size:13px">「この本から何を得たいか？」を書く。<br>目的なき読書は、目的地なきナビと同じ。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📝 2. 自分の言葉に変える</strong><br>
+        <span style="font-size:13px">著者の言葉は著者のもの。<br>「自分の状況に当てはめると？」と3分考えて、自分の言葉で書き直す。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📢 3. 48時間以内に誰かに説明する</strong><br>
+        <span style="font-size:13px">入力だけでは絶対に残らない。<br>口から出した瞬間、脳への刻印強度がまるで違う。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">⚡ 4. 一つだけ実行する</strong><br>
+        <span style="font-size:13px">「今週、たった一つ実行できることは？」<br>30分でできる小さな行動。これが効能感になる。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">🔄 5. 一冊を三度読む</strong><br>
+        <span style="font-size:13px">1回目：質問を持って読む。<br>2回目：1ヶ月後にノートを見返す。<br>3回目：実行後に再読。同じ文章が全く違って読める。</span>
+      </div>
+    </div>
+  ` : currentLang === 'en' ? `
+    <h3 style="text-align:center;margin-bottom:16px">📖 Chew &amp; Digest Method</h3>
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;text-align:center">The 5 steps that make 3 books<br>more impactful than 100</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">❓ 1. Ask before reading</strong><br>
+        <span style="font-size:13px">Write: "What do I want from this book?"<br>Reading without purpose is like driving without a destination.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📝 2. Rewrite in your words</strong><br>
+        <span style="font-size:13px">The author's words belong to the author.<br>Ask "How does this apply to MY life?" and write it in your own words.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📢 3. Explain within 48 hours</strong><br>
+        <span style="font-size:13px">Input alone never sticks.<br>The moment you speak it, the brain encodes it completely differently.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">⚡ 4. Execute just one thing</strong><br>
+        <span style="font-size:13px">"What's ONE thing I can do this week?"<br>A small 30-minute action. That's where real change begins.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">🔄 5. Meet the book three times</strong><br>
+        <span style="font-size:13px">1st: Read with your question.<br>2nd: Review notes after 1 month.<br>3rd: Re-read after execution. Same words, totally different meaning.</span>
+      </div>
+    </div>
+  ` : `
+    <h3 style="text-align:center;margin-bottom:16px">📖 씹어먹기 독서법</h3>
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;text-align:center">10권 읽고 변하지 않던 사람이<br>3권 읽고 달라지는 5단계</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">❓ 1. 읽기 전에 질문하라</strong><br>
+        <span style="font-size:13px">"이 책에서 무엇을 얻고 싶은가?" 를 적는다.<br>목적 없는 독서는 목적지 없이 네비를 켜는 것과 같다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📝 2. 내 말로 바꿔라</strong><br>
+        <span style="font-size:13px">저자의 말은 저자의 것이다.<br>"내 상황에 대입하면?" 3분 생각하고, 내 언어로 번역해서 적는다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📢 3. 48시간 안에 누군가에게 설명하라</strong><br>
+        <span style="font-size:13px">입력만으로는 절대 남지 않는다.<br>내 입으로 꺼내는 순간 뇌에 각인되는 강도가 완전히 달라진다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">⚡ 4. 하나만 실행하라</strong><br>
+        <span style="font-size:13px">"이번 주에 딱 하나, 실행할 수 있는 것은?"<br>30분이면 할 수 있는 작은 행동. 이게 효능감이 된다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">🔄 5. 한 권을 세 번 만나라</strong><br>
+        <span style="font-size:13px">1차: 질문을 가지고 읽는다.<br>2차: 한 달 후 메모만 다시 본다.<br>3차: 실행 후 다시 펼친다. 같은 문장이 전혀 다르게 읽힌다.</span>
+      </div>
+    </div>
+  `;
+  showModal(guide + `<div class="modal-actions" style="margin-top:14px"><button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button></div>`);
 }
 
 function showBookDetailModal(bookId) {
