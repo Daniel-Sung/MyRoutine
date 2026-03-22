@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "com.godsaeng.bekking",
+        "sha256_cert_fingerprints": ["45:9A:15:81:0F:40:DA:68:99:59:FB:87:78:8F:58:6B:92:3B:90:1C:9B:BA:13:8A:EE:AC:B7:48:57:EF:E3:43"]
+      }
+    }]
