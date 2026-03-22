@@ -2313,6 +2313,7 @@ body {
       </div>
     </div>
 
+    <div id="stats-partial-notice" style="display:none;background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px;color:#9A3412;text-align:center"></div>
     <div class="empty-state" id="stats-empty" style="display:none">
       <div class="emoji">📈</div>
       <p data-i18n="stats.noData">이 기간에는 기록이 없어요</p>
@@ -2563,6 +2564,7 @@ const TRANSLATIONS = {
     'header.stats': '통계', 'stats.weekly': '주간', 'stats.monthly': '월간',
     'stats.period': '기간', 'stats.recordedDays': '기록일',
     'stats.noData': '이 기간에는 기록이 없어요',
+    'stats.partialNotice': '미분류 활동이 있는 {n}일은 분류된 항목만 집계됩니다',
     'stats.activityRanking': '활동 TOP 5', 'stats.desiredTrend': '원하는 삶 달성률 추이',
     'stats.dreamTrend': '꿈 투자 시간 추이',
     'stats.fixedFlexTrend': '고정/유동 시간 비율', 'stats.activityTrend': '활동별 시간 추이',
@@ -2765,6 +2767,7 @@ const TRANSLATIONS = {
     'header.stats': '統計', 'stats.weekly': '週間', 'stats.monthly': '月間',
     'stats.period': '期間', 'stats.recordedDays': '記録日',
     'stats.noData': 'この期間には記録がありません',
+    'stats.partialNotice': '未分類の活動がある{n}日は、分類済みの項目のみ集計されます',
     'stats.activityRanking': '活動 TOP 5', 'stats.desiredTrend': '理想達成率の推移',
     'stats.dreamTrend': '夢の投資時間推移',
     'stats.fixedFlexTrend': '固定/自由時間の割合', 'stats.activityTrend': '活動別時間の推移',
@@ -2967,6 +2970,7 @@ const TRANSLATIONS = {
     'header.stats': 'Stats', 'stats.weekly': 'Weekly', 'stats.monthly': 'Monthly',
     'stats.period': 'Period', 'stats.recordedDays': 'Recorded',
     'stats.noData': 'No records for this period',
+    'stats.partialNotice': '{n} day(s) with unclassified activities — only classified items are counted',
     'stats.activityRanking': 'Top 5 Activities', 'stats.desiredTrend': 'Desired Life Achievement Trend',
     'stats.dreamTrend': 'Dream Investment Trend',
     'stats.fixedFlexTrend': 'Fixed/Flexible Ratio', 'stats.activityTrend': 'Activity Time Trend',
@@ -3749,15 +3753,17 @@ function getStatsPeriodDates() {
 
 function aggregateStatsData(dates) {
   const days = [];
+  let partialDays = 0;
   dates.forEach(dateStr => {
     const dd = data.dates[dateStr];
     if (!dd || !dd.entries || dd.entries.length === 0) return;
     const allClassified = dd.entries.every(e => e.category);
-    if (!allClassified) return;
+    if (!allClassified) partialDays++;
     const stats = calcStats(dd);
-    days.push({ date: dateStr, ...stats });
+    if (stats.totalMin <= 0) return;
+    days.push({ date: dateStr, ...stats, partial: !allClassified });
   });
-  return days;
+  return { days, partialDays };
 }
 
 function setStatsMode(mode) {
@@ -4144,7 +4150,7 @@ function renderStats() {
   document.getElementById('stats-period-label').textContent = formatStatsPeriodLabel();
 
   const dates = getStatsPeriodDates();
-  const days = aggregateStatsData(dates);
+  const { days, partialDays } = aggregateStatsData(dates);
   statsCachedDays = days;
   statsCachedDates = dates;
 
@@ -4153,6 +4159,17 @@ function renderStats() {
   const summaryRow = document.getElementById('stats-summary-row');
   const pdfBtn = document.getElementById('stats-export-pdf-btn');
   const shareBtn = document.getElementById('stats-share-btn');
+
+  // 미분류 날짜 안내
+  const noticeEl = document.getElementById('stats-partial-notice');
+  if (noticeEl) {
+    if (partialDays > 0) {
+      noticeEl.style.display = '';
+      noticeEl.textContent = t('stats.partialNotice').replace('{n}', partialDays);
+    } else {
+      noticeEl.style.display = 'none';
+    }
+  }
 
   if (days.length === 0) {
     chartsArea.style.display = 'none';
@@ -4487,7 +4504,7 @@ function selectStatsActivity(activity) {
     chip.classList.toggle('active', chipKey === activity);
   });
   const dates = getStatsPeriodDates();
-  const days = aggregateStatsData(dates);
+  const { days } = aggregateStatsData(dates);
   renderStatsActivityTrend(days, dates);
 }
 
@@ -7998,7 +8015,7 @@ function updateLifeCounter() {
 }
 
 function calcDreamRatio() {
-  // Calculate average dream time ratio from all recorded & classified days
+  // Calculate average dream time ratio from all recorded days (including partially classified)
   const allDates = Object.keys(data.dates || {});
   let totalRecordedMin = 0;
   let totalDreamMin = 0;
@@ -8007,7 +8024,6 @@ function calcDreamRatio() {
   allDates.forEach(dateStr => {
     const dd = data.dates[dateStr];
     if (!dd || !dd.entries || dd.entries.length === 0) return;
-    if (!dd.entries.every(e => e.category)) return; // skip unclassified days
     const stats = calcStats(dd);
     if (stats.totalMin <= 0) return;
     totalRecordedMin += stats.totalMin;

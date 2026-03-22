@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#7ECEC1">
+<meta name="theme-color" content="#5B8DEF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyRoutine">
@@ -20,6 +20,7 @@
   gtag('config', 'G-HJVMWV011Z');
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -27,24 +28,24 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
 :root {
-  --mint: #7ECEC1;
-  --mint-light: #B8E6DE;
-  --mint-bg: #E8F6F3;
-  --coral: #FF7F7F;
-  --coral-light: #FFB3B3;
-  --coral-bg: #FFF0F0;
+  --mint: #5B8DEF;
+  --mint-light: #A3C1F7;
+  --mint-bg: #EBF0FB;
+  --coral: #9B6DD7;
+  --coral-light: #C4A6E8;
+  --coral-bg: #F3EEFB;
   --blue-gray: #8E9AAF;
   --blue-gray-light: #BCC5D3;
   --blue-gray-bg: #EEF1F6;
-  --bg: #F7F9FC;
+  --bg: #F5F6FA;
   --card: #FFFFFF;
-  --text: #2D3436;
-  --text-sub: #636E72;
-  --text-light: #B2BEC3;
+  --text: #2D2B3A;
+  --text-sub: #636072;
+  --text-light: #B2AEC3;
   --danger: #E17055;
   --success: #00B894;
-  --shadow: 0 2px 12px rgba(0,0,0,0.08);
-  --shadow-lg: 0 4px 24px rgba(0,0,0,0.12);
+  --shadow: 0 2px 12px rgba(40,30,80,0.08);
+  --shadow-lg: 0 4px 24px rgba(40,30,80,0.12);
   --radius: 16px;
   --radius-sm: 10px;
   --tab-height: 64px;
@@ -59,8 +60,8 @@
   --text-light: #555570;
   --shadow: 0 2px 12px rgba(0,0,0,0.3);
   --shadow-lg: 0 4px 24px rgba(0,0,0,0.4);
-  --mint-bg: #1A3A35;
-  --coral-bg: #3A1A1A;
+  --mint-bg: #1A2240;
+  --coral-bg: #2A1A3A;
   --blue-gray-bg: #1A1A3A;
 }
 
@@ -94,7 +95,7 @@ body {
 .header h1 {
   font-size: 22px;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--mint), var(--coral));
+  background: linear-gradient(135deg, #3B6BE8, #8B5CF6, #D946A8);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1795,8 +1796,8 @@ body {
 }
 .stats-summary-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
   margin-bottom: 16px;
 }
 .stats-summary-card {
@@ -1828,24 +1829,37 @@ body {
 }
 .book-item {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 12px; border-radius: var(--radius-sm);
-  background: var(--bg); margin-bottom: 6px; cursor: pointer;
+  padding: 8px 10px; border-radius: var(--radius-sm);
+  background: var(--bg); margin-bottom: 4px; cursor: pointer;
   transition: background var(--transition);
 }
 .book-item:active { opacity: 0.7; }
-.book-title { font-size: 14px; font-weight: 600; }
-.book-author { font-size: 12px; color: var(--text-sub); margin-top: 2px; }
-.book-meta { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.book-list-scroll { max-height: 360px; overflow-y: auto; }
+.book-title { font-size: 15px; font-weight: 600; }
+.book-author { font-size: 13px; color: var(--text-sub); margin-top: 2px; }
+.book-meta { font-size: 12px; color: var(--text-light); margin-top: 2px; }
 .book-done-btn {
-  background: var(--success); color: white; border: none; border-radius: 8px;
+  background: none; color: var(--text-sub); border: 1.5px dashed var(--text-light); border-radius: 8px;
   padding: 4px 10px; font-size: 12px; cursor: pointer; white-space: nowrap;
+  transition: all var(--transition);
+}
+.book-done-btn:hover, .book-done-btn:active {
+  background: var(--success); color: white; border-color: var(--success);
 }
 .book-stars { color: #F59E0B; font-size: 13px; letter-spacing: 1px; }
 .book-section-title {
-  font-size: 13px; font-weight: 600; color: var(--text-sub);
+  font-size: 14px; font-weight: 600; color: var(--text-sub);
   margin: 14px 0 8px; padding-bottom: 4px;
   border-bottom: 1px solid var(--text-light);
 }
+.book-step-dots { display:inline-flex; gap:3px; margin-top:3px; vertical-align:middle; }
+.book-step-dot { width:7px; height:7px; border-radius:50%; background:var(--text-light); display:inline-block; }
+.book-step-dot.done { background:var(--success); }
+.book-chew-badge { font-size:10px; background:linear-gradient(135deg,#FFD700,#FFA500); color:white; padding:1px 6px; border-radius:8px; font-weight:700; margin-left:4px; }
+.book-detail-step { margin-top:14px; padding:12px; border-radius:var(--radius-sm); background:var(--bg); }
+.book-detail-step-hdr { display:flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--text-sub); margin-bottom:8px; }
+.book-note-item { padding:8px; margin-top:6px; background:var(--card); border-radius:var(--radius-sm); font-size:13px; display:flex; justify-content:space-between; align-items:flex-start; gap:8px; line-height:1.5; }
+.book-note-date { font-size:10px; color:var(--text-light); margin-top:2px; }
 .book-year-btn {
   background: none; border: none; color: var(--text-sub); font-size: 14px;
   cursor: pointer; padding: 4px 8px;
@@ -2017,7 +2031,7 @@ body {
 <div class="container">
   <!-- Header -->
   <div class="header">
-    <h1 data-i18n="app.name">갓생살기</h1>
+    <h1 data-i18n="app.name">GOD+生</h1>
     <div class="header-actions">
       <button class="icon-btn" onclick="switchTab('history')" data-i18n-title="header.history" title="히스토리">📅</button>
       <button class="icon-btn" onclick="toggleDarkMode()" data-i18n-title="header.darkMode" title="다크 모드">🌙</button>
@@ -2037,6 +2051,22 @@ body {
         <div id="record-status" class="record-status"></div>
         <div class="date-time-row">
           <div class="time" id="current-time"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Life Counter -->
+    <div id="life-counter" style="display:none;cursor:pointer;margin-bottom:8px" onclick="showLifeSetup()">
+      <div id="life-counter-grid" style="display:grid;grid-template-columns:1fr;gap:6px">
+        <div style="text-align:center;padding:8px 10px;background:var(--card);border-radius:var(--radius-sm);box-shadow:var(--shadow)">
+          <div style="font-size:10px;color:var(--text-sub);margin-bottom:3px" id="life-counter-label">⏳</div>
+          <div id="life-counter-line1" style="font-size:15px;font-weight:800;color:var(--coral);font-variant-numeric:tabular-nums"></div>
+          <div id="life-counter-line2" style="font-size:12px;font-weight:600;color:var(--coral);font-variant-numeric:tabular-nums;opacity:0.8"></div>
+        </div>
+        <div id="dream-counter-row" style="display:none;text-align:center;padding:8px 10px;background:var(--card);border-radius:var(--radius-sm);box-shadow:var(--shadow)">
+          <div style="font-size:10px;color:var(--text-sub);margin-bottom:3px" id="dream-counter-label"></div>
+          <div id="dream-counter-line1" style="font-size:15px;font-weight:800;color:#6366F1;font-variant-numeric:tabular-nums"></div>
+          <div id="dream-counter-line2" style="font-size:12px;font-weight:600;color:#6366F1;font-variant-numeric:tabular-nums;opacity:0.8"></div>
         </div>
       </div>
     </div>
@@ -2087,6 +2117,21 @@ body {
 
   <!-- Section: Plan -->
   <div id="sec-plan" class="section">
+    <div class="card" id="motto-card">
+      <h3 style="font-size:16px;margin-bottom:8px">💬 <span data-i18n="plan.mottoTitle">나의 모토</span></h3>
+      <textarea id="motto-text" class="input" rows="2" data-i18n-placeholder="plan.mottoPlaceholder" placeholder="인생 모토나 좋은 글귀를 적어보세요..." style="resize:vertical;font-size:15px;line-height:1.6;width:100%;box-sizing:border-box;padding:10px 14px" oninput="saveMotto()"></textarea>
+      <div id="motto-image-area" style="margin-top:8px">
+        <div id="motto-image-preview" style="display:none;position:relative;margin-bottom:8px">
+          <img id="motto-img" style="width:100%;border-radius:var(--radius-sm);cursor:pointer" onclick="document.getElementById('motto-image-input').click()">
+          <button onclick="removeMottoImage()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.6);color:white;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center">✕</button>
+        </div>
+        <label id="motto-image-btn" style="display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--text-sub);cursor:pointer;padding:6px 10px;border:1px dashed var(--text-light);border-radius:var(--radius-sm)">
+          📷 <span data-i18n="plan.mottoPhoto">사진 추가</span>
+          <input type="file" id="motto-image-input" accept="image/*" style="display:none" onchange="handleMottoImage(event)">
+        </label>
+      </div>
+    </div>
+
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <h3 style="font-size:16px;margin:0">🧠 <span data-i18n="plan.dumpTitle">브레인 덤프</span></h3>
@@ -2217,12 +2262,15 @@ body {
 
     <div class="card" id="books-card" style="margin-top:16px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <h3 style="font-size:15px;margin:0">📚 <span data-i18n="books.title">독서 기록</span></h3>
-        <button class="icon-btn" onclick="showAddBookModal()" style="font-size:18px">+</button>
+        <h3 style="margin:0">📚 <span data-i18n="books.title">독서 기록</span></h3>
+        <div style="display:flex;gap:4px;align-items:center">
+          <button class="icon-btn" onclick="showChewGuideModal()" style="font-size:14px" title="씹어먹기 독서법">📖</button>
+          <button class="icon-btn" id="books-add-btn" onclick="showAddBookModal()" style="font-size:18px">+</button>
+        </div>
       </div>
       <div id="books-mode-toggle" style="display:flex;gap:4px;margin-bottom:12px">
-        <button class="stats-mode-btn active" onclick="setBookMode('year')" data-bmode="year" data-i18n="books.yearly">연간</button>
-        <button class="stats-mode-btn" onclick="setBookMode('month')" data-bmode="month" data-i18n="books.monthly">월간</button>
+        <button class="stats-mode-btn active" onclick="setBookMode('month')" data-bmode="month" data-i18n="books.monthly">월간</button>
+        <button class="stats-mode-btn" onclick="setBookMode('year')" data-bmode="year" data-i18n="books.yearly">연간</button>
       </div>
       <div id="books-reading-list"></div>
       <div id="books-completed-section"></div>
@@ -2248,27 +2296,47 @@ body {
 
     <div class="stats-summary-row" id="stats-summary-row">
       <div class="stats-summary-card">
-        <div class="stats-summary-value" id="stats-total-time">-</div>
-        <div class="stats-summary-label" data-i18n="stats.totalTime">총 시간</div>
+        <div class="stats-summary-value" id="stats-free-time" style="color:var(--mint)">-</div>
+        <div class="stats-summary-label" data-i18n="stats.freeTime">나의 자유시간</div>
       </div>
       <div class="stats-summary-card">
-        <div class="stats-summary-value" id="stats-avg-desired">-</div>
-        <div class="stats-summary-label" data-i18n="stats.avgDesired">평균 달성률</div>
+        <div class="stats-summary-value" id="stats-dream-time" style="color:var(--coral)">-</div>
+        <div class="stats-summary-label" data-i18n="stats.dreamTime">꿈 투자 시간</div>
       </div>
       <div class="stats-summary-card">
-        <div class="stats-summary-value" id="stats-avg-flex">-</div>
-        <div class="stats-summary-label" data-i18n="stats.avgFlex">평균 유동 비율</div>
+        <div class="stats-summary-value" id="stats-dream-rate" style="color:#F59E0B">-</div>
+        <div class="stats-summary-label" data-i18n="stats.dreamRate">꿈 투자율</div>
+      </div>
+      <div class="stats-summary-card">
+        <div class="stats-summary-value" id="stats-fixed-sleep" style="color:#8E9AAF">-</div>
+        <div class="stats-summary-label" data-i18n="stats.fixedSleep">고정+수면</div>
       </div>
     </div>
 
+    <div id="stats-partial-notice" style="display:none;background:#FFF7ED;border:1px solid #FDBA74;border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px;color:#9A3412;text-align:center"></div>
     <div class="empty-state" id="stats-empty" style="display:none">
       <div class="emoji">📈</div>
       <p data-i18n="stats.noData">이 기간에는 기록이 없어요</p>
     </div>
 
     <div id="stats-charts-area">
+      <div class="card" id="stats-168-card">
+        <h3 style="font-size:15px;margin-bottom:12px" id="stats-168-title">나의 168시간</h3>
+        <div style="position:relative;width:100%;max-width:240px;margin:0 auto">
+          <canvas id="stats-168-chart" style="width:100%!important;max-height:240px"></canvas>
+          <div id="stats-168-center" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);text-align:center;pointer-events:none">
+            <div style="font-size:10px;color:var(--text-sub)" data-i18n="stats.freeTime">나의 자유시간</div>
+            <div id="stats-168-center-val" style="font-size:20px;font-weight:800;color:var(--mint);line-height:1.2">-</div>
+          </div>
+          <div id="stats-168-overlay" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);text-align:center;pointer-events:none;background:var(--card);border-radius:8px;padding:4px 8px;z-index:2">
+            <div id="stats-168-overlay-label" style="font-size:11px;color:var(--text-sub);font-weight:600"></div>
+            <div id="stats-168-overlay-val" style="font-size:18px;font-weight:800;line-height:1.2"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="card" id="stats-desired-card">
-        <h3 style="font-size:15px;margin-bottom:12px" data-i18n="stats.desiredTrend">원하는 삶 달성률 추이</h3>
+        <h3 style="font-size:15px;margin-bottom:12px" data-i18n="stats.dreamTrend">꿈 투자 시간 추이</h3>
         <div class="stats-chart-container"><canvas id="stats-desired-chart"></canvas></div>
       </div>
 
@@ -2312,6 +2380,9 @@ body {
     <button class="btn btn-share btn-block" onclick="shareStats()" style="margin-top:8px" id="stats-share-btn">
       📤 <span data-i18n="share.stats">통계 공유하기</span>
     </button>
+    <button class="btn btn-block" onclick="exportExcel()" style="margin-top:8px;background:#217346;color:white" id="stats-export-excel-btn">
+      📊 <span data-i18n="stats.exportExcel">엑셀로 내보내기</span>
+    </button>
   </div>
 </div>
 
@@ -2328,7 +2399,7 @@ body {
       <span class="tab-icon">📊</span><span data-i18n="tab.analysis">분석</span>
     </button>
     <button class="tab" data-tab="goals" onclick="switchTab('goals')">
-      <span class="tab-icon">🎯</span><span data-i18n="tab.goals">목표</span>
+      <span class="tab-icon">🎯</span><span data-i18n="tab.goals">목표/독서</span>
     </button>
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">
       <span class="tab-icon">📈</span><span data-i18n="tab.stats">통계</span>
@@ -2438,6 +2509,7 @@ const TRANSLATIONS = {
     'preset.newPreset': '새 프리셋 추가', 'preset.category': '카테고리',
     'preset.add': '추가', 'preset.empty': '프리셋이 없습니다',
     'toast.alreadyClosed': '이미 마감된 날짜입니다', 'toast.noEntries': '기록이 없습니다',
+    'toast.sameTime': '같은 시간에는 하나만 기록할 수 있어요', 'toast.alreadyRecording': '{0}은(는) 이미 기록 중입니다',
     'toast.reopened': '마감이 취소되었습니다. 다시 기록할 수 있어요!',
     'toast.classifyAll': '모든 활동을 분류해주세요',
     'toast.pdfSaved': 'PDF가 저장되었습니다', 'toast.pdfFailed': 'PDF 생성에 실패했습니다',
@@ -2449,14 +2521,16 @@ const TRANSLATIONS = {
     'toast.enterName': '이름을 입력하세요', 'toast.duplicateName': '이미 같은 이름이 있습니다', 'toast.cannotDelete': '기상/취침은 삭제할 수 없습니다',
     'toast.recorded': '✓ {0} 기록했습니다',
     'preset.reordered': '✓ 버튼 순서가 변경되었습니다',
+    'notify.title': 'GOD+生 알림', 'notify.body': '오늘 하루를 아직 마감하지 않았어요! 기록을 완성해보세요.',
     'chip.move': '이동', 'chip.edit': '수정', 'chip.delete': '삭제',
     'day.sun': '일', 'day.mon': '월', 'day.tue': '화', 'day.wed': '수',
     'day.thu': '목', 'day.fri': '금', 'day.sat': '토',
     'month.1': '1월', 'month.2': '2월', 'month.3': '3월', 'month.4': '4월',
     'month.5': '5월', 'month.6': '6월', 'month.7': '7월', 'month.8': '8월',
     'month.9': '9월', 'month.10': '10월', 'month.11': '11월', 'month.12': '12월',
-    'app.name': '갓생살기',
-    'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '목표', 'tab.stats': '통계',
+    'app.name': 'GOD+生',
+    'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '목표/독서', 'tab.stats': '통계',
+    'plan.mottoTitle': '나의 모토', 'plan.mottoPlaceholder': '인생 모토나 좋은 글귀를 적어보세요...', 'plan.mottoPhoto': '사진 추가',
     'plan.dumpTitle': '브레인 덤프', 'plan.dumpDesc': '오늘 해야 할 일을 모두 적어보세요',
     'plan.dumpPlaceholder': '할 일 입력', 'plan.dumpEmpty': '아직 할 일이 없어요. 위에 입력해 보세요!',
     'plan.big3Title': 'Big 3 + 타임 박싱', 'plan.big3Desc': '⭐ 중요한 3개를 선택하고, 시간을 배정하세요',
@@ -2490,11 +2564,16 @@ const TRANSLATIONS = {
     'header.stats': '통계', 'stats.weekly': '주간', 'stats.monthly': '월간',
     'stats.period': '기간', 'stats.recordedDays': '기록일',
     'stats.noData': '이 기간에는 기록이 없어요',
+    'stats.partialNotice': '미분류 활동이 있는 {n}일은 분류된 항목만 집계됩니다',
     'stats.activityRanking': '활동 TOP 5', 'stats.desiredTrend': '원하는 삶 달성률 추이',
+    'stats.dreamTrend': '꿈 투자 시간 추이',
     'stats.fixedFlexTrend': '고정/유동 시간 비율', 'stats.activityTrend': '활동별 시간 추이',
     'stats.totalTime': '총 시간', 'stats.avgDesired': '평균 달성률', 'stats.avgFlex': '평균 유동 비율',
+    'stats.freeTime': '나의 자유시간', 'stats.dreamTime': '꿈 투자 시간', 'stats.dreamRate': '꿈 투자율', 'stats.fixedSleep': '고정+수면',
+    'stats.168title': '나의 168시간', 'stats.sleep': '수면', 'stats.fixed': '고정(업무 등)', 'stats.dream': '꿈(원하는 삶)', 'stats.otherFlex': '기타 자유시간', 'stats.unrecorded': '미기록',
+    'stats.allActivities': '전체',
     'stats.selectActivity': '활동을 선택하세요',
-    'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
+    'stats.excludeFixed': '고정 활동 제외', 'stats.exportPdf': 'PDF로 내보내기', 'stats.exportExcel': '엑셀로 내보내기', 'stats.pdfTitle': 'MyRoutine - 기간별 통계',
     'stats.planTitle': '계획 실행 통계', 'stats.planTaskAvg': '할 일 완료율', 'stats.planBig3Avg': 'Big 3 달성률',
     'stats.planBig3Total': 'Big 3 달성', 'stats.planTimeAccuracy': '시간 정확도', 'stats.planTaskLine': '할 일 완료',
     'goals.title': '일일 루틴', 'goals.dateTitle': '{date} 루틴 달성', 'goals.manage': '루틴 관리', 'goals.add': '새 루틴 추가',
@@ -2530,6 +2609,13 @@ const TRANSLATIONS = {
     'auth.downloadComplete': '클라우드 데이터 적용 완료',
     'auth.syncNow': '지금 동기화', 'auth.never': '없음',
     'support.coffee': '개발자 응원하기',
+    'life.setup': '남은 시간 설정', 'life.country': '거주 국가', 'life.birthDate': '생년월일', 'life.gender': '성별',
+    'life.male': '남성', 'life.female': '여성',
+    'life.save': '저장', 'life.reset': '초기화',
+    'life.remaining': '남은 시간',
+    'life.tapToSet': '⏳ 터치하여 남은 시간 설정',
+    'life.years': '년', 'life.days': '일', 'life.hours': '시간', 'life.minutes': '분', 'life.seconds': '초',
+    'life.dreamProjected': '꿈 투자 예상 시간', 'life.dreamRatio': '일평균 투자율',
     'share.daily': '공유하기', 'share.stats': '통계 공유하기',
     'share.shareText': 'MyRoutine으로 분석한 나의 하루',
     'share.generating': '이미지 생성 중...', 'share.shared': '공유 완료!',
@@ -2559,6 +2645,15 @@ const TRANSLATIONS = {
     'books.yearly': '연간', 'books.monthly': '월간',
     'books.monthUnit': '월', 'books.booksUnit': '권',
     'books.avgDays': '평균 {avg}일/권',
+    'books.questionLabel': '읽기 전 질문', 'books.questionPlaceholder': '이 책에서 무엇을 얻고 싶은가?',
+    'books.myNotes': '내 말로 정리', 'books.addNote': '노트 추가', 'books.notePlaceholder': '핵심을 내 말로...',
+    'books.shareLabel': '48시간 내 공유', 'books.shareDone': '공유 완료', 'books.shareNotePlaceholder': '블로그 URL, 누구에게...',
+    'books.actionLabel': '이번 주 실행할 한 가지', 'books.actionPlaceholder': '이 책에서 바로 실행할 것...', 'books.actionDone': '실행 완료',
+    'books.threeReadings': '3회 만남', 'books.reading1': '1차 읽기', 'books.reading2': '2차 복습', 'books.reading3': '3차 재독',
+    'books.startNextReading': '다음 읽기 시작', 'books.chewComplete': '씹어먹기 완료',
+    'books.stepProgress': '{n}/5', 'books.lifeBook': '인생책',
+    'books.coverImage': '책 표지', 'books.coverUrlPlaceholder': '이미지 URL 붙여넣기', 'books.coverFile': '파일',
+    'books.goalDate': '독서 목표일', 'books.goalOverdue': '목표일 초과!', 'books.goalToday': '오늘이 목표일!', 'books.goalTomorrow': '내일이 목표일!',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2617,6 +2712,7 @@ const TRANSLATIONS = {
     'preset.newPreset': '新しいプリセット追加', 'preset.category': 'カテゴリ',
     'preset.add': '追加', 'preset.empty': 'プリセットがありません',
     'toast.alreadyClosed': 'すでに締められた日です', 'toast.noEntries': '記録がありません',
+    'toast.sameTime': '同じ時間には一つだけ記録できます', 'toast.alreadyRecording': '{0}はすでに記録中です',
     'toast.reopened': '締めが取り消されました。再び記録できます！',
     'toast.classifyAll': 'すべての活動を分類してください',
     'toast.pdfSaved': 'PDFが保存されました', 'toast.pdfFailed': 'PDF生成に失敗しました',
@@ -2628,14 +2724,16 @@ const TRANSLATIONS = {
     'toast.enterName': '名前を入力してください', 'toast.duplicateName': '同じ名前がすでにあります', 'toast.cannotDelete': '起床/就寝は削除できません',
     'toast.recorded': '✓ {0} 記録しました',
     'preset.reordered': '✓ ボタンの順序を変更しました',
+    'notify.title': 'MyRoutine リマインダー', 'notify.body': '今日のまとめがまだです！記録を完成させましょう。',
     'chip.move': '移動', 'chip.edit': '編集', 'chip.delete': '削除',
     'day.sun': '日', 'day.mon': '月', 'day.tue': '火', 'day.wed': '水',
     'day.thu': '木', 'day.fri': '金', 'day.sat': '土',
     'month.1': '1月', 'month.2': '2月', 'month.3': '3月', 'month.4': '4月',
     'month.5': '5月', 'month.6': '6月', 'month.7': '7月', 'month.8': '8月',
     'month.9': '9月', 'month.10': '10月', 'month.11': '11月', 'month.12': '12月',
-    'app.name': '神生活',
-    'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '目標', 'tab.stats': '統計',
+    'app.name': 'GOD+生',
+    'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '目標/読書', 'tab.stats': '統計',
+    'plan.mottoTitle': '私のモットー', 'plan.mottoPlaceholder': '人生のモットーや良い言葉を書いてみましょう...', 'plan.mottoPhoto': '写真を追加',
     'plan.dumpTitle': 'ブレインダンプ', 'plan.dumpDesc': '今日やるべきことをすべて書き出しましょう',
     'plan.dumpPlaceholder': 'やること入力', 'plan.dumpEmpty': 'まだやることがありません。上に入力してみましょう！',
     'plan.big3Title': 'Big 3 + タイムボクシング', 'plan.big3Desc': '⭐ 重要な3つを選び、時間を割り当てましょう',
@@ -2669,11 +2767,16 @@ const TRANSLATIONS = {
     'header.stats': '統計', 'stats.weekly': '週間', 'stats.monthly': '月間',
     'stats.period': '期間', 'stats.recordedDays': '記録日',
     'stats.noData': 'この期間には記録がありません',
+    'stats.partialNotice': '未分類の活動がある{n}日は、分類済みの項目のみ集計されます',
     'stats.activityRanking': '活動 TOP 5', 'stats.desiredTrend': '理想達成率の推移',
+    'stats.dreamTrend': '夢の投資時間推移',
     'stats.fixedFlexTrend': '固定/自由時間の割合', 'stats.activityTrend': '活動別時間の推移',
     'stats.totalTime': '合計時間', 'stats.avgDesired': '平均達成率', 'stats.avgFlex': '平均自由比率',
+    'stats.freeTime': '自由時間', 'stats.dreamTime': '夢の投資時間', 'stats.dreamRate': '夢の投資率', 'stats.fixedSleep': '固定+睡眠',
+    'stats.168title': '私の168時間', 'stats.sleep': '睡眠', 'stats.fixed': '固定(仕事等)', 'stats.dream': '夢(理想の人生)', 'stats.otherFlex': 'その他自由時間', 'stats.unrecorded': '未記録',
+    'stats.allActivities': '全体',
     'stats.selectActivity': '活動を選択してください',
-    'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
+    'stats.excludeFixed': '固定活動を除外', 'stats.exportPdf': 'PDFにエクスポート', 'stats.exportExcel': 'Excelにエクスポート', 'stats.pdfTitle': 'MyRoutine - 期間統計',
     'stats.planTitle': '計画実行統計', 'stats.planTaskAvg': 'タスク完了率', 'stats.planBig3Avg': 'Big 3 達成率',
     'stats.planBig3Total': 'Big 3 達成', 'stats.planTimeAccuracy': '時間精度', 'stats.planTaskLine': 'タスク完了',
     'goals.title': 'デイリールーティン', 'goals.dateTitle': '{date} ルーティン達成', 'goals.manage': 'ルーティン管理', 'goals.add': '新しいルーティンを追加',
@@ -2709,6 +2812,13 @@ const TRANSLATIONS = {
     'auth.downloadComplete': 'ダウンロード完了',
     'auth.syncNow': '今すぐ同期', 'auth.never': 'なし',
     'support.coffee': '開発者を応援する',
+    'life.setup': '残り時間設定', 'life.country': '居住国', 'life.birthDate': '生年月日', 'life.gender': '性別',
+    'life.male': '男性', 'life.female': '女性',
+    'life.save': '保存', 'life.reset': 'リセット',
+    'life.remaining': '残り時間',
+    'life.tapToSet': '⏳ タップして残り時間を設定',
+    'life.years': '年', 'life.days': '日', 'life.hours': '時間', 'life.minutes': '分', 'life.seconds': '秒',
+    'life.dreamProjected': '夢の投資予想時間', 'life.dreamRatio': '日平均投資率',
     'share.daily': 'シェアする', 'share.stats': '統計をシェアする',
     'share.shareText': 'MyRoutineで分析した一日',
     'share.generating': '画像を生成中...', 'share.shared': 'シェア完了！',
@@ -2738,6 +2848,15 @@ const TRANSLATIONS = {
     'books.yearly': '年間', 'books.monthly': '月間',
     'books.monthUnit': '月', 'books.booksUnit': '冊',
     'books.avgDays': '平均 {avg}日/冊',
+    'books.questionLabel': '読む前の質問', 'books.questionPlaceholder': 'この本から何を得たいか？',
+    'books.myNotes': '自分の言葉で', 'books.addNote': 'ノート追加', 'books.notePlaceholder': '核心を自分の言葉で...',
+    'books.shareLabel': '48時間以内に共有', 'books.shareDone': '共有済み', 'books.shareNotePlaceholder': 'ブログURL、誰に...',
+    'books.actionLabel': '今週実行する一つ', 'books.actionPlaceholder': 'この本からすぐ実行すること...', 'books.actionDone': '実行済み',
+    'books.threeReadings': '3回の出会い', 'books.reading1': '1回目', 'books.reading2': '2回目（復習）', 'books.reading3': '3回目（再読）',
+    'books.startNextReading': '次の読書を開始', 'books.chewComplete': '噛み砕き完了',
+    'books.stepProgress': '{n}/5', 'books.lifeBook': '人生の一冊',
+    'books.coverImage': '表紙画像', 'books.coverUrlPlaceholder': '画像URLを貼り付け', 'books.coverFile': 'ファイル',
+    'books.goalDate': '読書目標日', 'books.goalOverdue': '目標日超過！', 'books.goalToday': '今日が目標日！', 'books.goalTomorrow': '明日が目標日！',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -2796,6 +2915,7 @@ const TRANSLATIONS = {
     'preset.newPreset': 'Add New Preset', 'preset.category': 'Category',
     'preset.add': 'Add', 'preset.empty': 'No presets',
     'toast.alreadyClosed': 'This day is already closed', 'toast.noEntries': 'No entries recorded',
+    'toast.sameTime': 'Only one record per minute allowed', 'toast.alreadyRecording': '{0} is already being recorded',
     'toast.reopened': 'Day reopened. You can record again!',
     'toast.classifyAll': 'Please classify all activities',
     'toast.pdfSaved': 'PDF has been saved', 'toast.pdfFailed': 'Failed to generate PDF',
@@ -2807,14 +2927,16 @@ const TRANSLATIONS = {
     'toast.enterName': 'Please enter a name', 'toast.duplicateName': 'This name already exists', 'toast.cannotDelete': 'Wake Up/Bedtime cannot be deleted',
     'toast.recorded': '✓ Recorded {0}',
     'preset.reordered': '✓ Button order changed',
+    'notify.title': 'MyRoutine Reminder', 'notify.body': "You haven't closed today yet! Complete your daily record.",
     'chip.move': 'Move', 'chip.edit': 'Edit', 'chip.delete': 'Delete',
     'day.sun': 'Sun', 'day.mon': 'Mon', 'day.tue': 'Tue', 'day.wed': 'Wed',
     'day.thu': 'Thu', 'day.fri': 'Fri', 'day.sat': 'Sat',
     'month.1': 'Jan', 'month.2': 'Feb', 'month.3': 'Mar', 'month.4': 'Apr',
     'month.5': 'May', 'month.6': 'Jun', 'month.7': 'Jul', 'month.8': 'Aug',
     'month.9': 'Sep', 'month.10': 'Oct', 'month.11': 'Nov', 'month.12': 'Dec',
-    'app.name': 'Live Your Best',
-    'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals', 'tab.stats': 'Stats',
+    'app.name': 'GOD+生',
+    'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals/Books', 'tab.stats': 'Stats',
+    'plan.mottoTitle': 'My Motto', 'plan.mottoPlaceholder': 'Write your life motto or favorite quotes...', 'plan.mottoPhoto': 'Add photo',
     'plan.dumpTitle': 'Brain Dump', 'plan.dumpDesc': 'Write down everything you need to do today',
     'plan.dumpPlaceholder': 'Enter a task', 'plan.dumpEmpty': 'No tasks yet. Add one above!',
     'plan.big3Title': 'Big 3 + Time Boxing', 'plan.big3Desc': '⭐ Select top 3 and assign time blocks',
@@ -2848,11 +2970,16 @@ const TRANSLATIONS = {
     'header.stats': 'Stats', 'stats.weekly': 'Weekly', 'stats.monthly': 'Monthly',
     'stats.period': 'Period', 'stats.recordedDays': 'Recorded',
     'stats.noData': 'No records for this period',
+    'stats.partialNotice': '{n} day(s) with unclassified activities — only classified items are counted',
     'stats.activityRanking': 'Top 5 Activities', 'stats.desiredTrend': 'Desired Life Achievement Trend',
+    'stats.dreamTrend': 'Dream Investment Trend',
     'stats.fixedFlexTrend': 'Fixed/Flexible Ratio', 'stats.activityTrend': 'Activity Time Trend',
     'stats.totalTime': 'Total Time', 'stats.avgDesired': 'Avg Achievement', 'stats.avgFlex': 'Avg Flexible',
+    'stats.freeTime': 'My Free Time', 'stats.dreamTime': 'Dream Time', 'stats.dreamRate': 'Dream Rate', 'stats.fixedSleep': 'Fixed+Sleep',
+    'stats.168title': 'My 168 Hours', 'stats.sleep': 'Sleep', 'stats.fixed': 'Fixed (Work etc.)', 'stats.dream': 'Dream (Desired Life)', 'stats.otherFlex': 'Other Free Time', 'stats.unrecorded': 'Unrecorded',
+    'stats.allActivities': 'All',
     'stats.selectActivity': 'Select an activity',
-    'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.pdfTitle': 'MyRoutine - Period Stats',
+    'stats.excludeFixed': 'Exclude fixed', 'stats.exportPdf': 'Export as PDF', 'stats.exportExcel': 'Export as Excel', 'stats.pdfTitle': 'MyRoutine - Period Stats',
     'stats.planTitle': 'Plan Execution Stats', 'stats.planTaskAvg': 'Task Completion', 'stats.planBig3Avg': 'Big 3 Rate',
     'stats.planBig3Total': 'Big 3 Done', 'stats.planTimeAccuracy': 'Time Accuracy', 'stats.planTaskLine': 'Task Completion',
     'goals.title': 'Daily Routines', 'goals.dateTitle': '{date} Routines', 'goals.manage': 'Manage Routines', 'goals.add': 'Add New Routine',
@@ -2888,6 +3015,13 @@ const TRANSLATIONS = {
     'auth.downloadComplete': 'Download complete',
     'auth.syncNow': 'Sync now', 'auth.never': 'Never',
     'support.coffee': 'Buy us a coffee',
+    'life.setup': 'Life Timer Setup', 'life.country': 'Country', 'life.birthDate': 'Date of birth', 'life.gender': 'Gender',
+    'life.male': 'Male', 'life.female': 'Female',
+    'life.save': 'Save', 'life.reset': 'Reset',
+    'life.remaining': 'Time remaining',
+    'life.tapToSet': '⏳ Tap to set your life timer',
+    'life.years': 'y', 'life.days': 'd', 'life.hours': 'h', 'life.minutes': 'm', 'life.seconds': 's',
+    'life.dreamProjected': 'Dream Investment Time', 'life.dreamRatio': 'Daily avg ratio',
     'share.daily': 'Share', 'share.stats': 'Share Stats',
     'share.shareText': 'My day analyzed with MyRoutine',
     'share.generating': 'Generating image...', 'share.shared': 'Shared!',
@@ -2917,6 +3051,15 @@ const TRANSLATIONS = {
     'books.yearly': 'Yearly', 'books.monthly': 'Monthly',
     'books.monthUnit': '', 'books.booksUnit': ' books',
     'books.avgDays': 'avg {avg} days/book',
+    'books.questionLabel': 'Pre-reading Question', 'books.questionPlaceholder': 'What do I want from this book?',
+    'books.myNotes': 'My Notes', 'books.addNote': 'Add Note', 'books.notePlaceholder': 'Key takeaway in my words...',
+    'books.shareLabel': 'Share within 48h', 'books.shareDone': 'Shared', 'books.shareNotePlaceholder': 'Blog URL, told whom...',
+    'books.actionLabel': 'One action this week', 'books.actionPlaceholder': 'One thing to execute from this book...', 'books.actionDone': 'Done',
+    'books.threeReadings': '3 Readings', 'books.reading1': '1st Read', 'books.reading2': '2nd Review', 'books.reading3': '3rd Re-read',
+    'books.startNextReading': 'Start Next Reading', 'books.chewComplete': 'Fully Digested',
+    'books.stepProgress': '{n}/5', 'books.lifeBook': 'Life-changing Book',
+    'books.coverImage': 'Cover Image', 'books.coverUrlPlaceholder': 'Paste image URL', 'books.coverFile': 'File',
+    'books.goalDate': 'Reading Goal', 'books.goalOverdue': 'Overdue!', 'books.goalToday': 'Due today!', 'books.goalTomorrow': 'Due tomorrow!',
   }
 };
 
@@ -3053,6 +3196,7 @@ let statsDesiredChart = null;
 let statsRatioChart = null;
 let statsActivityChart = null;
 let statsPlanChart = null;
+let stats168Chart = null;
 let statsSelectedActivity = null;
 let statsExcludeFixed = false;
 let statsCachedDays = [];
@@ -3215,14 +3359,21 @@ async function syncToCloud() {
     const userRef = db.collection('users').doc(uid);
     const now = firebase.firestore.FieldValue.serverTimestamp();
 
-    // 1. Upload config document
+    // 1. Upload config document (strip Base64 images from books to stay under 1MB)
+    const booksForCloud = (data.books || []).map(b => {
+      if (b.coverImage && b.coverImage.startsWith('data:')) {
+        const { coverImage, ...rest } = b;
+        return rest;
+      }
+      return b;
+    });
     await userRef.set({
       activityPresets: data.activityPresets || {},
       customPresets: data.customPresets || null,
       settings: data.settings || {},
       goals: data.goals || [],
       lifeGoals: data.lifeGoals || [],
-      books: data.books || [],
+      books: booksForCloud,
       lastSync: now
     }, { merge: true });
 
@@ -3269,7 +3420,15 @@ async function syncFromCloud() {
       if (cfg.settings) data.settings = cfg.settings;
       if (cfg.goals) data.goals = cfg.goals;
       if (cfg.lifeGoals) data.lifeGoals = cfg.lifeGoals;
-      if (cfg.books) data.books = cfg.books;
+      if (cfg.books) {
+        // Preserve local Base64 cover images that were stripped during cloud sync
+        const localCovers = {};
+        (data.books || []).forEach(b => { if (b.coverImage && b.coverImage.startsWith('data:')) localCovers[b.id] = b.coverImage; });
+        data.books = cfg.books.map(b => {
+          if (!b.coverImage && localCovers[b.id]) b.coverImage = localCovers[b.id];
+          return b;
+        });
+      }
     }
 
     // 2. Read all dates
@@ -3403,6 +3562,48 @@ function init() {
   const entries = dd ? dd.entries : [];
   if (!localStorage.getItem('tourCompleted') && entries.length === 0) {
     setTimeout(() => startTour(), 500);
+  }
+  scheduleReminders();
+  startLifeCounter();
+}
+
+// --- Daily close reminder notifications ---
+let reminderTimers = [];
+function scheduleReminders() {
+  // Clear any existing timers
+  reminderTimers.forEach(id => clearTimeout(id));
+  reminderTimers = [];
+  // Request notification permission on first load
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+  const REMINDER_HOURS = [19, 21, 22]; // 7PM, 9PM, 10PM
+  const now = new Date();
+  REMINDER_HOURS.forEach(hour => {
+    const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), hour, 0, 0);
+    const ms = target.getTime() - now.getTime();
+    if (ms > 0) {
+      const id = setTimeout(() => showReminderNotification(), ms);
+      reminderTimers.push(id);
+    }
+  });
+}
+
+function showReminderNotification() {
+  const today = getTodayStr();
+  const dd = data.dates[today];
+  // Only notify if today has entries but is not yet closed
+  if (!dd || dd.entries.length === 0 || dd.status === 'completed') return;
+  if ('Notification' in window && Notification.permission === 'granted') {
+    const title = t('notify.title');
+    const body = t('notify.body');
+    if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.showNotification(title, { body, icon: 'https://daniel-sung.github.io/MyRoutine/icon-192.png', tag: 'daily-reminder' });
+      });
+    } else {
+      new Notification(title, { body });
+    }
   }
 }
 
@@ -3552,15 +3753,17 @@ function getStatsPeriodDates() {
 
 function aggregateStatsData(dates) {
   const days = [];
+  let partialDays = 0;
   dates.forEach(dateStr => {
     const dd = data.dates[dateStr];
     if (!dd || !dd.entries || dd.entries.length === 0) return;
     const allClassified = dd.entries.every(e => e.category);
-    if (!allClassified) return;
+    if (!allClassified) partialDays++;
     const stats = calcStats(dd);
-    days.push({ date: dateStr, ...stats });
+    if (stats.totalMin <= 0) return;
+    days.push({ date: dateStr, ...stats, partial: !allClassified });
   });
-  return days;
+  return { days, partialDays };
 }
 
 function setStatsMode(mode) {
@@ -3947,7 +4150,7 @@ function renderStats() {
   document.getElementById('stats-period-label').textContent = formatStatsPeriodLabel();
 
   const dates = getStatsPeriodDates();
-  const days = aggregateStatsData(dates);
+  const { days, partialDays } = aggregateStatsData(dates);
   statsCachedDays = days;
   statsCachedDates = dates;
 
@@ -3956,6 +4159,17 @@ function renderStats() {
   const summaryRow = document.getElementById('stats-summary-row');
   const pdfBtn = document.getElementById('stats-export-pdf-btn');
   const shareBtn = document.getElementById('stats-share-btn');
+
+  // 미분류 날짜 안내
+  const noticeEl = document.getElementById('stats-partial-notice');
+  if (noticeEl) {
+    if (partialDays > 0) {
+      noticeEl.style.display = '';
+      noticeEl.textContent = t('stats.partialNotice').replace('{n}', partialDays);
+    } else {
+      noticeEl.style.display = 'none';
+    }
+  }
 
   if (days.length === 0) {
     chartsArea.style.display = 'none';
@@ -3972,7 +4186,8 @@ function renderStats() {
   if (pdfBtn) pdfBtn.style.display = '';
   if (shareBtn) shareBtn.style.display = '';
 
-  renderStatsSummaryCards(days);
+  renderStatsSummaryCards(days, dates);
+  render168Chart(days, dates);
   renderStatsDesiredChart(days, dates);
   renderStatsRatioChart(days, dates);
   renderStatsRanking(days);
@@ -3981,18 +4196,88 @@ function renderStats() {
   renderStatsPlan(dates);
 }
 
-function renderStatsSummaryCards(days) {
-  const totalMin = days.reduce((s, d) => s + d.totalMin, 0);
-  const avgDesired = days.length > 0
-    ? Math.round(days.reduce((s, d) => s + (d.flexMin > 0 ? (d.desiredMin / d.flexMin * 100) : 0), 0) / days.length)
-    : 0;
-  const avgFlex = days.length > 0
-    ? Math.round(days.reduce((s, d) => s + (d.totalMin > 0 ? (d.flexMin / d.totalMin * 100) : 0), 0) / days.length)
-    : 0;
+function renderStatsSummaryCards(days, dates) {
+  const totalFixedMin = days.reduce((s, d) => s + d.fixedMin, 0);
+  const totalFlexMin = days.reduce((s, d) => s + d.flexMin, 0);
+  const totalDesiredMin = days.reduce((s, d) => s + d.desiredMin, 0);
+  const numDays = dates.length;
+  const totalWeekMin = numDays * 24 * 60; // 168h for 7 days
+  const freeMin = totalWeekMin - totalFixedMin;
+  const dreamRate = totalFlexMin > 0 ? Math.round(totalDesiredMin / totalFlexMin * 100) : 0;
 
-  document.getElementById('stats-total-time').textContent = formatMin(totalMin);
-  document.getElementById('stats-avg-desired').textContent = avgDesired + '%';
-  document.getElementById('stats-avg-flex').textContent = avgFlex + '%';
+  document.getElementById('stats-free-time').textContent = formatMin(freeMin > 0 ? freeMin : 0);
+  document.getElementById('stats-dream-time').textContent = formatMin(totalDesiredMin);
+  document.getElementById('stats-dream-rate').textContent = dreamRate + '%';
+  document.getElementById('stats-fixed-sleep').textContent = formatMin(totalFixedMin);
+}
+
+function render168Chart(days, dates) {
+  const ctx = document.getElementById('stats-168-chart').getContext('2d');
+  if (stats168Chart) stats168Chart.destroy();
+
+  const numDays = dates.length;
+  const totalWeekMin = numDays * 24 * 60;
+  const totalHours = numDays * 24;
+
+  // Dynamic title: "나의 168시간" for weekly, "나의 720시간" for monthly, etc.
+  const titleEl = document.getElementById('stats-168-title');
+  const prefix = currentLang === 'ja' ? '私の' : currentLang === 'en' ? 'My ' : '나의 ';
+  const suffix = currentLang === 'ja' ? '時間' : currentLang === 'en' ? ' Hours' : '시간';
+  titleEl.textContent = prefix + totalHours + suffix;
+
+  const totalSleepMin = days.reduce((s, d) => s + (d.sleepMin || 0), 0);
+  const totalFixedNoSleep = days.reduce((s, d) => s + d.fixedMin - (d.sleepMin || 0), 0);
+  const totalDesiredMin = days.reduce((s, d) => s + d.desiredMin, 0);
+  const totalFlexMin = days.reduce((s, d) => s + d.flexMin, 0);
+  const otherFlexMin = totalFlexMin - totalDesiredMin;
+  const recordedMin = days.reduce((s, d) => s + d.totalMin, 0);
+  const unrecordedMin = Math.max(0, totalWeekMin - recordedMin);
+  const freeMin = Math.max(0, totalWeekMin - totalSleepMin - totalFixedNoSleep);
+
+  document.getElementById('stats-168-center-val').textContent = formatMin(freeMin);
+
+  const overlay = document.getElementById('stats-168-overlay');
+  const overlayLabel = document.getElementById('stats-168-overlay-label');
+  const overlayVal = document.getElementById('stats-168-overlay-val');
+  const colors = ['#6366F1', '#8E9AAF', '#FF7F7F', '#7ECEC1', '#E5E7EB'];
+
+  document.getElementById('stats-168-center-val').textContent = formatMin(freeMin);
+
+  stats168Chart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: [t('stats.sleep'), t('stats.fixed'), t('stats.dream'), t('stats.otherFlex'), t('stats.unrecorded')],
+      datasets: [{
+        data: [totalSleepMin, Math.max(0, totalFixedNoSleep), totalDesiredMin, Math.max(0, otherFlexMin), unrecordedMin],
+        backgroundColor: colors,
+        borderWidth: 2,
+        borderColor: 'var(--card)',
+        cutout: '68%'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      onHover: (evt, elements) => {
+        if (elements.length > 0) {
+          const i = elements[0].index;
+          const label = stats168Chart.data.labels[i];
+          const val = stats168Chart.data.datasets[0].data[i];
+          const pct = Math.round(val / totalWeekMin * 100);
+          overlayLabel.textContent = label;
+          overlayVal.textContent = formatMin(val) + ' (' + pct + '%)';
+          overlayVal.style.color = colors[i];
+          overlay.style.display = '';
+        } else {
+          overlay.style.display = 'none';
+        }
+      },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true, pointStyleWidth: 8, padding: 8 } },
+        tooltip: { enabled: false }
+      }
+    }
+  });
 }
 
 function renderStatsDesiredChart(days, dates) {
@@ -4003,33 +4288,55 @@ function renderStatsDesiredChart(days, dates) {
     const parts = d.split('-');
     return parseInt(parts[1]) + '/' + parseInt(parts[2]);
   });
-  const values = dates.map(dateStr => {
+  const timeValues = dates.map(dateStr => {
+    const day = days.find(d => d.date === dateStr);
+    return day ? day.desiredMin : 0;
+  });
+  const pctValues = dates.map(dateStr => {
     const day = days.find(d => d.date === dateStr);
     if (!day || day.flexMin === 0) return null;
     return Math.round(day.desiredMin / day.flexMin * 100);
   });
 
   statsDesiredChart = new Chart(ctx, {
-    type: 'line',
+    type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: values,
-        borderColor: 'rgba(255,127,127,0.9)',
-        backgroundColor: 'rgba(255,127,127,0.15)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3,
-        pointBackgroundColor: 'rgba(255,127,127,1)',
-        spanGaps: true
-      }]
+      datasets: [
+        {
+          label: t('stats.dreamTime'),
+          data: timeValues,
+          backgroundColor: 'rgba(255,127,127,0.5)',
+          borderColor: 'rgba(255,127,127,1)',
+          borderWidth: 1,
+          borderRadius: 3,
+          yAxisID: 'y'
+        },
+        {
+          label: t('stats.dreamRate'),
+          data: pctValues,
+          type: 'line',
+          borderColor: '#F59E0B',
+          backgroundColor: 'rgba(245,158,11,0.1)',
+          fill: false,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: '#F59E0B',
+          spanGaps: true,
+          yAxisID: 'y1'
+        }
+      ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } } },
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, usePointStyle: true, pointStyleWidth: 10, padding: 12 } },
+        tooltip: { callbacks: { label: ctx => ctx.dataset.yAxisID === 'y1' ? ctx.parsed.y + '%' : formatMin(ctx.parsed.y) } }
+      },
       scales: {
-        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+        y: { beginAtZero: true, position: 'left', ticks: { callback: v => Math.floor(v/60) > 0 ? Math.floor(v/60) + 'h' : v + 'm', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+        y1: { beginAtZero: true, max: 100, position: 'right', ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { display: false } },
         x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }, grid: { display: false } }
       }
     }
@@ -4106,25 +4413,20 @@ function renderStatsRanking(days) {
 }
 
 function renderStatsActivityTrend(days, dates) {
-  // Collect all activities
   const actSet = new Set();
   days.forEach(d => d.activities.forEach(a => actSet.add(a.activity)));
   const allActivities = [...actSet].sort();
 
   const chipsEl = document.getElementById('stats-activity-chips');
-  if (!statsSelectedActivity || !actSet.has(statsSelectedActivity)) {
-    statsSelectedActivity = allActivities[0] || null;
+  const ALL_KEY = '__all__';
+  if (!statsSelectedActivity || (statsSelectedActivity !== ALL_KEY && !actSet.has(statsSelectedActivity))) {
+    statsSelectedActivity = ALL_KEY;
   }
 
-  chipsEl.innerHTML = allActivities.map(a =>
-    `<button class="stats-activity-chip${a === statsSelectedActivity ? ' active' : ''}" onclick="selectStatsActivity('${a.replace(/'/g, "\\'")}')">${a}</button>`
+  const allChip = `<button class="stats-activity-chip${statsSelectedActivity === ALL_KEY ? ' active' : ''}" data-key="${ALL_KEY}" onclick="selectStatsActivity('${ALL_KEY}')">${t('stats.allActivities')}</button>`;
+  chipsEl.innerHTML = allChip + allActivities.map(a =>
+    `<button class="stats-activity-chip${a === statsSelectedActivity ? ' active' : ''}" data-key="${a.replace(/"/g, '&quot;')}" onclick="selectStatsActivity('${a.replace(/'/g, "\\'")}')">${a}</button>`
   ).join('');
-
-  if (!statsSelectedActivity) {
-    const ctx = document.getElementById('stats-activity-chart').getContext('2d');
-    if (statsActivityChart) { statsActivityChart.destroy(); statsActivityChart = null; }
-    return;
-  }
 
   const ctx = document.getElementById('stats-activity-chart').getContext('2d');
   if (statsActivityChart) statsActivityChart.destroy();
@@ -4133,43 +4435,76 @@ function renderStatsActivityTrend(days, dates) {
     const parts = d.split('-');
     return parseInt(parts[1]) + '/' + parseInt(parts[2]);
   });
-  const values = dates.map(dateStr => {
-    const day = days.find(d => d.date === dateStr);
-    if (!day) return 0;
-    return day.activities.filter(a => a.activity === statsSelectedActivity).reduce((s, a) => s + a.minutes, 0);
-  });
 
-  statsActivityChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data: values,
-        backgroundColor: 'rgba(126,206,193,0.6)',
-        borderColor: 'rgba(126,206,193,1)',
-        borderWidth: 1,
-        borderRadius: 3
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => formatMin(ctx.parsed.y) } } },
-      scales: {
-        y: { beginAtZero: true, ticks: { callback: v => Math.floor(v/60) > 0 ? Math.floor(v/60) + 'h' : v + 'm', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
-        x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }, grid: { display: false } }
+  if (statsSelectedActivity === ALL_KEY) {
+    // Stacked bar: fixed / dream / other flex
+    const fixedData = dates.map(dateStr => { const day = days.find(d => d.date === dateStr); return day ? day.fixedMin : 0; });
+    const dreamData = dates.map(dateStr => { const day = days.find(d => d.date === dateStr); return day ? day.desiredMin : 0; });
+    const otherFlexData = dates.map(dateStr => { const day = days.find(d => d.date === dateStr); return day ? Math.max(0, day.flexMin - day.desiredMin) : 0; });
+
+    statsActivityChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [
+          { label: t('stats.fixed'), data: fixedData, backgroundColor: 'rgba(142,154,175,0.7)', borderRadius: 2 },
+          { label: t('stats.dream'), data: dreamData, backgroundColor: 'rgba(255,127,127,0.7)', borderRadius: 2 },
+          { label: t('stats.otherFlex'), data: otherFlexData, backgroundColor: 'rgba(126,206,193,0.5)', borderRadius: 2 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 }, usePointStyle: true, pointStyleWidth: 10, padding: 12 } },
+          tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + formatMin(ctx.parsed.y) } }
+        },
+        scales: {
+          x: { stacked: true, ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }, grid: { display: false } },
+          y: { stacked: true, ticks: { callback: v => Math.floor(v/60) + 'h', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } }
+        }
       }
-    }
-  });
+    });
+  } else {
+    const values = dates.map(dateStr => {
+      const day = days.find(d => d.date === dateStr);
+      if (!day) return 0;
+      return day.activities.filter(a => a.activity === statsSelectedActivity).reduce((s, a) => s + a.minutes, 0);
+    });
+
+    statsActivityChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          backgroundColor: 'rgba(126,206,193,0.6)',
+          borderColor: 'rgba(126,206,193,1)',
+          borderWidth: 1,
+          borderRadius: 3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => formatMin(ctx.parsed.y) } } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => Math.floor(v/60) > 0 ? Math.floor(v/60) + 'h' : v + 'm', font: { size: 11 } }, grid: { color: 'rgba(128,128,128,0.1)' } },
+          x: { ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }, grid: { display: false } }
+        }
+      }
+    });
+  }
 }
 
 function selectStatsActivity(activity) {
   statsSelectedActivity = activity;
   document.querySelectorAll('.stats-activity-chip').forEach(chip => {
-    chip.classList.toggle('active', chip.textContent === activity);
+    const chipKey = chip.getAttribute('data-key') || chip.textContent;
+    chip.classList.toggle('active', chipKey === activity);
   });
   const dates = getStatsPeriodDates();
-  const days = aggregateStatsData(dates);
+  const { days } = aggregateStatsData(dates);
   renderStatsActivityTrend(days, dates);
 }
 
@@ -4363,7 +4698,7 @@ function renderStatsPlan(dates) {
 // ============== Books (Reading Log) ==============
 let booksYear = new Date().getFullYear();
 let booksMonth = new Date().getMonth() + 1; // 1-12
-let booksMode = 'year'; // 'year' or 'month'
+let booksMode = 'month'; // 'year' or 'month'
 let booksChart = null;
 
 function setBookMode(mode) {
@@ -4371,11 +4706,14 @@ function setBookMode(mode) {
   document.querySelectorAll('#books-mode-toggle .stats-mode-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.bmode === mode);
   });
+  const addBtn = document.getElementById('books-add-btn');
+  if (addBtn) addBtn.style.display = mode === 'month' ? '' : 'none';
   renderBooks();
 }
 
 function renderBooks() {
   if (!data.books) data.books = [];
+  data.books.forEach(migrateBookData);
   const readingList = document.getElementById('books-reading-list');
   const completedSection = document.getElementById('books-completed-section');
   const nav = document.getElementById('books-nav');
@@ -4395,53 +4733,93 @@ function renderBooks() {
     periodLabel = `${booksYear}.${String(booksMonth).padStart(2,'0')}`;
   } else {
     completed = data.books.filter(b => b.endDate && b.endDate.startsWith(String(booksYear)))
-      .sort((a, b) => b.endDate.localeCompare(a.endDate));
+      .sort((a, b) => (b.lifeBook ? 1 : 0) - (a.lifeBook ? 1 : 0) || (b.rating || 0) - (a.rating || 0) || b.endDate.localeCompare(a.endDate));
     periodLabel = String(booksYear);
   }
 
-  // Reading list
+  // Reading list (hide in yearly mode)
   if (reading.length === 0 && completed.length === 0 && data.books.length === 0) {
     readingList.innerHTML = `<div style="text-align:center;color:var(--text-light);padding:16px;font-size:13px">${t('books.noBooks')}</div>`;
-  } else if (reading.length === 0) {
+  } else if (reading.length === 0 || booksMode === 'year') {
     readingList.innerHTML = '';
   } else {
-    const today = new Date();
-    readingList.innerHTML = `<div class="book-section-title">📖 ${t('books.reading')} (${reading.length})</div>` +
+    const today = new Date(); today.setHours(0,0,0,0);
+    readingList.innerHTML = `<div class="book-section-title">📖 ${t('books.reading')} (${reading.length})</div><div class="book-list-scroll">` +
       reading.map(b => {
-        const start = new Date(b.startDate);
-        const dayCount = Math.max(1, Math.ceil((today - start) / 86400000) + 1);
+        const start = new Date(b.startDate); start.setHours(0,0,0,0);
+        const dayCount = Math.max(1, Math.floor((today - start) / 86400000) + 1);
         const dayStr = t('books.dayCount').replace('{n}', dayCount);
-        return `<div class="book-item" onclick="showEditBookModal('${escAttr(b.id)}')">
-          <div>
-            <div class="book-title">${escHtml(b.title)}</div>
+        let goalIcon = '';
+        if (b.goalDate) {
+          const goal = new Date(b.goalDate); goal.setHours(0,0,0,0);
+          const daysLeft = Math.floor((goal - today) / 86400000);
+          if (daysLeft < 0) goalIcon = '<span style="color:var(--danger)" title="' + t('books.goalOverdue') + '">🔥</span>';
+          else if (daysLeft === 0) goalIcon = '<span style="color:var(--danger)" title="' + t('books.goalToday') + '">⏰</span>';
+          else if (daysLeft === 1) goalIcon = '<span style="color:#F59E0B" title="' + t('books.goalTomorrow') + '">⏰</span>';
+        }
+        return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
+          ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-right:8px">` : ''}
+          <div style="flex:1;min-width:0">
+            <div class="book-title">${escHtml(b.title)} ${goalIcon}</div>
             ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
-            <div class="book-meta">${b.startDate.slice(5).replace('-','/')}~ · ${dayStr} 📖</div>
+            <div class="book-meta">${b.startDate.slice(5).replace('-','/')}~ · ${dayStr} 📖${b.goalDate ? ' · 🎯' + b.goalDate.slice(5).replace('-','/') : ''} ${renderStepDots(b)}</div>
           </div>
-          <button class="book-done-btn" onclick="event.stopPropagation();showFinishBookModal('${escAttr(b.id)}')">✅ ${t('books.markDone')}</button>
+          <button class="book-done-btn" onclick="event.stopPropagation();showFinishBookModal('${escAttr(b.id)}')">☐ ${t('books.markDone')}</button>
         </div>`;
-      }).join('');
+      }).join('') + '</div>';
+  }
+
+  // Life books (always shown, max 10, excluding those already in completed list)
+  const completedIds = new Set(completed.map(b => b.id));
+  const lifeBooks = data.books.filter(b => b.lifeBook && b.endDate && !completedIds.has(b.id))
+    .sort((a, b) => (b.rating || 0) - (a.rating || 0)).slice(0, 10);
+  const lifeBooksSection = document.getElementById('books-lifebooks-section') || (() => {
+    const el = document.createElement('div');
+    el.id = 'books-lifebooks-section';
+    completedSection.parentNode.insertBefore(el, completedSection);
+    return el;
+  })();
+  if (lifeBooks.length > 0) {
+    const renderLifeBookItem = (b) => {
+      const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
+      return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
+        ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-right:8px">` : ''}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${stars ? `<span class="book-stars">${stars}</span>` : ''}
+            <span class="book-title">${escHtml(b.title)}</span>
+          </div>
+          ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
+        </div>
+        <span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>
+      </div>`;
+    };
+    lifeBooksSection.innerHTML = `<div class="book-section-title">❤️ ${t('books.lifeBook')} (${lifeBooks.length})</div><div class="book-list-scroll">${lifeBooks.map(renderLifeBookItem).join('')}</div>`;
+  } else {
+    lifeBooksSection.innerHTML = '';
   }
 
   // Completed list
   if (completed.length > 0) {
-    completedSection.innerHTML = `<div class="book-section-title">📗 ${t('books.completed')} (${completed.length})</div>` +
+    completedSection.innerHTML = `<div class="book-section-title">📗 ${t('books.completed')} (${completed.length})</div><div class="book-list-scroll">` +
       completed.map(b => {
         const start = new Date(b.startDate);
         const end = new Date(b.endDate);
         const days = Math.max(1, Math.ceil((end - start) / 86400000) + 1);
         const stars = b.rating ? '⭐'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
-        return `<div class="book-item" onclick="showEditBookModal('${escAttr(b.id)}')">
+        return `<div class="book-item" onclick="showBookDetailModal('${escAttr(b.id)}')">
+          ${b.coverImage ? `<img src="${escAttr(b.coverImage)}" style="width:40px;height:56px;object-fit:cover;border-radius:4px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.15);margin-right:8px">` : ''}
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
               ${stars ? `<span class="book-stars">${stars}</span>` : ''}
               <span class="book-title">${escHtml(b.title)}</span>
             </div>
             ${b.author ? `<div class="book-author">${escHtml(b.author)}</div>` : ''}
-            <div class="book-meta">${b.startDate.slice(5).replace('-','/')} → ${b.endDate.slice(5).replace('-','/')} (${t('books.readDays').replace('{n}', days)})</div>
-            ${b.memo ? `<div style="font-size:12px;color:var(--text-sub);margin-top:3px;font-style:italic">"${escHtml(b.memo)}"</div>` : ''}
+            <div class="book-meta">${b.startDate.slice(5).replace('-','/')} → ${b.endDate.slice(5).replace('-','/')} (${t('books.readDays').replace('{n}', days)}) ${renderStepDots(b)}</div>
           </div>
+          ${b.lifeBook ? '<span style="font-size:16px;flex-shrink:0;align-self:center">❤️</span>' : ''}
         </div>`;
-      }).join('');
+      }).join('') + '</div>';
   } else {
     completedSection.innerHTML = '';
   }
@@ -4608,6 +4986,25 @@ function showAddBookModal() {
           <label style="font-size:13px;font-weight:600">${t('books.startDate')}</label>
           <input type="date" id="book-input-start" class="time-input" value="${today}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
         </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">🎯 ${t('books.goalDate')}</label>
+          <input type="date" id="book-input-goal" class="time-input" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+            <input type="text" id="book-input-image-url" class="time-input" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap">
+              ${t('books.coverFile')}
+              <input type="file" accept="image/*" onchange="handleBookCoverFile(event)" style="display:none">
+            </label>
+          </div>
+          <div id="book-cover-preview" style="margin-top:6px;text-align:center"></div>
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">❓ ${t('books.questionLabel')}</label>
+          <textarea id="book-input-question" class="time-input" placeholder="${t('books.questionPlaceholder')}" style="width:100%;font-size:14px;padding:8px;margin-top:4px;min-height:60px;resize:vertical"></textarea>
+        </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="btn" onclick="closeModal()" style="flex:1">${t('books.cancel')}</button>
           <button class="btn" onclick="addBook()" style="flex:1;background:var(--mint);color:white">${t('books.register')}</button>
@@ -4617,21 +5014,112 @@ function showAddBookModal() {
   setTimeout(() => document.getElementById('book-input-title')?.focus(), 100);
 }
 
+let _pendingBookCover = null;
+
+function handleBookCoverFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 200;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _pendingBookCover = canvas.toDataURL('image/jpeg', 0.8);
+      const preview = document.getElementById('book-cover-preview');
+      if (preview) preview.innerHTML = `<img src="${_pendingBookCover}" style="max-height:80px;border-radius:4px;box-shadow:var(--shadow)">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleBookEditCoverFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 200;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      _pendingBookCover = canvas.toDataURL('image/jpeg', 0.8);
+      const preview = document.getElementById('book-edit-cover-preview');
+      if (preview) preview.innerHTML = `<img src="${_pendingBookCover}" style="max-height:80px;border-radius:4px;box-shadow:var(--shadow)">`;
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
 function addBook() {
   const title = document.getElementById('book-input-title').value.trim();
   if (!title) return;
   const author = document.getElementById('book-input-author').value.trim();
   const startDate = document.getElementById('book-input-start').value || getTodayStr();
+  const question = (document.getElementById('book-input-question')?.value || '').trim();
+  const imageUrl = (document.getElementById('book-input-image-url')?.value || '').trim();
+  const coverImage = _pendingBookCover || imageUrl || '';
+  const goalDate = (document.getElementById('book-input-goal')?.value || '');
+  _pendingBookCover = null;
 
   if (!data.books) data.books = [];
   data.books.push({
     id: 'b_' + Date.now(),
-    title, author, startDate,
-    endDate: null, rating: 0, memo: ''
+    title, author, startDate, goalDate,
+    endDate: null, rating: 0, memo: '', coverImage,
+    question, notes: [], shared: false, shareNote: '',
+    actionItem: '', actionDone: false, readCount: 1, readings: []
   });
   saveData();
   closeModal();
   renderBooks();
+}
+
+function migrateBookData(book) {
+  if (book.question === undefined) book.question = '';
+  if (!book.notes) {
+    book.notes = [];
+    if (book.memo) book.notes.push({ id: 'n_migrated', text: book.memo, createdAt: book.startDate });
+  }
+  if (book.shared === undefined) book.shared = false;
+  if (book.shareNote === undefined) book.shareNote = '';
+  if (book.actionItem === undefined) book.actionItem = '';
+  if (book.actionDone === undefined) book.actionDone = false;
+  if (book.readCount === undefined) book.readCount = book.endDate ? 1 : 1;
+  if (!book.readings) book.readings = book.endDate ? [{ endDate: book.endDate, rating: book.rating }] : [];
+  if (book.lifeBook === undefined) book.lifeBook = false;
+  if (book.coverImage === undefined) book.coverImage = '';
+  if (book.goalDate === undefined) book.goalDate = '';
+}
+
+function getBookStepProgress(book) {
+  return [
+    !!(book.question && book.question.trim()),
+    !!(book.notes && book.notes.length > 0),
+    !!book.shared,
+    !!book.actionDone,
+    !!(book.readCount >= 3)
+  ];
+}
+
+function renderStepDots(book) {
+  const steps = getBookStepProgress(book);
+  const doneCount = steps.filter(Boolean).length;
+  const allDone = doneCount === 5;
+  let html = '<div class="book-step-dots">';
+  steps.forEach(done => { html += `<span class="book-step-dot${done ? ' done' : ''}"></span>`; });
+  html += '</div>';
+  if (allDone) html += ` <span class="book-chew-badge">🏆 ${t('books.chewComplete')}</span>`;
+  return html;
 }
 
 function showFinishBookModal(bookId) {
@@ -4658,6 +5146,10 @@ function showFinishBookModal(bookId) {
           <label style="font-size:13px;font-weight:600">${t('books.memo')}</label>
           <input type="text" id="book-finish-memo" class="time-input" placeholder="${t('books.memoPlaceholder')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
         </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">⚡ ${t('books.actionLabel')}</label>
+          <input type="text" id="book-finish-action" class="time-input" placeholder="${t('books.actionPlaceholder')}" value="${escAttr(book.actionItem || '')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="btn" onclick="closeModal()" style="flex:1">${t('books.cancel')}</button>
           <button class="btn" onclick="finishBook('${escAttr(bookId)}')" style="flex:1;background:var(--success);color:white">${t('books.save')}</button>
@@ -4678,9 +5170,28 @@ function showFinishBookModal(bookId) {
 function finishBook(bookId) {
   const book = data.books.find(b => b.id === bookId);
   if (!book) return;
-  book.endDate = document.getElementById('book-finish-date').value || getTodayStr();
-  book.rating = parseInt(document.getElementById('book-rating-stars').dataset.rating) || 0;
-  book.memo = document.getElementById('book-finish-memo').value.trim();
+  migrateBookData(book);
+  const endDate = document.getElementById('book-finish-date').value || getTodayStr();
+  const rating = parseInt(document.getElementById('book-rating-stars')?.dataset.rating) || 0;
+  const memo = (document.getElementById('book-finish-memo')?.value || '').trim();
+  const action = (document.getElementById('book-finish-action')?.value || '').trim();
+
+  book.endDate = endDate;
+  if (rating) book.rating = rating;
+  if (memo) {
+    book.notes.push({ id: 'n_' + Date.now(), text: memo, createdAt: endDate });
+  }
+  if (action) book.actionItem = action;
+  book.readings.push({ endDate, rating });
+
+  // 3회독 완료 체크
+  if (book.readCount >= 3 && getBookStepProgress(book).every(Boolean)) {
+    saveData();
+    closeModal();
+    renderBooks();
+    setTimeout(() => showToast(`🏆 ${t('books.chewComplete')}! 「${book.title}」`), 300);
+    return;
+  }
   saveData();
   closeModal();
   renderBooks();
@@ -4710,6 +5221,23 @@ function showEditBookModal(bookId) {
           <label style="font-size:13px;font-weight:600">${t('books.endDate')}</label>
           <input type="date" id="book-edit-end" class="time-input" value="${book.endDate || ''}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
           ${!book.endDate ? `<span style="font-size:11px;color:var(--text-light)">${t('books.notReading')}</span>` : ''}
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">🎯 ${t('books.goalDate')}</label>
+          <input type="date" id="book-edit-goal" class="time-input" value="${book.goalDate || ''}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+        </div>
+        <div style="margin-top:10px">
+          <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
+          <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
+            <input type="text" id="book-edit-image-url" class="time-input" value="${escAttr(book.coverImage && !book.coverImage.startsWith('data:') ? book.coverImage : '')}" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap">
+              ${t('books.coverFile')}
+              <input type="file" accept="image/*" onchange="handleBookEditCoverFile(event)" style="display:none">
+            </label>
+          </div>
+          <div id="book-edit-cover-preview" style="margin-top:6px;text-align:center">
+            ${book.coverImage ? `<img src="${escAttr(book.coverImage)}" style="max-height:80px;border-radius:4px;box-shadow:var(--shadow)">` : ''}
+          </div>
         </div>
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.rating')}</label>
@@ -4748,6 +5276,10 @@ function saveEditBook(bookId) {
   book.author = document.getElementById('book-edit-author').value.trim();
   book.startDate = document.getElementById('book-edit-start').value || book.startDate;
   book.endDate = document.getElementById('book-edit-end').value || null;
+  book.goalDate = document.getElementById('book-edit-goal')?.value || '';
+  const editImageUrl = (document.getElementById('book-edit-image-url')?.value || '').trim();
+  if (_pendingBookCover) { book.coverImage = _pendingBookCover; _pendingBookCover = null; }
+  else if (editImageUrl) { book.coverImage = editImageUrl; }
   book.rating = parseInt(document.getElementById('book-edit-stars').dataset.rating) || 0;
   book.memo = document.getElementById('book-edit-memo').value.trim();
   saveData();
@@ -4777,6 +5309,250 @@ function confirmDeleteBook(bookId) {
   saveData();
   closeModal();
   renderBooks();
+}
+
+function showChewGuideModal() {
+  const guide = currentLang === 'ja' ? `
+    <h3 style="text-align:center;margin-bottom:16px">📖 噛み砕き読書法</h3>
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;text-align:center">本を100冊読んでも変わらなかった人が、<br>3冊で変わる5ステップ</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">❓ 1. 読む前に質問する</strong><br>
+        <span style="font-size:13px">「この本から何を得たいか？」を書く。<br>目的なき読書は、目的地なきナビと同じ。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📝 2. 自分の言葉に変える</strong><br>
+        <span style="font-size:13px">著者の言葉は著者のもの。<br>「自分の状況に当てはめると？」と3分考えて、自分の言葉で書き直す。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📢 3. 48時間以内に誰かに説明する</strong><br>
+        <span style="font-size:13px">入力だけでは絶対に残らない。<br>口から出した瞬間、脳への刻印強度がまるで違う。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">⚡ 4. 一つだけ実行する</strong><br>
+        <span style="font-size:13px">「今週、たった一つ実行できることは？」<br>30分でできる小さな行動。これが効能感になる。</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">🔄 5. 一冊を三度読む</strong><br>
+        <span style="font-size:13px">1回目：質問を持って読む。<br>2回目：1ヶ月後にノートを見返す。<br>3回目：実行後に再読。同じ文章が全く違って読める。</span>
+      </div>
+    </div>
+  ` : currentLang === 'en' ? `
+    <h3 style="text-align:center;margin-bottom:16px">📖 Chew &amp; Digest Method</h3>
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;text-align:center">The 5 steps that make 3 books<br>more impactful than 100</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">❓ 1. Ask before reading</strong><br>
+        <span style="font-size:13px">Write: "What do I want from this book?"<br>Reading without purpose is like driving without a destination.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📝 2. Rewrite in your words</strong><br>
+        <span style="font-size:13px">The author's words belong to the author.<br>Ask "How does this apply to MY life?" and write it in your own words.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📢 3. Explain within 48 hours</strong><br>
+        <span style="font-size:13px">Input alone never sticks.<br>The moment you speak it, the brain encodes it completely differently.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">⚡ 4. Execute just one thing</strong><br>
+        <span style="font-size:13px">"What's ONE thing I can do this week?"<br>A small 30-minute action. That's where real change begins.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">🔄 5. Meet the book three times</strong><br>
+        <span style="font-size:13px">1st: Read with your question.<br>2nd: Review notes after 1 month.<br>3rd: Re-read after execution. Same words, totally different meaning.</span>
+      </div>
+    </div>
+  ` : `
+    <h3 style="text-align:center;margin-bottom:16px">📖 씹어먹기 독서법</h3>
+    <p style="font-size:13px;color:var(--text-sub);line-height:1.7;margin-bottom:14px;text-align:center">10권 읽고 변하지 않던 사람이<br>3권 읽고 달라지는 5단계</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">❓ 1. 읽기 전에 질문하라</strong><br>
+        <span style="font-size:13px">"이 책에서 무엇을 얻고 싶은가?" 를 적는다.<br>목적 없는 독서는 목적지 없이 네비를 켜는 것과 같다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📝 2. 내 말로 바꿔라</strong><br>
+        <span style="font-size:13px">저자의 말은 저자의 것이다.<br>"내 상황에 대입하면?" 3분 생각하고, 내 언어로 번역해서 적는다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">📢 3. 48시간 안에 누군가에게 설명하라</strong><br>
+        <span style="font-size:13px">입력만으로는 절대 남지 않는다.<br>내 입으로 꺼내는 순간 뇌에 각인되는 강도가 완전히 달라진다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">⚡ 4. 하나만 실행하라</strong><br>
+        <span style="font-size:13px">"이번 주에 딱 하나, 실행할 수 있는 것은?"<br>30분이면 할 수 있는 작은 행동. 이게 효능감이 된다.</span>
+      </div>
+      <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);line-height:1.7">
+        <strong style="color:var(--mint)">🔄 5. 한 권을 세 번 만나라</strong><br>
+        <span style="font-size:13px">1차: 질문을 가지고 읽는다.<br>2차: 한 달 후 메모만 다시 본다.<br>3차: 실행 후 다시 펼친다. 같은 문장이 전혀 다르게 읽힌다.</span>
+      </div>
+    </div>
+  `;
+  showModal(guide + `<div class="modal-actions" style="margin-top:14px"><button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button></div>`);
+}
+
+function showBookDetailModal(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  migrateBookData(book);
+  const steps = getBookStepProgress(book);
+  const doneCount = steps.filter(Boolean).length;
+  const readLabels = [t('books.reading1'), t('books.reading2'), t('books.reading3')];
+
+  const notesHtml = book.notes.map((n, i) => `
+    <div class="book-note-item">
+      <div style="flex:1;min-width:0"><div style="white-space:pre-wrap">${escHtml(n.text)}</div><div class="book-note-date">${n.createdAt || ''}</div></div>
+      <button onclick="event.stopPropagation();deleteBookNote('${escAttr(bookId)}',${i})" style="background:none;border:none;color:var(--text-light);cursor:pointer;font-size:14px;padding:4px">🗑️</button>
+    </div>
+  `).join('');
+
+  const readingsHtml = [0,1,2].map(i => {
+    const r = book.readings[i];
+    const done = !!r;
+    const isCurrent = i === (book.readCount - 1) && !book.endDate;
+    return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
+      <span class="book-step-dot${done ? ' done' : ''}" style="width:10px;height:10px"></span>
+      <span style="font-weight:${done || isCurrent ? '600' : '400'};color:${done ? 'var(--success)' : isCurrent ? 'var(--text)' : 'var(--text-light)'}">${readLabels[i]}</span>
+      ${r ? `<span style="font-size:11px;color:var(--text-light)">${r.endDate || ''}</span>` : ''}
+      ${done ? '✓' : isCurrent ? '📖' : ''}
+    </div>`;
+  }).join('');
+
+  // Review reminder: 1 month after 1st reading
+  let reminderHtml = '';
+  if (book.readings.length === 1 && book.readCount === 1 && book.endDate) {
+    const reviewDate = new Date(book.endDate);
+    reviewDate.setMonth(reviewDate.getMonth() + 1);
+    const reviewStr = reviewDate.toISOString().split('T')[0];
+    reminderHtml = `<div style="font-size:12px;color:var(--coral);margin-top:6px">📅 ${reviewStr} ${t('books.reading2')}</div>`;
+  }
+
+  const modal = document.getElementById('modal-container');
+  modal.innerHTML = `
+    <div class="modal-overlay" onclick="closeModal()">
+      <div class="modal book-detail-modal" onclick="event.stopPropagation()" style="max-width:420px;max-height:85vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <button onclick="closeModal()" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--text-sub)">← ${t('books.cancel')}</button>
+          <button onclick="closeModal();showEditBookModal('${escAttr(bookId)}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--mint)">✏️</button>
+        </div>
+        <div style="text-align:center;margin-bottom:16px">
+          ${book.coverImage ? `<img src="${escAttr(book.coverImage)}" style="max-height:120px;border-radius:6px;box-shadow:var(--shadow);margin-bottom:8px">` : ''}
+          <div style="font-size:18px;font-weight:800">「${escHtml(book.title)}」</div>
+          ${book.author ? `<div style="font-size:13px;color:var(--text-sub);margin-top:4px">${escHtml(book.author)}</div>` : ''}
+          ${book.rating ? `<div style="margin-top:4px">${'⭐'.repeat(book.rating)}${'☆'.repeat(5-book.rating)}</div>` : ''}
+          <label onclick="event.stopPropagation()" style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:6px;cursor:pointer;font-size:13px;color:${book.lifeBook ? 'var(--coral)' : 'var(--text-light)'}">
+            <input type="checkbox" ${book.lifeBook ? 'checked' : ''} onchange="toggleLifeBook('${escAttr(book.id)}',this.checked)" style="accent-color:var(--coral);width:16px;height:16px">
+            ❤️ ${t('books.lifeBook')}
+          </label>
+          <div style="margin-top:8px;display:flex;justify-content:center;align-items:center;gap:6px">
+            ${renderStepDots(book)}
+            <span style="font-size:12px;color:var(--text-sub)">${t('books.stepProgress').replace('{n}', doneCount)}</span>
+          </div>
+        </div>
+
+        <div class="book-detail-step">
+          <div class="book-detail-step-hdr">❓ ${t('books.questionLabel')} ${steps[0] ? '✓' : ''}</div>
+          <textarea id="book-detail-question" onblur="saveBookField('${escAttr(bookId)}','question',this.value)" style="width:100%;font-size:13px;padding:8px;border:1px solid var(--text-light);border-radius:var(--radius-sm);background:var(--card);color:var(--text);min-height:50px;resize:vertical">${escHtml(book.question)}</textarea>
+        </div>
+
+        <div class="book-detail-step">
+          <div class="book-detail-step-hdr">📝 ${t('books.myNotes')} (${book.notes.length}) ${steps[1] ? '✓' : ''}</div>
+          ${notesHtml}
+          <div style="margin-top:8px;display:flex;gap:6px">
+            <input type="text" id="book-note-input" class="time-input" placeholder="${t('books.notePlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <button onclick="addBookNote('${escAttr(bookId)}')" class="btn" style="font-size:12px;padding:6px 10px;background:var(--mint);color:white">${t('books.addNote')}</button>
+          </div>
+        </div>
+
+        <div class="book-detail-step">
+          <div class="book-detail-step-hdr">📢 ${t('books.shareLabel')} ${steps[2] ? '✓' : ''}</div>
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
+            <input type="checkbox" ${book.shared ? 'checked' : ''} onchange="toggleBookShare('${escAttr(bookId)}',this.checked)" style="accent-color:var(--success);width:18px;height:18px">
+            ${t('books.shareDone')}
+          </label>
+          <input type="text" value="${escAttr(book.shareNote)}" onblur="saveBookField('${escAttr(bookId)}','shareNote',this.value)" placeholder="${t('books.shareNotePlaceholder')}" style="width:100%;margin-top:6px;font-size:13px;padding:6px 8px;border:1px solid var(--text-light);border-radius:var(--radius-sm);background:var(--card);color:var(--text)">
+        </div>
+
+        <div class="book-detail-step">
+          <div class="book-detail-step-hdr">⚡ ${t('books.actionLabel')} ${steps[3] ? '✓' : ''}</div>
+          <input type="text" value="${escAttr(book.actionItem)}" onblur="saveBookField('${escAttr(bookId)}','actionItem',this.value)" placeholder="${t('books.actionPlaceholder')}" style="width:100%;font-size:13px;padding:6px 8px;border:1px solid var(--text-light);border-radius:var(--radius-sm);background:var(--card);color:var(--text)">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;margin-top:6px">
+            <input type="checkbox" ${book.actionDone ? 'checked' : ''} onchange="toggleBookAction('${escAttr(bookId)}',this.checked)" style="accent-color:var(--success);width:18px;height:18px">
+            ${t('books.actionDone')}
+          </label>
+        </div>
+
+        <div class="book-detail-step">
+          <div class="book-detail-step-hdr">🔄 ${t('books.threeReadings')} (${Math.min(book.readings.length, 3)}/3) ${steps[4] ? '✓' : ''}</div>
+          ${readingsHtml}
+          ${reminderHtml}
+          ${book.endDate && book.readCount < 3 ? `<button onclick="advanceReading('${escAttr(bookId)}')" class="btn" style="margin-top:8px;font-size:12px;padding:6px 12px;background:var(--mint);color:white">${t('books.startNextReading')}</button>` : ''}
+        </div>
+
+        ${!book.endDate ? `<button onclick="closeModal();showFinishBookModal('${escAttr(bookId)}')" class="btn btn-block" style="margin-top:16px;background:var(--success);color:white">☐ ${t('books.markDone')} (${readLabels[book.readCount - 1]})</button>` : ''}
+        <button onclick="closeModal();renderBooks()" class="btn btn-block" style="margin-top:8px;background:var(--mint);color:white">${t('books.save')}</button>
+      </div>
+    </div>`;
+}
+
+function saveBookField(bookId, field, value) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book[field] = value.trim();
+  saveData();
+}
+
+function addBookNote(bookId) {
+  const input = document.getElementById('book-note-input');
+  const text = input?.value.trim();
+  if (!text) return;
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  migrateBookData(book);
+  book.notes.push({ id: 'n_' + Date.now(), text, createdAt: getTodayStr() });
+  saveData();
+  showBookDetailModal(bookId);
+}
+
+function deleteBookNote(bookId, noteIdx) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book || !book.notes) return;
+  book.notes.splice(noteIdx, 1);
+  saveData();
+  showBookDetailModal(bookId);
+}
+
+function toggleBookShare(bookId, checked) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book.shared = checked;
+  saveData();
+}
+
+function toggleLifeBook(bookId, checked) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book.lifeBook = checked;
+  saveData();
+  showBookDetailModal(bookId);
+}
+
+function toggleBookAction(bookId, checked) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  book.actionDone = checked;
+  saveData();
+}
+
+function advanceReading(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book || book.readCount >= 3) return;
+  book.readCount++;
+  book.endDate = null;
+  saveData();
+  closeModal();
+  renderBooks();
+  showToast(`${book.readCount === 2 ? t('books.reading2') : t('books.reading3')} 시작!`);
 }
 
 function exportStatsPDF() {
@@ -4924,10 +5700,11 @@ function getPlan() {
       }
     }
     if (carried) {
-      // Copy plan but reset done status and blocks
+      // Carry over only uncompleted items (done items = finished, deleted items = already removed)
+      const undone = carried.dump.filter(item => !item.done);
       dd.plan = {
-        dump: carried.dump.map(item => ({ text: item.text, done: false })),
-        big3: [...carried.big3],
+        dump: undone.map(item => ({ text: item.text, done: false })),
+        big3: [],
         blocks: {},
         note: ''
       };
@@ -4940,6 +5717,7 @@ function getPlan() {
 
 function renderPlan() {
   const plan = getPlan();
+  renderMotto();
   renderDumpList(plan);
   renderBig3Unified(plan);
   renderPlanNote(plan);
@@ -5125,6 +5903,58 @@ function renderPlanNote(plan) {
   if (el) el.value = plan.note || '';
 }
 
+// ============== Motto (persistent, not reset daily) ==============
+function saveMotto() {
+  data.motto = document.getElementById('motto-text').value;
+  saveData();
+}
+
+function renderMotto() {
+  const el = document.getElementById('motto-text');
+  if (el) el.value = data.motto || '';
+  const img = document.getElementById('motto-img');
+  const preview = document.getElementById('motto-image-preview');
+  const btn = document.getElementById('motto-image-btn');
+  if (data.mottoImage) {
+    img.src = data.mottoImage;
+    preview.style.display = 'block';
+    btn.style.display = 'none';
+  } else {
+    preview.style.display = 'none';
+    btn.style.display = 'inline-flex';
+  }
+}
+
+function handleMottoImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Resize to max 800px to save storage
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const maxW = 800;
+      let w = img.width, h = img.height;
+      if (w > maxW) { h = h * maxW / w; w = maxW; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      data.mottoImage = canvas.toDataURL('image/jpeg', 0.8);
+      saveData();
+      renderMotto();
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeMottoImage() {
+  data.mottoImage = null;
+  saveData();
+  renderMotto();
+  document.getElementById('motto-image-input').value = '';
+}
+
 // ============== Big 3 Mini (Record Tab) ==============
 function renderBig3Mini() {
   const container = document.getElementById('big3-mini');
@@ -5297,6 +6127,21 @@ function addEntry(activityName) {
   if (dd.status === 'completed') {
     showToast(t('toast.alreadyClosed'));
     return;
+  }
+
+  // 같은 시간(분 단위) 중복 방지
+  if (dd.entries.some(e => e.time === time)) {
+    showToast(t('toast.sameTime'));
+    return;
+  }
+
+  // 같은 활동이 마지막 기록이면 중복 안내 (이미 진행 중)
+  if (dd.entries.length > 0) {
+    const lastEntry = dd.entries[dd.entries.length - 1];
+    if (lastEntry.activity === activity) {
+      showToast(t('toast.alreadyRecording').replace('{0}', displayActivity(activity)));
+      return;
+    }
   }
 
   dd.entries.push({
@@ -6213,7 +7058,13 @@ function renderDailyMemo() {
   const container = document.getElementById('daily-memo');
   const dd = getDateData(currentDate);
   const memo = dd.memo || '';
-  container.innerHTML = `
+  const planNote = dd.plan && dd.plan.note ? dd.plan.note : '';
+  const affirmationHtml = planNote ? `
+    <div class="card" style="margin-bottom:12px">
+      <h3 style="font-size:16px;margin-bottom:8px">📝 ${t('plan.noteTitle')}</h3>
+      <div style="font-size:15px;line-height:1.7;color:var(--text-sub);padding:10px 14px;background:var(--bg);border-radius:var(--radius-sm);white-space:pre-wrap">${escHtml(planNote)}</div>
+    </div>` : '';
+  container.innerHTML = affirmationHtml + `
     <div class="card">
       <h3 style="font-size:16px;margin-bottom:12px">${t('memo.title')}</h3>
       <textarea class="daily-memo-textarea" placeholder="${t('memo.placeholder')}" oninput="saveDailyMemo(this.value)">${escHtml(memo)}</textarea>
@@ -6687,6 +7538,222 @@ async function shareDaily() {
   }
 }
 
+// ============== Excel Export ==============
+async function exportExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel 라이브러리 로딩 중... 잠시 후 다시 시도해주세요.');
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = () => showToast('로딩 완료! 다시 버튼을 눌러주세요.');
+    s.onerror = () => showToast('Excel 라이브러리를 불러올 수 없습니다.');
+    document.head.appendChild(s);
+    return;
+  }
+  const btn = document.getElementById('stats-export-excel-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ ' + (currentLang === 'ja' ? 'エクスポート中...' : currentLang === 'en' ? 'Exporting...' : '내보내는 중...'); }
+  try {
+  const dates = getStatsPeriodDates();
+  const periodLabel = formatStatsPeriodLabel();
+  if (!dates || dates.length === 0) { showToast(t('analysis.noData')); if (btn) { btn.disabled = false; btn.innerHTML = '📊 <span data-i18n="stats.exportExcel">' + t('stats.exportExcel') + '</span>'; } return; }
+
+  const wb = XLSX.utils.book_new();
+
+  // ---- Sheet 1: Weekly Timetable ----
+  const dayNames = getDayNames();
+  // Build header rows: time | day1 activity | day1 memo | day2 activity | day2 memo | ...
+  const headerRow1 = [''];
+  const headerRow2 = [t('stats.exportExcel') === 'Export as Excel' ? 'Time' : '시간'];
+  dates.forEach(dateStr => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const dayLabel = `${m}/${d} (${dayNames[dt.getDay()]})`;
+    headerRow1.push(dayLabel, '');
+    headerRow2.push(currentLang === 'ja' ? '活動' : currentLang === 'en' ? 'Activity' : '활동',
+                     currentLang === 'ja' ? 'メモ' : currentLang === 'en' ? 'Memo' : '메모');
+  });
+
+  const rows = [headerRow1, headerRow2];
+
+  // Build hour map for each date: hour -> { activity, category, memo, isDesired }
+  const dateHourMaps = dates.map(dateStr => {
+    const dd = data.dates[dateStr];
+    const hourMap = {};
+    if (dd && dd.entries && dd.entries.length > 0) {
+      dd.entries.forEach((entry, i) => {
+        const startMin = timeToMin(entry.time);
+        let endMin;
+        if (i < dd.entries.length - 1) {
+          endMin = timeToMin(dd.entries[i + 1].time);
+        } else {
+          endMin = dd.closedAt ? timeToMin(dd.closedAt) : startMin;
+        }
+        const startHour = Math.floor(startMin / 60);
+        const endHour = Math.min(23, Math.floor((endMin > startMin ? endMin - 1 : startMin) / 60));
+        for (let h = startHour; h <= endHour; h++) {
+          const catLabel = entry.category === 'fixed'
+            ? (currentLang === 'ja' ? '固定' : currentLang === 'en' ? 'Fixed' : '고정')
+            : entry.category === 'flexible'
+              ? (currentLang === 'ja' ? '自由' : currentLang === 'en' ? 'Flex' : '유동')
+              : '';
+          const desired = entry.isDesiredLife ? ' ★' : '';
+          hourMap[h] = {
+            activity: `${getIcon(entry.activity)} ${displayActivity(entry.activity)}${desired} [${catLabel}]`,
+            memo: entry.memo || ''
+          };
+        }
+      });
+    }
+    return { dateStr, dd, hourMap };
+  });
+
+  // 0~23 hour rows
+  for (let h = 0; h < 24; h++) {
+    const row = [String(h).padStart(2, '0') + ':00'];
+    dateHourMaps.forEach(({ hourMap }) => {
+      const cell = hourMap[h];
+      row.push(cell ? cell.activity : '', cell ? cell.memo : '');
+    });
+    rows.push(row);
+  }
+
+  // Summary rows
+  const emptyLabel = '';
+  const summaryLabels = [
+    currentLang === 'ja' ? 'ステータス' : currentLang === 'en' ? 'Status' : '상태',
+    currentLang === 'ja' ? '固定時間' : currentLang === 'en' ? 'Fixed' : '고정시간',
+    currentLang === 'ja' ? '自由時間' : currentLang === 'en' ? 'Flexible' : '유동시간',
+    currentLang === 'ja' ? '睡眠' : currentLang === 'en' ? 'Sleep' : '수면',
+    currentLang === 'ja' ? '理想の人生' : currentLang === 'en' ? 'Desired Life' : '원하는 삶',
+    currentLang === 'ja' ? '意気込み' : currentLang === 'en' ? 'Resolution' : '다짐',
+    currentLang === 'ja' ? 'メモ' : currentLang === 'en' ? 'Memo' : '메모'
+  ];
+
+  rows.push([]); // blank row
+  summaryLabels.forEach((label, idx) => {
+    const row = [label];
+    dateHourMaps.forEach(({ dd }) => {
+      if (!dd || !dd.entries || dd.entries.length === 0) { row.push('', ''); return; }
+      const stats = calcStats(dd);
+      switch (idx) {
+        case 0: row.push(dd.status === 'completed' ? '✓' : '...', ''); break;
+        case 1: row.push(formatMin(stats.fixedMin), ''); break;
+        case 2: row.push(formatMin(stats.flexMin), ''); break;
+        case 3: row.push(formatMin(stats.sleepMin), ''); break;
+        case 4: {
+          const pct = stats.flexMin > 0 ? Math.round(stats.desiredMin / stats.flexMin * 100) : 0;
+          row.push(`${formatMin(stats.desiredMin)} (${pct}%)`, '');
+          break;
+        }
+        case 5: row.push(dd.plan && dd.plan.note ? dd.plan.note : '', ''); break;
+        case 6: row.push(dd.memo || '', ''); break;
+      }
+    });
+    rows.push(row);
+  });
+
+  const ws1 = XLSX.utils.aoa_to_sheet(rows);
+  // Set column widths
+  const colWidths = [{ wch: 6 }];
+  dates.forEach(() => { colWidths.push({ wch: 28 }, { wch: 20 }); });
+  ws1['!cols'] = colWidths;
+  // Merge header row1 cells (each date spans 2 columns)
+  ws1['!merges'] = dates.map((_, i) => ({ s: { r: 0, c: 1 + i * 2 }, e: { r: 0, c: 2 + i * 2 } }));
+  XLSX.utils.book_append_sheet(wb, ws1, periodLabel.replace(/[\/\\?*[\]]/g, '_'));
+
+  // ---- Sheet 2: Plan (Big 3) ----
+  const planHeader = [
+    currentLang === 'ja' ? '日付' : currentLang === 'en' ? 'Date' : '날짜',
+    currentLang === 'ja' ? 'タスク' : currentLang === 'en' ? 'Task' : '할 일',
+    currentLang === 'ja' ? '完了' : currentLang === 'en' ? 'Done' : '완료',
+    'Big 3',
+    currentLang === 'ja' ? '開始' : currentLang === 'en' ? 'Start' : '시작',
+    currentLang === 'ja' ? '終了' : currentLang === 'en' ? 'End' : '종료'
+  ];
+  const planRows = [planHeader];
+  dates.forEach(dateStr => {
+    const dd = data.dates[dateStr];
+    if (!dd || !dd.plan || !dd.plan.dump || dd.plan.dump.length === 0) return;
+    dd.plan.dump.forEach(item => {
+      const big3Idx = dd.plan.big3 ? dd.plan.big3.indexOf(item.text) : -1;
+      const big3Label = big3Idx >= 0 ? `★${big3Idx + 1}` : '';
+      const block = dd.plan.blocks && dd.plan.blocks[item.text] ? dd.plan.blocks[item.text] : {};
+      planRows.push([
+        dateStr, item.text, item.done ? '✓' : '', big3Label,
+        block.start || '', block.end || ''
+      ]);
+    });
+  });
+  const ws2 = XLSX.utils.aoa_to_sheet(planRows);
+  ws2['!cols'] = [{ wch: 12 }, { wch: 30 }, { wch: 5 }, { wch: 6 }, { wch: 8 }, { wch: 8 }];
+  const planSheetName = currentLang === 'ja' ? '計画' : currentLang === 'en' ? 'Plan' : '계획';
+  XLSX.utils.book_append_sheet(wb, ws2, planSheetName);
+
+  // ---- Sheet 3: Books ----
+  const bookHeader = [
+    currentLang === 'ja' ? '状態' : currentLang === 'en' ? 'Status' : '상태',
+    currentLang === 'ja' ? 'タイトル' : currentLang === 'en' ? 'Title' : '제목',
+    currentLang === 'ja' ? '著者' : currentLang === 'en' ? 'Author' : '저자',
+    currentLang === 'ja' ? '開始日' : currentLang === 'en' ? 'Start' : '시작일',
+    currentLang === 'ja' ? '読了日' : currentLang === 'en' ? 'End' : '완독일',
+    currentLang === 'ja' ? '日数' : currentLang === 'en' ? 'Days' : '소요일',
+    currentLang === 'ja' ? '評価' : currentLang === 'en' ? 'Rating' : '별점',
+    currentLang === 'ja' ? 'メモ' : currentLang === 'en' ? 'Memo' : '메모'
+  ];
+  const bookRows = [bookHeader];
+  if (data.books) {
+    const reading = data.books.filter(b => !b.endDate).sort((a, b) => b.startDate.localeCompare(a.startDate));
+    const completed = data.books.filter(b => b.endDate).sort((a, b) => b.endDate.localeCompare(a.endDate));
+    const statusReading = currentLang === 'ja' ? '読書中' : currentLang === 'en' ? 'Reading' : '읽는중';
+    const statusDone = currentLang === 'ja' ? '読了' : currentLang === 'en' ? 'Done' : '완독';
+    reading.forEach(b => {
+      const days = Math.max(1, Math.ceil((new Date() - new Date(b.startDate)) / 86400000) + 1);
+      bookRows.push([statusReading, b.title, b.author || '', b.startDate, '', days, '', '']);
+    });
+    completed.forEach(b => {
+      const days = Math.max(1, Math.ceil((new Date(b.endDate) - new Date(b.startDate)) / 86400000) + 1);
+      const stars = b.rating ? '★'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
+      bookRows.push([statusDone, b.title, b.author || '', b.startDate, b.endDate, days, stars, b.memo || '']);
+    });
+  }
+  const ws3 = XLSX.utils.aoa_to_sheet(bookRows);
+  ws3['!cols'] = [{ wch: 8 }, { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 6 }, { wch: 12 }, { wch: 30 }];
+  const bookSheetName = currentLang === 'ja' ? '読書記録' : currentLang === 'en' ? 'Books' : '독서 기록';
+  XLSX.utils.book_append_sheet(wb, ws3, bookSheetName);
+
+  // ---- Download or Share ----
+  const fileName = `MyRoutine_${periodLabel.replace(/[\s\/~]/g, '_')}.xlsx`;
+  const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+  const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+  const downloadFile = () => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    showToast(currentLang === 'ja' ? 'ダウンロード完了' : currentLang === 'en' ? 'Download complete' : '다운로드 완료');
+  };
+  let shared = false;
+  if (navigator.share && navigator.canShare) {
+    try {
+      const file = new File([blob], fileName, { type: blob.type });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'MyRoutine' });
+        shared = true;
+        showToast(currentLang === 'ja' ? '共有完了' : currentLang === 'en' ? 'Shared!' : '공유 완료');
+      }
+    } catch(_) { /* share cancelled or failed, fall through to download */ }
+  }
+  if (!shared) { downloadFile(); }
+  if (typeof gtag === 'function') gtag('event', 'export_excel');
+  } catch (e) {
+    console.error('Excel export error:', e);
+    showToast('엑셀 내보내기 실패: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '📊 <span data-i18n="stats.exportExcel">' + t('stats.exportExcel') + '</span>'; }
+  }
+}
+
 async function shareStats() {
   if (typeof gtag === 'function') gtag('event', 'share', { content_type: 'stats' });
   const html = buildStatsShareCardHTML();
@@ -6739,12 +7806,234 @@ function showAboutModal() {
       📧 ${t('about.feedback')}<br>
       <a href="mailto:info.bekking@gmail.com" style="color:var(--mint);text-decoration:none;font-weight:600;">info.bekking@gmail.com</a>
     </p>
-    <a href="https://buymeacoffee.com/bekkingstudio" target="_blank" rel="noopener" class="btn btn-block" style="background:#FFDD00;color:#000;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">☕ ${t('support.coffee')}</a>
+    <button class="btn btn-block" onclick="closeModal();showLifeSetup();" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;font-weight:700">⏳ ${t('life.setup')}</button>
+    <a href="https://buymeacoffee.com/bekkingstudio" target="_blank" rel="noopener" class="btn btn-block" style="margin-top:8px;background:#FFDD00;color:#000;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px;">☕ ${t('support.coffee')}</a>
     <button class="btn btn-outline btn-block" onclick="closeModal();localStorage.removeItem('tourCompleted');startTour();" style="margin-top:8px">📖 ${t('tour.replay')}</button>
     <div class="modal-actions" style="margin-top:8px">
       <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
     </div>
   `);
+}
+
+// ============== Life Counter ==============
+const LIFE_EXPECTANCY = {
+  KR: { male: 80.6, female: 86.6, name: '🇰🇷 한국', nameJa: '🇰🇷 韓国', nameEn: '🇰🇷 South Korea' },
+  JP: { male: 81.5, female: 87.6, name: '🇯🇵 일본', nameJa: '🇯🇵 日本', nameEn: '🇯🇵 Japan' },
+  US: { male: 74.8, female: 80.2, name: '🇺🇸 미국', nameJa: '🇺🇸 アメリカ', nameEn: '🇺🇸 United States' },
+  GB: { male: 79.0, female: 82.9, name: '🇬🇧 영국', nameJa: '🇬🇧 イギリス', nameEn: '🇬🇧 United Kingdom' },
+  DE: { male: 78.7, female: 83.4, name: '🇩🇪 독일', nameJa: '🇩🇪 ドイツ', nameEn: '🇩🇪 Germany' },
+  FR: { male: 79.5, female: 85.3, name: '🇫🇷 프랑스', nameJa: '🇫🇷 フランス', nameEn: '🇫🇷 France' },
+  CA: { male: 79.8, female: 84.1, name: '🇨🇦 캐나다', nameJa: '🇨🇦 カナダ', nameEn: '🇨🇦 Canada' },
+  AU: { male: 81.3, female: 85.4, name: '🇦🇺 호주', nameJa: '🇦🇺 オーストラリア', nameEn: '🇦🇺 Australia' },
+  CN: { male: 75.0, female: 80.5, name: '🇨🇳 중국', nameJa: '🇨🇳 中国', nameEn: '🇨🇳 China' },
+  IN: { male: 69.4, female: 72.0, name: '🇮🇳 인도', nameJa: '🇮🇳 インド', nameEn: '🇮🇳 India' },
+  BR: { male: 72.0, female: 79.4, name: '🇧🇷 브라질', nameJa: '🇧🇷 ブラジル', nameEn: '🇧🇷 Brazil' },
+  SG: { male: 81.4, female: 85.7, name: '🇸🇬 싱가포르', nameJa: '🇸🇬 シンガポール', nameEn: '🇸🇬 Singapore' },
+  TW: { male: 77.3, female: 83.7, name: '🇹🇼 대만', nameJa: '🇹🇼 台湾', nameEn: '🇹🇼 Taiwan' },
+  TH: { male: 73.2, female: 80.7, name: '🇹🇭 태국', nameJa: '🇹🇭 タイ', nameEn: '🇹🇭 Thailand' },
+  WW: { male: 70.8, female: 75.6, name: '🌍 세계 평균', nameJa: '🌍 世界平均', nameEn: '🌍 World Average' },
+};
+
+const LANG_TO_COUNTRY = { ko: 'KR', ja: 'JP', en: 'US' };
+
+let lifeCounterInterval = null;
+
+function getLifeExpectancy() {
+  const country = data.country || LANG_TO_COUNTRY[currentLang] || 'WW';
+  return LIFE_EXPECTANCY[country] || LIFE_EXPECTANCY.WW;
+}
+
+function getCountryName(code) {
+  const le = LIFE_EXPECTANCY[code];
+  if (!le) return code;
+  return currentLang === 'ja' ? le.nameJa : currentLang === 'en' ? le.nameEn : le.name;
+}
+
+function showLifeSetup() {
+  const bd = data.birthDate || '';
+  const gen = data.gender || 'male';
+  const selCountry = data.country || LANG_TO_COUNTRY[currentLang] || 'WW';
+  const countryOptions = Object.keys(LIFE_EXPECTANCY).map(code =>
+    `<option value="${code}" ${code === selCountry ? 'selected' : ''}>${getCountryName(code)}</option>`
+  ).join('');
+  const le = LIFE_EXPECTANCY[selCountry];
+  showModal(`
+    <h3>⏳ ${t('life.setup')}</h3>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('life.country')}</label>
+      <select id="life-country-input" class="input" style="width:100%;padding:10px 12px" onchange="updateLifeExpLabel()">
+        ${countryOptions}
+      </select>
+    </div>
+    <p id="life-exp-label" style="font-size:12px;color:var(--text-sub);margin-bottom:14px;line-height:1.6;text-align:center">
+      ${currentLang === 'ja' ? '平均寿命: 男性 ' + le.male + '歳 / 女性 ' + le.female + '歳' :
+        currentLang === 'en' ? 'Life expectancy: M ' + le.male + 'y / F ' + le.female + 'y' :
+        '평균 수명: 남성 ' + le.male + '세 / 여성 ' + le.female + '세'}
+    </p>
+    <div style="margin-bottom:12px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('life.birthDate')}</label>
+      <input type="date" id="life-birth-input" class="input" value="${bd}" style="width:100%">
+    </div>
+    <div style="margin-bottom:18px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('life.gender')}</label>
+      <div style="display:flex;gap:8px">
+        <button id="life-gender-male" class="btn ${gen === 'male' ? '' : 'btn-outline'}" onclick="document.getElementById('life-gender-male').className='btn';document.getElementById('life-gender-female').className='btn btn-outline';updateLifeExpLabel()" style="flex:1">${t('life.male')}</button>
+        <button id="life-gender-female" class="btn ${gen === 'female' ? '' : 'btn-outline'}" onclick="document.getElementById('life-gender-female').className='btn';document.getElementById('life-gender-male').className='btn btn-outline';updateLifeExpLabel()" style="flex:1">${t('life.female')}</button>
+      </div>
+    </div>
+    <button class="btn btn-block" onclick="saveLifeSetup()" style="background:linear-gradient(135deg,#6366F1,#8B5CF6);color:white;font-weight:700">${t('life.save')}</button>
+    <button class="btn btn-outline btn-block" onclick="resetLifeSetup()" style="margin-top:8px;color:var(--coral)">${t('life.reset')}</button>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
+    </div>
+  `);
+}
+
+function updateLifeExpLabel() {
+  const code = document.getElementById('life-country-input').value;
+  const le = LIFE_EXPECTANCY[code];
+  if (!le) return;
+  const label = document.getElementById('life-exp-label');
+  if (!label) return;
+  label.textContent = currentLang === 'ja' ? '平均寿命: 男性 ' + le.male + '歳 / 女性 ' + le.female + '歳' :
+    currentLang === 'en' ? 'Life expectancy: M ' + le.male + 'y / F ' + le.female + 'y' :
+    '평균 수명: 남성 ' + le.male + '세 / 여성 ' + le.female + '세';
+}
+
+function saveLifeSetup() {
+  const bd = document.getElementById('life-birth-input').value;
+  if (!bd) return;
+  const isFemale = document.getElementById('life-gender-female').className === 'btn';
+  data.birthDate = bd;
+  data.gender = isFemale ? 'female' : 'male';
+  data.country = document.getElementById('life-country-input').value;
+  saveData();
+  closeModal();
+  startLifeCounter();
+}
+
+function resetLifeSetup() {
+  delete data.birthDate;
+  delete data.gender;
+  delete data.country;
+  saveData();
+  closeModal();
+  stopLifeCounter();
+  const el = document.getElementById('life-counter');
+  if (el) el.style.display = 'none';
+}
+
+function startLifeCounter() {
+  stopLifeCounter();
+  if (!data.birthDate) {
+    const el = document.getElementById('life-counter');
+    if (el) {
+      el.style.display = 'block';
+      el.querySelector('#life-counter-label').textContent = '';
+      el.querySelector('#life-counter-line1').style.fontSize = '13px';
+      el.querySelector('#life-counter-line1').style.color = 'var(--text-sub)';
+      el.querySelector('#life-counter-line1').textContent = t('life.tapToSet');
+      el.querySelector('#life-counter-line2').textContent = '';
+    }
+    return;
+  }
+  updateLifeCounter();
+  lifeCounterInterval = setInterval(updateLifeCounter, 1000);
+}
+
+function stopLifeCounter() {
+  if (lifeCounterInterval) { clearInterval(lifeCounterInterval); lifeCounterInterval = null; }
+}
+
+function updateLifeCounter() {
+  const el = document.getElementById('life-counter');
+  if (!el) return;
+  el.style.display = 'block';
+
+  const labelEl = el.querySelector('#life-counter-label');
+  const line1 = el.querySelector('#life-counter-line1');
+  const line2 = el.querySelector('#life-counter-line2');
+  line1.style.fontSize = '15px';
+  line1.style.color = 'var(--coral)';
+
+  const birth = new Date(data.birthDate);
+  const le = getLifeExpectancy();
+  const expectancy = data.gender === 'female' ? le.female : le.male;
+  const deathDate = new Date(birth);
+  deathDate.setFullYear(deathDate.getFullYear() + Math.floor(expectancy));
+  deathDate.setMonth(deathDate.getMonth() + Math.round((expectancy % 1) * 12));
+
+  const now = new Date();
+  const diff = deathDate.getTime() - now.getTime();
+  if (diff <= 0) {
+    labelEl.textContent = '⏳ ' + t('life.remaining');
+    line1.textContent = '--';
+    line2.textContent = '';
+    return;
+  }
+
+  const totalSec = Math.floor(diff / 1000);
+  const years = Math.floor(totalSec / (365.25 * 24 * 3600));
+  const remAfterYears = totalSec - years * Math.floor(365.25 * 24 * 3600);
+  const days = Math.floor(remAfterYears / (24 * 3600));
+  const hours = Math.floor((remAfterYears % (24 * 3600)) / 3600);
+  const minutes = Math.floor((remAfterYears % 3600) / 60);
+  const seconds = totalSec % 60;
+
+  labelEl.textContent = '⏳ ' + t('life.remaining');
+  line1.textContent = `${years}${t('life.years')} ${days}${t('life.days')}`;
+  line2.textContent = `${hours}${t('life.hours')} ${minutes}${t('life.minutes')} ${String(seconds).padStart(2,'0')}${t('life.seconds')}`;
+
+  // Dream projected time
+  const dreamRow = document.getElementById('dream-counter-row');
+  const dreamLabel = document.getElementById('dream-counter-label');
+  const dreamLine1 = document.getElementById('dream-counter-line1');
+  const dreamLine2 = document.getElementById('dream-counter-line2');
+  if (!dreamRow || !dreamLabel || !dreamLine1) return;
+
+  const grid = document.getElementById('life-counter-grid');
+  const dreamRatio = calcDreamRatio();
+  if (dreamRatio <= 0) {
+    dreamRow.style.display = 'none';
+    if (grid) grid.style.gridTemplateColumns = '1fr';
+    return;
+  }
+
+  dreamRow.style.display = '';
+  if (grid) grid.style.gridTemplateColumns = '1fr 1fr';
+  const dreamSec = Math.floor(totalSec * dreamRatio);
+  const dYears = Math.floor(dreamSec / (365.25 * 24 * 3600));
+  const dRem = dreamSec - dYears * Math.floor(365.25 * 24 * 3600);
+  const dDays = Math.floor(dRem / (24 * 3600));
+  const dHours = Math.floor((dRem % (24 * 3600)) / 3600);
+
+  const dMinutes = Math.floor((dRem % (24 * 3600) % 3600) / 60);
+  const pct = Math.round(dreamRatio * 100);
+  dreamLabel.textContent = `✨ ${t('life.dreamProjected')} (${pct}%)`;
+  dreamLine1.textContent = `${dYears}${t('life.years')} ${dDays}${t('life.days')}`;
+  if (dreamLine2) dreamLine2.textContent = `${dHours}${t('life.hours')} ${dMinutes}${t('life.minutes')}`;
+}
+
+function calcDreamRatio() {
+  // Calculate average dream time ratio from all recorded days (including partially classified)
+  const allDates = Object.keys(data.dates || {});
+  let totalRecordedMin = 0;
+  let totalDreamMin = 0;
+  let dayCount = 0;
+
+  allDates.forEach(dateStr => {
+    const dd = data.dates[dateStr];
+    if (!dd || !dd.entries || dd.entries.length === 0) return;
+    const stats = calcStats(dd);
+    if (stats.totalMin <= 0) return;
+    totalRecordedMin += stats.totalMin;
+    totalDreamMin += stats.desiredMin;
+    dayCount++;
+  });
+
+  if (dayCount === 0 || totalRecordedMin === 0) return 0;
+  // ratio = dream time / total recorded time (which represents a full day)
+  return totalDreamMin / totalRecordedMin;
 }
 
 // ============== Helpers ==============
@@ -7655,9 +8944,12 @@ function showTourStep(index) {
 
 function positionTooltip(targetEl, tooltip, position) {
   if (!targetEl || position === 'center') {
-    tooltip.style.top = '50%';
     tooltip.style.left = '50%';
-    tooltip.style.transform = 'translate(-50%, -50%)';
+    tooltip.style.transform = 'translateX(-50%)';
+    // Place in upper-center area to avoid covering bottom tab bar
+    const tipH = tooltip.offsetHeight || 200;
+    const availH = window.innerHeight - 72; // 64px tab bar + 8px margin
+    tooltip.style.top = Math.max(8, (availH - tipH) / 2) + 'px';
     return;
   }
   const rect = targetEl.getBoundingClientRect();
