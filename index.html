@@ -281,15 +281,16 @@
 
     .faq-answer-inner .steps li {
       position: relative;
-      padding-left: 52px;
+      padding-left: 60px;
       margin-bottom: 10px;
     }
 
     .faq-answer-inner .steps li::before {
       counter-increment: step;
-      content: 'Step ' counter(step) '.';
+      content: 'Step' counter(step) '.';
       position: absolute;
       left: 0;
+      width: 50px;
       font-size: 12px;
       font-weight: 700;
       color: #FF874B;
