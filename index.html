@@ -2508,6 +2508,7 @@ const TRANSLATIONS = {
     'preset.newPreset': '새 프리셋 추가', 'preset.category': '카테고리',
     'preset.add': '추가', 'preset.empty': '프리셋이 없습니다',
     'toast.alreadyClosed': '이미 마감된 날짜입니다', 'toast.noEntries': '기록이 없습니다',
+    'toast.sameTime': '같은 시간에는 하나만 기록할 수 있어요', 'toast.alreadyRecording': '{0}은(는) 이미 기록 중입니다',
     'toast.reopened': '마감이 취소되었습니다. 다시 기록할 수 있어요!',
     'toast.classifyAll': '모든 활동을 분류해주세요',
     'toast.pdfSaved': 'PDF가 저장되었습니다', 'toast.pdfFailed': 'PDF 생성에 실패했습니다',
@@ -2709,6 +2710,7 @@ const TRANSLATIONS = {
     'preset.newPreset': '新しいプリセット追加', 'preset.category': 'カテゴリ',
     'preset.add': '追加', 'preset.empty': 'プリセットがありません',
     'toast.alreadyClosed': 'すでに締められた日です', 'toast.noEntries': '記録がありません',
+    'toast.sameTime': '同じ時間には一つだけ記録できます', 'toast.alreadyRecording': '{0}はすでに記録中です',
     'toast.reopened': '締めが取り消されました。再び記録できます！',
     'toast.classifyAll': 'すべての活動を分類してください',
     'toast.pdfSaved': 'PDFが保存されました', 'toast.pdfFailed': 'PDF生成に失敗しました',
@@ -2910,6 +2912,7 @@ const TRANSLATIONS = {
     'preset.newPreset': 'Add New Preset', 'preset.category': 'Category',
     'preset.add': 'Add', 'preset.empty': 'No presets',
     'toast.alreadyClosed': 'This day is already closed', 'toast.noEntries': 'No entries recorded',
+    'toast.sameTime': 'Only one record per minute allowed', 'toast.alreadyRecording': '{0} is already being recorded',
     'toast.reopened': 'Day reopened. You can record again!',
     'toast.classifyAll': 'Please classify all activities',
     'toast.pdfSaved': 'PDF has been saved', 'toast.pdfFailed': 'Failed to generate PDF',
@@ -6107,6 +6110,21 @@ function addEntry(activityName) {
   if (dd.status === 'completed') {
     showToast(t('toast.alreadyClosed'));
     return;
+  }
+
+  // 같은 시간(분 단위) 중복 방지
+  if (dd.entries.some(e => e.time === time)) {
+    showToast(t('toast.sameTime'));
+    return;
+  }
+
+  // 같은 활동이 마지막 기록이면 중복 안내 (이미 진행 중)
+  if (dd.entries.length > 0) {
+    const lastEntry = dd.entries[dd.entries.length - 1];
+    if (lastEntry.activity === activity) {
+      showToast(t('toast.alreadyRecording').replace('{0}', displayActivity(activity)));
+      return;
+    }
   }
 
   dd.entries.push({
