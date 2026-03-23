@@ -127,6 +127,44 @@
     .sidebar-list li a:hover { color: #FF874B; text-decoration: none; }
     .sidebar-list li a.active { color: #333; font-weight: 700; }
 
+    .sidebar-group-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #363D40;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .sidebar-sublist {
+      list-style: none;
+      padding-left: 12px;
+    }
+
+    .sidebar-sublist li { margin-bottom: 8px; }
+
+    .sidebar-sublist li a {
+      font-size: 13px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s;
+    }
+
+    .sidebar-sublist li a::before {
+      content: '';
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      background: #ccc;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    .sidebar-sublist li a:hover { color: #FF874B; text-decoration: none; }
+    .sidebar-sublist li a.active { color: #333; font-weight: 700; }
+
     /* ── Content ── */
     .content { flex: 1; min-width: 0; }
 
@@ -427,12 +465,17 @@
       <div class="sidebar-box">
         <h3 class="sidebar-title">FAQ カテゴリー</h3>
         <ul class="sidebar-list">
-          <li><a href="#cat-overview" class="active">有料オプション概要</a></li>
-          <li><a href="#cat-payment">お支払い方法</a></li>
-          <li><a href="#cat-esign">電子署名の設定</a></li>
-          <li><a href="#cat-timestamp">認定タイムスタンプ</a></li>
-          <li><a href="#cat-sms">SMS通知・認証</a></li>
-          <li><a href="#cat-restrict">利用制限の設定</a></li>
+          <li>
+            <div class="sidebar-group-title">有料オプションについて</div>
+            <ul class="sidebar-sublist">
+              <li><a href="#cat-overview" class="active">有料オプション概要</a></li>
+              <li><a href="#cat-payment">お支払い方法</a></li>
+              <li><a href="#cat-esign">電子署名の設定</a></li>
+              <li><a href="#cat-timestamp">認定タイムスタンプ</a></li>
+              <li><a href="#cat-sms">SMS通知・認証</a></li>
+              <li><a href="#cat-restrict">利用制限の設定</a></li>
+            </ul>
+          </li>
         </ul>
       </div>
     </aside>
