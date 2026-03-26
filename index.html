@@ -7,7 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MyRoutine">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.google.com https://www.google-analytics.com https://analytics.google.com; font-src 'self'; frame-src 'self' https://*.firebaseapp.com;">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.google.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.firebaseapp.com;">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>MyRoutine - 나의 하루 분석</title>
@@ -627,6 +630,48 @@ body {
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   margin-bottom: 16px;
+}
+/* Affirmation viewer */
+.affirm-viewer {
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  z-index: 9999; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  transition: background 0.3s;
+  padding: 24px;
+}
+.affirm-viewer .affirm-text {
+  font-weight: 800; text-align: center; line-height: 1.6;
+  max-width: 600px; padding: 0 16px;
+  animation: affirmFadeIn 0.5s ease;
+}
+@keyframes affirmFadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.affirm-viewer .affirm-nav {
+  position: absolute; bottom: 40px; display: flex; gap: 16px; align-items: center;
+}
+.affirm-viewer .affirm-nav button {
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  width: 44px; height: 44px; border-radius: 50%; font-size: 20px; cursor: pointer;
+}
+.affirm-viewer .affirm-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  width: 36px; height: 36px; border-radius: 50%; font-size: 18px; cursor: pointer;
+}
+.affirm-viewer .affirm-counter {
+  font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 16px;
+}
+.affirm-settings-row {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.affirm-settings-row select, .affirm-settings-row input[type="color"] {
+  padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 12px; background: var(--card); color: var(--text);
+}
+.affirm-settings-row input[type="color"] {
+  width: 32px; height: 32px; padding: 2px; cursor: pointer;
 }
 .plan-note-card textarea {
   min-height: 100px;
@@ -2132,6 +2177,24 @@ body {
       </div>
     </div>
 
+    <div class="card" id="affirm-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="font-size:16px;margin:0">✨ <span data-i18n="affirm.title">아침 확언</span></h3>
+        <div style="display:flex;gap:6px">
+          <button class="icon-btn" onclick="showAffirmSettings()" style="width:28px;height:28px;font-size:14px;">⚙️</button>
+          <button class="btn btn-primary" onclick="startAffirmViewer()" style="padding:6px 14px;font-size:13px;font-weight:700">▶ <span data-i18n="affirm.start">읽기</span></button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px" data-i18n="affirm.desc">매일 아침 확언을 소리 내어 읽으세요</p>
+      <div id="affirm-preview" style="max-height:120px;overflow:hidden;position:relative">
+        <div id="affirm-list" style="font-size:13px;line-height:1.8;color:var(--text-sub)"></div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent, var(--card))"></div>
+      </div>
+      <div style="text-align:center;margin-top:6px">
+        <button onclick="showAffirmEditor()" style="background:none;border:none;color:var(--primary);font-size:12px;cursor:pointer;padding:4px 8px" data-i18n="affirm.edit">확언 편집</button>
+      </div>
+    </div>
+
     <div class="card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <h3 style="font-size:16px;margin:0">🧠 <span data-i18n="plan.dumpTitle">브레인 덤프</span></h3>
@@ -2531,6 +2594,12 @@ const TRANSLATIONS = {
     'app.name': 'GOD+生',
     'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '목표/독서', 'tab.stats': '통계',
     'plan.mottoTitle': '나의 모토', 'plan.mottoPlaceholder': '인생 모토나 좋은 글귀를 적어보세요...', 'plan.mottoPhoto': '사진 추가',
+    'affirm.title': '아침 확언', 'affirm.start': '읽기', 'affirm.desc': '매일 아침 확언을 소리 내어 읽으세요',
+    'affirm.edit': '확언 편집', 'affirm.editTitle': '확언 편집', 'affirm.editDesc': '한 줄에 하나씩 입력하세요',
+    'affirm.save': '저장', 'affirm.reset': '기본 확언으로 초기화',
+    'affirm.settingsTitle': '확언 스타일 설정', 'affirm.bg': '배경', 'affirm.fontSize': '글자 크기',
+    'affirm.fontSizeS': '작게', 'affirm.fontSizeM': '보통', 'affirm.fontSizeL': '크게', 'affirm.fontSizeXL': '아주 크게',
+    'affirm.bgGradient1': '보라-남색', 'affirm.bgGradient2': '코랄-오렌지', 'affirm.bgGradient3': '민트-블루', 'affirm.bgGradient4': '다크', 'affirm.bgCustom': '직접 선택',
     'plan.dumpTitle': '브레인 덤프', 'plan.dumpDesc': '오늘 해야 할 일을 모두 적어보세요',
     'plan.dumpPlaceholder': '할 일 입력', 'plan.dumpEmpty': '아직 할 일이 없어요. 위에 입력해 보세요!',
     'plan.big3Title': 'Big 3 + 타임 박싱', 'plan.big3Desc': '⭐ 중요한 3개를 선택하고, 시간을 배정하세요',
@@ -2560,6 +2629,7 @@ const TRANSLATIONS = {
     'pdf.activityMemo': '메모',
     'calendar.achievement': '{total}일 중 {stars}일 달성',
     'calendar.diamondDesc': '{total}일 중 {diamonds}일 달성',
+    'calendar.starLegend': '꿈 투자 80%↑', 'calendar.diamondLegend': '루틴 전체 달성',
     'activityMemo.placeholder': '이 활동에 대한 메모...',
     'header.stats': '통계', 'stats.weekly': '주간', 'stats.monthly': '월간',
     'stats.period': '기간', 'stats.recordedDays': '기록일',
@@ -2616,6 +2686,8 @@ const TRANSLATIONS = {
     'life.tapToSet': '⏳ 터치하여 남은 시간 설정',
     'life.years': '년', 'life.days': '일', 'life.hours': '시간', 'life.minutes': '분', 'life.seconds': '초',
     'life.dreamProjected': '꿈 투자 예상 시간', 'life.dreamRatio': '일평균 투자율',
+    'life.bonusTime': '🎉 보너스 타임!', 'life.bonusMsg': '기대 수명을 넘겼습니다. 축하해요!',
+    'life.source': 'UN WPP 2024 기준',
     'share.daily': '공유하기', 'share.stats': '통계 공유하기',
     'share.shareText': 'MyRoutine으로 분석한 나의 하루',
     'share.generating': '이미지 생성 중...', 'share.shared': '공유 완료!',
@@ -2646,7 +2718,7 @@ const TRANSLATIONS = {
     'books.monthUnit': '월', 'books.booksUnit': '권',
     'books.avgDays': '평균 {avg}일/권',
     'books.questionLabel': '읽기 전 질문', 'books.questionPlaceholder': '이 책에서 무엇을 얻고 싶은가?',
-    'books.myNotes': '내 말로 정리', 'books.addNote': '노트 추가', 'books.notePlaceholder': '핵심을 내 말로...',
+    'books.myNotes': '내 말로 정리', 'books.addNote': '노트 추가', 'books.notePlaceholder': '핵심을 내 말로...', 'books.editNote': '노트 수정', 'books.cardDownload': '인스타 카드 다운로드',
     'books.shareLabel': '48시간 내 공유', 'books.shareDone': '공유 완료', 'books.shareNotePlaceholder': '블로그 URL, 누구에게...',
     'books.actionLabel': '이번 주 실행할 한 가지', 'books.actionPlaceholder': '이 책에서 바로 실행할 것...', 'books.actionDone': '실행 완료',
     'books.threeReadings': '3회 만남', 'books.reading1': '1차 읽기', 'books.reading2': '2차 복습', 'books.reading3': '3차 재독',
@@ -2734,6 +2806,12 @@ const TRANSLATIONS = {
     'app.name': 'GOD+生',
     'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '目標/読書', 'tab.stats': '統計',
     'plan.mottoTitle': '私のモットー', 'plan.mottoPlaceholder': '人生のモットーや良い言葉を書いてみましょう...', 'plan.mottoPhoto': '写真を追加',
+    'affirm.title': '朝のアファメーション', 'affirm.start': '読む', 'affirm.desc': '毎朝アファメーションを声に出して読みましょう',
+    'affirm.edit': 'アファメーション編集', 'affirm.editTitle': 'アファメーション編集', 'affirm.editDesc': '1行に1つずつ入力してください',
+    'affirm.save': '保存', 'affirm.reset': 'デフォルトに戻す',
+    'affirm.settingsTitle': 'スタイル設定', 'affirm.bg': '背景', 'affirm.fontSize': '文字サイズ',
+    'affirm.fontSizeS': '小', 'affirm.fontSizeM': '中', 'affirm.fontSizeL': '大', 'affirm.fontSizeXL': '特大',
+    'affirm.bgGradient1': 'パープル', 'affirm.bgGradient2': 'コーラル', 'affirm.bgGradient3': 'ミント', 'affirm.bgGradient4': 'ダーク', 'affirm.bgCustom': 'カスタム',
     'plan.dumpTitle': 'ブレインダンプ', 'plan.dumpDesc': '今日やるべきことをすべて書き出しましょう',
     'plan.dumpPlaceholder': 'やること入力', 'plan.dumpEmpty': 'まだやることがありません。上に入力してみましょう！',
     'plan.big3Title': 'Big 3 + タイムボクシング', 'plan.big3Desc': '⭐ 重要な3つを選び、時間を割り当てましょう',
@@ -2763,6 +2841,7 @@ const TRANSLATIONS = {
     'pdf.activityMemo': 'メモ',
     'calendar.achievement': '{total}日中 {stars}日達成',
     'calendar.diamondDesc': '{total}日中 {diamonds}日達成',
+    'calendar.starLegend': '夢の投資80%↑', 'calendar.diamondLegend': 'ルーティン全達成',
     'activityMemo.placeholder': 'この活動についてメモ...',
     'header.stats': '統計', 'stats.weekly': '週間', 'stats.monthly': '月間',
     'stats.period': '期間', 'stats.recordedDays': '記録日',
@@ -2819,6 +2898,8 @@ const TRANSLATIONS = {
     'life.tapToSet': '⏳ タップして残り時間を設定',
     'life.years': '年', 'life.days': '日', 'life.hours': '時間', 'life.minutes': '分', 'life.seconds': '秒',
     'life.dreamProjected': '夢の投資予想時間', 'life.dreamRatio': '日平均投資率',
+    'life.bonusTime': '🎉 ボーナスタイム!', 'life.bonusMsg': '平均寿命を超えました。おめでとうございます!',
+    'life.source': 'UN WPP 2024年基準',
     'share.daily': 'シェアする', 'share.stats': '統計をシェアする',
     'share.shareText': 'MyRoutineで分析した一日',
     'share.generating': '画像を生成中...', 'share.shared': 'シェア完了！',
@@ -2849,7 +2930,7 @@ const TRANSLATIONS = {
     'books.monthUnit': '月', 'books.booksUnit': '冊',
     'books.avgDays': '平均 {avg}日/冊',
     'books.questionLabel': '読む前の質問', 'books.questionPlaceholder': 'この本から何を得たいか？',
-    'books.myNotes': '自分の言葉で', 'books.addNote': 'ノート追加', 'books.notePlaceholder': '核心を自分の言葉で...',
+    'books.myNotes': '自分の言葉で', 'books.addNote': 'ノート追加', 'books.notePlaceholder': '核心を自分の言葉で...', 'books.editNote': 'ノート編集', 'books.cardDownload': 'Instaカードダウンロード',
     'books.shareLabel': '48時間以内に共有', 'books.shareDone': '共有済み', 'books.shareNotePlaceholder': 'ブログURL、誰に...',
     'books.actionLabel': '今週実行する一つ', 'books.actionPlaceholder': 'この本からすぐ実行すること...', 'books.actionDone': '実行済み',
     'books.threeReadings': '3回の出会い', 'books.reading1': '1回目', 'books.reading2': '2回目（復習）', 'books.reading3': '3回目（再読）',
@@ -2937,6 +3018,12 @@ const TRANSLATIONS = {
     'app.name': 'GOD+生',
     'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals/Books', 'tab.stats': 'Stats',
     'plan.mottoTitle': 'My Motto', 'plan.mottoPlaceholder': 'Write your life motto or favorite quotes...', 'plan.mottoPhoto': 'Add photo',
+    'affirm.title': 'Morning Affirmations', 'affirm.start': 'Read', 'affirm.desc': 'Read your affirmations aloud every morning',
+    'affirm.edit': 'Edit affirmations', 'affirm.editTitle': 'Edit Affirmations', 'affirm.editDesc': 'Enter one affirmation per line',
+    'affirm.save': 'Save', 'affirm.reset': 'Reset to defaults',
+    'affirm.settingsTitle': 'Affirmation Style', 'affirm.bg': 'Background', 'affirm.fontSize': 'Font size',
+    'affirm.fontSizeS': 'Small', 'affirm.fontSizeM': 'Medium', 'affirm.fontSizeL': 'Large', 'affirm.fontSizeXL': 'Extra Large',
+    'affirm.bgGradient1': 'Purple', 'affirm.bgGradient2': 'Coral', 'affirm.bgGradient3': 'Mint', 'affirm.bgGradient4': 'Dark', 'affirm.bgCustom': 'Custom',
     'plan.dumpTitle': 'Brain Dump', 'plan.dumpDesc': 'Write down everything you need to do today',
     'plan.dumpPlaceholder': 'Enter a task', 'plan.dumpEmpty': 'No tasks yet. Add one above!',
     'plan.big3Title': 'Big 3 + Time Boxing', 'plan.big3Desc': '⭐ Select top 3 and assign time blocks',
@@ -2966,6 +3053,7 @@ const TRANSLATIONS = {
     'pdf.activityMemo': 'Memo',
     'calendar.achievement': '{stars} of {total} days achieved',
     'calendar.diamondDesc': '{diamonds} of {total} days achieved',
+    'calendar.starLegend': 'Dream 80%+', 'calendar.diamondLegend': 'All routines done',
     'activityMemo.placeholder': 'Leave a note about this activity...',
     'header.stats': 'Stats', 'stats.weekly': 'Weekly', 'stats.monthly': 'Monthly',
     'stats.period': 'Period', 'stats.recordedDays': 'Recorded',
@@ -3022,6 +3110,8 @@ const TRANSLATIONS = {
     'life.tapToSet': '⏳ Tap to set your life timer',
     'life.years': 'y', 'life.days': 'd', 'life.hours': 'h', 'life.minutes': 'm', 'life.seconds': 's',
     'life.dreamProjected': 'Dream Investment Time', 'life.dreamRatio': 'Daily avg ratio',
+    'life.bonusTime': '🎉 Bonus Time!', 'life.bonusMsg': 'You\'ve exceeded life expectancy. Congrats!',
+    'life.source': 'Based on UN WPP 2024',
     'share.daily': 'Share', 'share.stats': 'Share Stats',
     'share.shareText': 'My day analyzed with MyRoutine',
     'share.generating': 'Generating image...', 'share.shared': 'Shared!',
@@ -3052,7 +3142,7 @@ const TRANSLATIONS = {
     'books.monthUnit': '', 'books.booksUnit': ' books',
     'books.avgDays': 'avg {avg} days/book',
     'books.questionLabel': 'Pre-reading Question', 'books.questionPlaceholder': 'What do I want from this book?',
-    'books.myNotes': 'My Notes', 'books.addNote': 'Add Note', 'books.notePlaceholder': 'Key takeaway in my words...',
+    'books.myNotes': 'My Notes', 'books.addNote': 'Add Note', 'books.notePlaceholder': 'Key takeaway in my words...', 'books.editNote': 'Edit Note', 'books.cardDownload': 'Download Insta Card',
     'books.shareLabel': 'Share within 48h', 'books.shareDone': 'Shared', 'books.shareNotePlaceholder': 'Blog URL, told whom...',
     'books.actionLabel': 'One action this week', 'books.actionPlaceholder': 'One thing to execute from this book...', 'books.actionDone': 'Done',
     'books.threeReadings': '3 Readings', 'books.reading1': '1st Read', 'books.reading2': '2nd Review', 'books.reading3': '3rd Re-read',
@@ -3758,7 +3848,7 @@ function aggregateStatsData(dates) {
     const dd = data.dates[dateStr];
     if (!dd || !dd.entries || dd.entries.length === 0) return;
     const allClassified = dd.entries.every(e => e.category);
-    if (!allClassified) partialDays++;
+    if (!allClassified && dateStr !== getTodayStr()) partialDays++;
     const stats = calcStats(dd);
     if (stats.totalMin <= 0) return;
     days.push({ date: dateStr, ...stats, partial: !allClassified });
@@ -5401,7 +5491,7 @@ function showBookDetailModal(bookId) {
 
   const notesHtml = book.notes.map((n, i) => `
     <div class="book-note-item">
-      <div style="flex:1;min-width:0"><div style="white-space:pre-wrap">${escHtml(n.text)}</div><div class="book-note-date">${n.createdAt || ''}</div></div>
+      <div style="flex:1;min-width:0;cursor:pointer" onclick="event.stopPropagation();editBookNote('${escAttr(bookId)}',${i})"><div style="white-space:pre-wrap">${escHtml(n.text)}</div><div class="book-note-date">${n.createdAt || ''}</div></div>
       <button onclick="event.stopPropagation();deleteBookNote('${escAttr(bookId)}',${i})" style="background:none;border:none;color:var(--text-light);cursor:pointer;font-size:14px;padding:4px">🗑️</button>
     </div>
   `).join('');
@@ -5436,7 +5526,7 @@ function showBookDetailModal(bookId) {
           <button onclick="closeModal();showEditBookModal('${escAttr(bookId)}')" style="background:none;border:none;cursor:pointer;font-size:14px;color:var(--mint)">✏️</button>
         </div>
         <div style="text-align:center;margin-bottom:16px">
-          ${book.coverImage ? `<img src="${escAttr(book.coverImage)}" style="max-height:120px;border-radius:6px;box-shadow:var(--shadow);margin-bottom:8px">` : ''}
+          ${book.coverImage ? `<img src="${escAttr(book.coverImage)}" onclick="event.stopPropagation();showImageViewer('${escAttr(book.coverImage)}')" style="max-height:120px;border-radius:6px;box-shadow:var(--shadow);margin-bottom:8px;cursor:pointer">` : ''}
           <div style="font-size:18px;font-weight:800">「${escHtml(book.title)}」</div>
           ${book.author ? `<div style="font-size:13px;color:var(--text-sub);margin-top:4px">${escHtml(book.author)}</div>` : ''}
           ${book.rating ? `<div style="margin-top:4px">${'⭐'.repeat(book.rating)}${'☆'.repeat(5-book.rating)}</div>` : ''}
@@ -5491,6 +5581,7 @@ function showBookDetailModal(bookId) {
 
         ${!book.endDate ? `<button onclick="closeModal();showFinishBookModal('${escAttr(bookId)}')" class="btn btn-block" style="margin-top:16px;background:var(--success);color:white">☐ ${t('books.markDone')} (${readLabels[book.readCount - 1]})</button>` : ''}
         <button onclick="closeModal();renderBooks()" class="btn btn-block" style="margin-top:8px;background:var(--mint);color:white">${t('books.save')}</button>
+        <button onclick="generateBookCard('${escAttr(bookId)}')" class="btn btn-block" style="margin-top:8px;background:linear-gradient(135deg,#667eea,#764ba2);color:white">📸 ${t('books.cardDownload')}</button>
       </div>
     </div>`;
 }
@@ -5515,11 +5606,284 @@ function addBookNote(bookId) {
 }
 
 function deleteBookNote(bookId, noteIdx) {
+  showConfirm(t('toast.confirmDelete'), function() {
+    const book = data.books.find(b => b.id === bookId);
+    if (!book || !book.notes) return;
+    book.notes.splice(noteIdx, 1);
+    saveData();
+    showBookDetailModal(bookId);
+  });
+}
+
+function editBookNote(bookId, noteIdx) {
   const book = data.books.find(b => b.id === bookId);
-  if (!book || !book.notes) return;
-  book.notes.splice(noteIdx, 1);
+  if (!book || !book.notes || !book.notes[noteIdx]) return;
+  const note = book.notes[noteIdx];
+  showModal(`
+    <h3>📝 ${t('books.editNote')}</h3>
+    <textarea id="edit-note-text" class="input" rows="5" style="resize:vertical;font-size:14px;line-height:1.7;width:100%;box-sizing:border-box;padding:12px">${escHtml(note.text)}</textarea>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn btn-outline" onclick="closeModal();showBookDetailModal('${escAttr(bookId)}')">${t('modal.cancel')}</button>
+      <button class="btn btn-primary" onclick="saveBookNote('${escAttr(bookId)}',${noteIdx})">${t('affirm.save')}</button>
+    </div>
+  `);
+}
+
+function saveBookNote(bookId, noteIdx) {
+  const text = document.getElementById('edit-note-text').value.trim();
+  if (!text) return;
+  const book = data.books.find(b => b.id === bookId);
+  if (!book || !book.notes || !book.notes[noteIdx]) return;
+  book.notes[noteIdx].text = text;
   saveData();
+  closeModal();
   showBookDetailModal(bookId);
+}
+
+function showImageViewer(src) {
+  const viewer = document.createElement('div');
+  viewer.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;cursor:pointer';
+  viewer.onclick = () => viewer.remove();
+  viewer.innerHTML = `<img src="${escAttr(src)}" style="max-width:90%;max-height:90%;object-fit:contain;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,0.5)">
+    <button style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.2);border:none;color:white;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer">✕</button>`;
+  document.body.appendChild(viewer);
+}
+
+async function generateBookCard(bookId) {
+  const book = data.books.find(b => b.id === bookId);
+  if (!book) return;
+  migrateBookData(book);
+
+  const W = 2160, PAD = 144, INNER = W - PAD * 2;
+  const cards = [];
+  const appName = 'GOD+生';
+  const FONT = '"Noto Sans KR", -apple-system, sans-serif';
+
+  function wrapText(ctx, text, maxWidth) {
+    const lines = [];
+    for (const para of text.split('\n')) {
+      let line = '';
+      for (const ch of para.split('')) {
+        const test = line + ch;
+        if (ctx.measureText(test).width > maxWidth && line) { lines.push(line); line = ch; }
+        else line = test;
+      }
+      if (line) lines.push(line);
+      if (para === '') lines.push('');
+    }
+    return lines;
+  }
+
+  function drawBg(ctx, colors) {
+    const grad = ctx.createLinearGradient(0, 0, W, W);
+    colors.forEach((c, i) => grad.addColorStop(i / (colors.length - 1), c));
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, W, W);
+  }
+
+  function drawWatermark(ctx) {
+    ctx.textAlign = 'center';
+    ctx.font = `700 40px ${FONT}`;
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fillText(appName, W / 2, W - 72);
+  }
+
+  // ====== Card 1: Cover + Info ======
+  const c1 = document.createElement('canvas');
+  c1.width = W; c1.height = W;
+  const ctx1 = c1.getContext('2d');
+  drawBg(ctx1, ['#1a1a2e', '#16213e']);
+
+  let coverY = 120;
+  if (book.coverImage) {
+    try {
+      const img = await new Promise((res, rej) => {
+        const i = new Image(); i.crossOrigin = 'anonymous';
+        i.onload = () => res(i); i.onerror = rej; i.src = book.coverImage;
+      });
+      const maxH = 1040, maxW = 760;
+      const ratio = Math.min(maxW / img.width, maxH / img.height);
+      const dw = img.width * ratio, dh = img.height * ratio;
+      ctx1.shadowColor = 'rgba(0,0,0,0.6)'; ctx1.shadowBlur = 80; ctx1.shadowOffsetY = 24;
+      ctx1.drawImage(img, (W - dw) / 2, coverY, dw, dh);
+      ctx1.shadowColor = 'transparent';
+      coverY += dh + 72;
+    } catch(e) { coverY = 560; }
+  }
+
+  ctx1.textAlign = 'center';
+  ctx1.fillStyle = '#ffffff';
+  const titleSize = book.title.length > 12 ? 96 : 112;
+  ctx1.font = `900 ${titleSize}px ${FONT}`;
+  const titleLines = wrapText(ctx1, book.title, INNER);
+  const titleStartY = book.coverImage ? coverY : 720;
+  titleLines.forEach((line, i) => { ctx1.fillText(line, W/2, titleStartY + i * (titleSize + 24)); });
+  let infoY = titleStartY + titleLines.length * (titleSize + 24) + 40;
+
+  if (book.author) {
+    ctx1.font = `400 60px ${FONT}`;
+    ctx1.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx1.fillText(book.author, W/2, infoY);
+    infoY += 96;
+  }
+
+  if (book.rating) {
+    ctx1.font = '80px sans-serif';
+    ctx1.fillStyle = '#ffffff';
+    ctx1.fillText('⭐'.repeat(book.rating) + '☆'.repeat(5 - book.rating), W/2, infoY);
+    infoY += 100;
+  }
+
+  if (book.lifeBook) {
+    ctx1.font = `700 56px ${FONT}`;
+    ctx1.fillStyle = '#ff6b6b';
+    ctx1.fillText('❤️ ' + t('books.lifeBook'), W/2, infoY);
+    infoY += 88;
+  }
+
+  ctx1.font = `400 48px ${FONT}`;
+  ctx1.fillStyle = 'rgba(255,255,255,0.45)';
+  ctx1.fillText(book.startDate + (book.endDate ? '  →  ' + book.endDate : ''), W/2, infoY);
+
+  drawWatermark(ctx1);
+  cards.push(c1);
+
+  // ====== Card 2: Question + Notes ======
+  const hasQuestion = book.question && book.question.trim();
+  const hasNotes = book.notes && book.notes.length > 0;
+  const hasShare = book.shared && book.shareNote;
+  const hasAction = book.actionItem && book.actionItem.trim();
+
+  if (hasQuestion || hasNotes) {
+    const c2 = document.createElement('canvas');
+    c2.width = W; c2.height = W;
+    const ctx2 = c2.getContext('2d');
+    drawBg(ctx2, ['#0f0c29', '#302b63', '#24243e']);
+
+    let y = PAD;
+    ctx2.textAlign = 'left';
+
+    ctx2.font = `700 52px ${FONT}`;
+    ctx2.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx2.fillText('「' + book.title + '」', PAD, y + 52);
+    y += 112;
+
+    if (hasQuestion) {
+      ctx2.font = `900 64px ${FONT}`;
+      ctx2.fillStyle = '#f9d423';
+      ctx2.fillText('❓ ' + t('books.questionLabel'), PAD, y + 64);
+      y += 104;
+
+      ctx2.font = `400 56px ${FONT}`;
+      ctx2.fillStyle = '#ffffff';
+      const qLines = wrapText(ctx2, book.question, INNER);
+      qLines.slice(0, 5).forEach(line => { ctx2.fillText(line, PAD, y + 56); y += 80; });
+      y += 48;
+    }
+
+    if (hasNotes) {
+      ctx2.font = `900 64px ${FONT}`;
+      ctx2.fillStyle = '#7ecec1';
+      ctx2.fillText('📝 ' + t('books.myNotes') + ' (' + book.notes.length + ')', PAD, y + 64);
+      y += 104;
+
+      ctx2.font = `400 52px ${FONT}`;
+      ctx2.fillStyle = '#ffffff';
+      const maxLines = Math.floor((W - y - 160) / 76);
+      let used = 0;
+      for (const note of book.notes) {
+        if (used >= maxLines) break;
+        const nLines = wrapText(ctx2, '• ' + note.text, INNER);
+        for (const nl of nLines) {
+          if (used >= maxLines) break;
+          ctx2.fillText(nl, PAD, y + 52); y += 76; used++;
+        }
+        y += 16;
+      }
+    }
+
+    drawWatermark(ctx2);
+    cards.push(c2);
+  }
+
+  // ====== Card 3: Share + Action + overflow notes ======
+  const needsCard3 = hasShare || hasAction || (hasNotes && book.notes.length > 4);
+  if (needsCard3) {
+    const c3 = document.createElement('canvas');
+    c3.width = W; c3.height = W;
+    const ctx3 = c3.getContext('2d');
+    drawBg(ctx3, ['#0f0c29', '#302b63', '#24243e']);
+
+    let y = PAD;
+    ctx3.textAlign = 'left';
+
+    ctx3.font = `700 52px ${FONT}`;
+    ctx3.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx3.fillText('「' + book.title + '」', PAD, y + 52);
+    y += 112;
+
+    // Overflow notes
+    if (hasNotes && book.notes.length > 4) {
+      ctx3.font = `900 64px ${FONT}`;
+      ctx3.fillStyle = '#7ecec1';
+      ctx3.fillText('📝 ' + t('books.myNotes') + ' — ' + (currentLang === 'en' ? 'cont.' : currentLang === 'ja' ? '続き' : '이어서'), PAD, y + 64);
+      y += 104;
+
+      ctx3.font = `400 52px ${FONT}`;
+      ctx3.fillStyle = '#ffffff';
+      const remainNotes = book.notes.slice(4);
+      for (const note of remainNotes) {
+        const nLines = wrapText(ctx3, '• ' + note.text, INNER);
+        for (const nl of nLines) {
+          if (y > W - 520) break;
+          ctx3.fillText(nl, PAD, y + 52); y += 76;
+        }
+        y += 16;
+      }
+      y += 32;
+    }
+
+    // Share section
+    if (hasShare) {
+      ctx3.font = `900 64px ${FONT}`;
+      ctx3.fillStyle = '#f093fb';
+      ctx3.fillText('📢 ' + t('books.shareLabel'), PAD, y + 64);
+      y += 104;
+
+      ctx3.font = `400 52px ${FONT}`;
+      ctx3.fillStyle = '#ffffff';
+      const sLines = wrapText(ctx3, book.shareNote, INNER);
+      sLines.slice(0, 4).forEach(line => { ctx3.fillText(line, PAD, y + 52); y += 76; });
+      y += 48;
+    }
+
+    // Action item
+    if (hasAction) {
+      ctx3.font = `900 64px ${FONT}`;
+      ctx3.fillStyle = '#FFD700';
+      ctx3.fillText('⚡ ' + t('books.actionLabel') + (book.actionDone ? ' ✅' : ''), PAD, y + 64);
+      y += 104;
+
+      ctx3.font = `400 56px ${FONT}`;
+      ctx3.fillStyle = '#ffffff';
+      const aLines = wrapText(ctx3, book.actionItem, INNER);
+      aLines.slice(0, 3).forEach(line => { ctx3.fillText(line, PAD, y + 56); y += 80; });
+    }
+
+    drawWatermark(ctx3);
+    cards.push(c3);
+  }
+
+  // Download
+  for (let i = 0; i < cards.length; i++) {
+    const link = document.createElement('a');
+    link.download = `book_${book.title.replace(/[^a-zA-Z0-9가-힣ぁ-んァ-ヶ亜-熙]/g, '_').slice(0, 20)}_${i + 1}.png`;
+    link.href = cards[i].toDataURL('image/png');
+    link.click();
+  }
+
+  showToast(currentLang === 'ja' ? `${cards.length}枚のカードをダウンロードしました` :
+    currentLang === 'en' ? `Downloaded ${cards.length} card(s)` :
+    `${cards.length}장의 카드를 다운로드했습니다`);
 }
 
 function toggleBookShare(bookId, checked) {
@@ -5718,9 +6082,219 @@ function getPlan() {
 function renderPlan() {
   const plan = getPlan();
   renderMotto();
+  renderAffirmPreview();
   renderDumpList(plan);
   renderBig3Unified(plan);
   renderPlanNote(plan);
+}
+
+// ============== Affirmation (확언) ==============
+const DEFAULT_AFFIRMATIONS = [
+  '나는 반드시 성공한다.',
+  '나의 성공은 나에게도 주변에게도 세상에게도 도움이 된다.',
+  '나의 성공은 이기심이 아닌 주변과 세상을 향한 이타심에서 출발한다.',
+  '내가 하는 일은 명분과 비전을 가지고 있다.',
+  '나는 내가 하는 일에 깊은 확신이 있다.',
+  '나는 진심으로 좋아하는 일을 하며 그 일에 몰입한다.',
+  '나는 생각만 하는 사람이 아니라 끝까지 행동하는 사람이다.',
+  '나는 내가 어떤 사람이 되고 싶은지를 늘 기억한다.',
+  '나는 성과보다 성장에 더 큰 의미를 둔다.',
+  '나는 오늘보다 내일 더 깊고 단단한 사람이 된다.',
+  '나는 내 분야에서 최고가 되기로 결심한 사람이다.',
+  '나는 나의 실력으로 나를 증명한다.',
+  '나는 순간의 욕심보다 장기적인 신뢰를 선택한다.',
+  '나는 돈보다 시간을 더 소중히 여긴다.',
+  '나는 반복되는 일에 시간을 쓰지 않고 시스템을 만든다.',
+  '나는 사소한 일에 일희일비하지 않으며 큰 그림을 본다.',
+  '나는 완벽하지 않아도 일단 시작하고 향후에 보완한다.',
+  '나는 성장하는데 필요한 고통을 감수할 줄 안다.',
+  '나는 강점을 날카롭게 만드는데 집중한다.',
+  '나는 남들이 가지 않는 길을 선택한다.',
+  '나는 실패보다 시도하지 않음을 더 두려워한다.',
+  '나는 변화를 두려워하지 않고 기회로 바꾼다.',
+  '나는 열배, 100배 더 크게 생각하는 습관을 가진 사람이다.',
+  '나는 길게 보고 크게 생각한다.',
+  '나는 사람과의 관계를 중요시한다.',
+  '나는 먼저 주는 기버이다.',
+  '나는 신뢰를 먼저 베풀고 그 신뢰를 지켜나간다.',
+  '나는 훌륭한 팀을 이끄는 리더이다.',
+  '나는 받은 것보다 더 큰 가치를 돌려주는 사람이다.',
+  '나는 내가 가진 영향력을 선하게 사용하는 사람이다.',
+  '나는 남들이 놀랄 만한 결과를 만들어내는 사람이다.',
+  '나는 이미 부자이며 더 큰 부자가 된다.',
+  '나는 나답게 그리고 당당하게 살아간다.',
+  '나는 나의 가능성을 믿는다.',
+  '나는 무엇이든 해내는 사람이며 나의 길을 끝까지 가는 사람이다.',
+  '나는 늘 밝게 웃으며 실행한다. 그리고 그 과정을 즐긴다.'
+];
+
+const AFFIRM_BGS = {
+  gradient1: 'linear-gradient(135deg, #667eea, #764ba2)',
+  gradient2: 'linear-gradient(135deg, #f093fb, #f5576c)',
+  gradient3: 'linear-gradient(135deg, #4facfe, #00f2fe)',
+  gradient4: 'linear-gradient(135deg, #1a1a2e, #16213e)',
+};
+
+const AFFIRM_FONT_SIZES = { S: 20, M: 26, L: 34, XL: 42 };
+
+function getAffirmations() {
+  if (!data.affirmations || data.affirmations.length === 0) {
+    data.affirmations = [...DEFAULT_AFFIRMATIONS];
+  }
+  return data.affirmations;
+}
+
+function getAffirmStyle() {
+  if (!data.affirmStyle) {
+    data.affirmStyle = { bg: 'gradient1', fontSize: 'L', customColor: '#1a1a2e' };
+  }
+  return data.affirmStyle;
+}
+
+function renderAffirmPreview() {
+  const list = document.getElementById('affirm-list');
+  if (!list) return;
+  const affirmations = getAffirmations();
+  list.innerHTML = affirmations.slice(0, 5).map(a => escHtml(a)).join('<br>');
+}
+
+function startAffirmViewer() {
+  const affirmations = getAffirmations();
+  if (affirmations.length === 0) return;
+  const style = getAffirmStyle();
+  const bg = style.bg === 'custom'
+    ? style.customColor
+    : (AFFIRM_BGS[style.bg] || AFFIRM_BGS.gradient1);
+  const fontSize = AFFIRM_FONT_SIZES[style.fontSize] || 34;
+
+  let idx = 0;
+  const viewer = document.createElement('div');
+  viewer.className = 'affirm-viewer';
+  viewer.style.background = bg;
+
+  function renderSlide() {
+    viewer.innerHTML = `
+      <button class="affirm-close" onclick="this.parentElement.remove()">✕</button>
+      <div class="affirm-text" style="font-size:${fontSize}px;color:white">
+        ${escHtml(affirmations[idx])}
+      </div>
+      <div class="affirm-counter">${idx + 1} / ${affirmations.length}</div>
+      <div class="affirm-nav">
+        <button onclick="affirmPrev()" ${idx === 0 ? 'style="opacity:0.3"' : ''}>◀</button>
+        <button onclick="affirmNext()" ${idx === affirmations.length - 1 ? 'style="opacity:0.3"' : ''}>▶</button>
+      </div>
+    `;
+  }
+
+  window.affirmPrev = () => { if (idx > 0) { idx--; renderSlide(); } };
+  window.affirmNext = () => {
+    if (idx < affirmations.length - 1) { idx++; renderSlide(); }
+    else { viewer.remove(); showToast(currentLang === 'ja' ? 'アファメーション完了！素晴らしい一日を！' : currentLang === 'en' ? 'Affirmations done! Have a great day!' : '확언 완료! 멋진 하루 되세요!'); }
+  };
+
+  // Swipe support
+  let touchStartX = 0;
+  viewer.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+  viewer.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(diff) > 50) { diff > 0 ? window.affirmPrev() : window.affirmNext(); }
+  });
+
+  renderSlide();
+  document.body.appendChild(viewer);
+}
+
+function showAffirmEditor() {
+  const affirmations = getAffirmations();
+  showModal(`
+    <h3>✨ ${t('affirm.editTitle')}</h3>
+    <p style="font-size:12px;color:var(--text-sub);margin-bottom:10px">${t('affirm.editDesc')}</p>
+    <textarea id="affirm-edit-text" class="input" rows="15" style="resize:vertical;font-size:14px;line-height:1.8;width:100%;box-sizing:border-box;padding:12px">${escHtml(affirmations.join('\n'))}</textarea>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-outline" onclick="resetAffirmations()" style="flex:1;font-size:12px">${t('affirm.reset')}</button>
+      <button class="btn btn-primary" onclick="saveAffirmations()" style="flex:1">${t('affirm.save')}</button>
+    </div>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
+    </div>
+  `);
+}
+
+function saveAffirmations() {
+  const text = document.getElementById('affirm-edit-text').value;
+  data.affirmations = text.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+  saveData();
+  closeModal();
+  renderAffirmPreview();
+  showToast(currentLang === 'ja' ? '保存しました' : currentLang === 'en' ? 'Saved' : '저장되었습니다');
+}
+
+function resetAffirmations() {
+  document.getElementById('affirm-edit-text').value = DEFAULT_AFFIRMATIONS.join('\n');
+}
+
+function showAffirmSettings() {
+  const style = getAffirmStyle();
+  const bgOptions = [
+    { key: 'gradient1', label: t('affirm.bgGradient1') },
+    { key: 'gradient2', label: t('affirm.bgGradient2') },
+    { key: 'gradient3', label: t('affirm.bgGradient3') },
+    { key: 'gradient4', label: t('affirm.bgGradient4') },
+    { key: 'custom', label: t('affirm.bgCustom') },
+  ];
+  const fontOptions = [
+    { key: 'S', label: t('affirm.fontSizeS') },
+    { key: 'M', label: t('affirm.fontSizeM') },
+    { key: 'L', label: t('affirm.fontSizeL') },
+    { key: 'XL', label: t('affirm.fontSizeXL') },
+  ];
+
+  showModal(`
+    <h3>⚙️ ${t('affirm.settingsTitle')}</h3>
+    <div style="margin:16px 0">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('affirm.bg')}</label>
+      <div class="affirm-settings-row">
+        <select id="affirm-bg-select" onchange="previewAffirmBg()">
+          ${bgOptions.map(o => `<option value="${o.key}" ${style.bg === o.key ? 'selected' : ''}>${o.label}</option>`).join('')}
+        </select>
+        <input type="color" id="affirm-custom-color" value="${style.customColor || '#1a1a2e'}" onchange="previewAffirmBg()" style="${style.bg === 'custom' ? '' : 'display:none'}">
+      </div>
+      <div id="affirm-bg-preview" style="height:60px;border-radius:8px;margin-top:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:15px;background:${style.bg === 'custom' ? style.customColor : (AFFIRM_BGS[style.bg] || AFFIRM_BGS.gradient1)}">
+        ${currentLang === 'ja' ? 'プレビュー' : currentLang === 'en' ? 'Preview' : '미리보기'}
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('affirm.fontSize')}</label>
+      <div class="affirm-settings-row">
+        <select id="affirm-font-select">
+          ${fontOptions.map(o => `<option value="${o.key}" ${style.fontSize === o.key ? 'selected' : ''}>${o.label}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveAffirmSettings()">${t('affirm.save')}</button>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn btn-outline btn-block" onclick="closeModal()">${t('modal.close')}</button>
+    </div>
+  `);
+}
+
+function previewAffirmBg() {
+  const sel = document.getElementById('affirm-bg-select').value;
+  const colorInput = document.getElementById('affirm-custom-color');
+  const preview = document.getElementById('affirm-bg-preview');
+  colorInput.style.display = sel === 'custom' ? '' : 'none';
+  preview.style.background = sel === 'custom' ? colorInput.value : (AFFIRM_BGS[sel] || AFFIRM_BGS.gradient1);
+}
+
+function saveAffirmSettings() {
+  data.affirmStyle = {
+    bg: document.getElementById('affirm-bg-select').value,
+    fontSize: document.getElementById('affirm-font-select').value,
+    customColor: document.getElementById('affirm-custom-color').value
+  };
+  saveData();
+  closeModal();
+  showToast(currentLang === 'ja' ? '保存しました' : currentLang === 'en' ? 'Saved' : '저장되었습니다');
 }
 
 function resetPlan() {
@@ -6115,6 +6689,23 @@ function renderPlanVsActual() {
 }
 
 // ============== Mission 1: Record ==============
+function guessDesiredLife(activity) {
+  // Check past entries: if this activity was marked as desired >50% of the time, auto-check
+  const allDates = Object.keys(data.dates || {});
+  let desiredCount = 0, totalCount = 0;
+  for (let i = allDates.length - 1; i >= 0 && totalCount < 30; i--) {
+    const dd = data.dates[allDates[i]];
+    if (!dd || !dd.entries) continue;
+    for (const e of dd.entries) {
+      if (e.activity === activity && e.category === 'flexible') {
+        totalCount++;
+        if (e.isDesiredLife) desiredCount++;
+      }
+    }
+  }
+  return totalCount >= 2 && desiredCount / totalCount > 0.5;
+}
+
 function addEntry(activityName) {
   const input = document.getElementById('activity-input');
   const activity = activityName || input.value.trim();
@@ -6155,7 +6746,7 @@ function addEntry(activityName) {
       }
       return data.activityPresets[activity] || DEFAULT_CATEGORIES[activity] || null;
     })(),
-    isDesiredLife: false,
+    isDesiredLife: guessDesiredLife(activity),
     memo: ''
   });
 
@@ -6311,7 +6902,8 @@ function closeDay() {
   // 취침 엔트리에서 시간 가져오기
   const bedEntry = [...dd.entries].reverse().find(e => isBedActivity(e.activity));
   const defaultCloseTime = bedEntry ? bedEntry.time : getCurrentTime();
-  const defaultSleepTime = bedEntry ? bedEntry.time : '00:00';
+  const now10 = new Date(); now10.setMinutes(now10.getMinutes() + 10);
+  const defaultSleepTime = bedEntry ? bedEntry.time : String(now10.getHours()).padStart(2,'0') + ':' + String(now10.getMinutes()).padStart(2,'0');
 
   showModal(`
     <h3>${t('modal.closeDay')}</h3>
@@ -7816,22 +8408,23 @@ function showAboutModal() {
 }
 
 // ============== Life Counter ==============
+// UN World Population Prospects 2024 (2023 estimates)
 const LIFE_EXPECTANCY = {
-  KR: { male: 80.6, female: 86.6, name: '🇰🇷 한국', nameJa: '🇰🇷 韓国', nameEn: '🇰🇷 South Korea' },
-  JP: { male: 81.5, female: 87.6, name: '🇯🇵 일본', nameJa: '🇯🇵 日本', nameEn: '🇯🇵 Japan' },
-  US: { male: 74.8, female: 80.2, name: '🇺🇸 미국', nameJa: '🇺🇸 アメリカ', nameEn: '🇺🇸 United States' },
-  GB: { male: 79.0, female: 82.9, name: '🇬🇧 영국', nameJa: '🇬🇧 イギリス', nameEn: '🇬🇧 United Kingdom' },
-  DE: { male: 78.7, female: 83.4, name: '🇩🇪 독일', nameJa: '🇩🇪 ドイツ', nameEn: '🇩🇪 Germany' },
-  FR: { male: 79.5, female: 85.3, name: '🇫🇷 프랑스', nameJa: '🇫🇷 フランス', nameEn: '🇫🇷 France' },
-  CA: { male: 79.8, female: 84.1, name: '🇨🇦 캐나다', nameJa: '🇨🇦 カナダ', nameEn: '🇨🇦 Canada' },
-  AU: { male: 81.3, female: 85.4, name: '🇦🇺 호주', nameJa: '🇦🇺 オーストラリア', nameEn: '🇦🇺 Australia' },
-  CN: { male: 75.0, female: 80.5, name: '🇨🇳 중국', nameJa: '🇨🇳 中国', nameEn: '🇨🇳 China' },
-  IN: { male: 69.4, female: 72.0, name: '🇮🇳 인도', nameJa: '🇮🇳 インド', nameEn: '🇮🇳 India' },
-  BR: { male: 72.0, female: 79.4, name: '🇧🇷 브라질', nameJa: '🇧🇷 ブラジル', nameEn: '🇧🇷 Brazil' },
-  SG: { male: 81.4, female: 85.7, name: '🇸🇬 싱가포르', nameJa: '🇸🇬 シンガポール', nameEn: '🇸🇬 Singapore' },
-  TW: { male: 77.3, female: 83.7, name: '🇹🇼 대만', nameJa: '🇹🇼 台湾', nameEn: '🇹🇼 Taiwan' },
-  TH: { male: 73.2, female: 80.7, name: '🇹🇭 태국', nameJa: '🇹🇭 タイ', nameEn: '🇹🇭 Thailand' },
-  WW: { male: 70.8, female: 75.6, name: '🌍 세계 평균', nameJa: '🌍 世界平均', nameEn: '🌍 World Average' },
+  KR: { male: 81.3, female: 87.3, name: '🇰🇷 한국', nameJa: '🇰🇷 韓国', nameEn: '🇰🇷 South Korea' },
+  JP: { male: 81.8, female: 87.9, name: '🇯🇵 일본', nameJa: '🇯🇵 日本', nameEn: '🇯🇵 Japan' },
+  US: { male: 77.1, female: 82.0, name: '🇺🇸 미국', nameJa: '🇺🇸 アメリカ', nameEn: '🇺🇸 United States' },
+  GB: { male: 79.5, female: 83.3, name: '🇬🇧 영국', nameJa: '🇬🇧 イギリス', nameEn: '🇬🇧 United Kingdom' },
+  DE: { male: 79.2, female: 83.9, name: '🇩🇪 독일', nameJa: '🇩🇪 ドイツ', nameEn: '🇩🇪 Germany' },
+  FR: { male: 80.6, female: 86.2, name: '🇫🇷 프랑스', nameJa: '🇫🇷 フランス', nameEn: '🇫🇷 France' },
+  CA: { male: 80.5, female: 84.9, name: '🇨🇦 캐나다', nameJa: '🇨🇦 カナダ', nameEn: '🇨🇦 Canada' },
+  AU: { male: 82.3, female: 85.5, name: '🇦🇺 호주', nameJa: '🇦🇺 オーストラリア', nameEn: '🇦🇺 Australia' },
+  CN: { male: 75.3, female: 81.0, name: '🇨🇳 중국', nameJa: '🇨🇳 中国', nameEn: '🇨🇳 China' },
+  IN: { male: 70.7, female: 73.9, name: '🇮🇳 인도', nameJa: '🇮🇳 インド', nameEn: '🇮🇳 India' },
+  BR: { male: 73.0, female: 79.2, name: '🇧🇷 브라질', nameJa: '🇧🇷 ブラジル', nameEn: '🇧🇷 Brazil' },
+  SG: { male: 81.4, female: 86.4, name: '🇸🇬 싱가포르', nameJa: '🇸🇬 シンガポール', nameEn: '🇸🇬 Singapore' },
+  TW: { male: 78.3, female: 84.0, name: '🇹🇼 대만', nameJa: '🇹🇼 台湾', nameEn: '🇹🇼 Taiwan' },
+  TH: { male: 72.9, female: 81.4, name: '🇹🇭 태국', nameJa: '🇹🇭 タイ', nameEn: '🇹🇭 Thailand' },
+  WW: { male: 71.0, female: 76.0, name: '🌍 세계 평균', nameJa: '🌍 世界平均', nameEn: '🌍 World Average' },
 };
 
 const LANG_TO_COUNTRY = { ko: 'KR', ja: 'JP', en: 'US' };
@@ -7869,6 +8462,7 @@ function showLifeSetup() {
       ${currentLang === 'ja' ? '平均寿命: 男性 ' + le.male + '歳 / 女性 ' + le.female + '歳' :
         currentLang === 'en' ? 'Life expectancy: M ' + le.male + 'y / F ' + le.female + 'y' :
         '평균 수명: 남성 ' + le.male + '세 / 여성 ' + le.female + '세'}
+      <br><span style="font-size:10px;color:var(--text-sub);opacity:0.7">(${t('life.source')})</span>
     </p>
     <div style="margin-bottom:12px">
       <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">${t('life.birthDate')}</label>
@@ -7895,9 +8489,10 @@ function updateLifeExpLabel() {
   if (!le) return;
   const label = document.getElementById('life-exp-label');
   if (!label) return;
-  label.textContent = currentLang === 'ja' ? '平均寿命: 男性 ' + le.male + '歳 / 女性 ' + le.female + '歳' :
+  const txt = currentLang === 'ja' ? '平均寿命: 男性 ' + le.male + '歳 / 女性 ' + le.female + '歳' :
     currentLang === 'en' ? 'Life expectancy: M ' + le.male + 'y / F ' + le.female + 'y' :
     '평균 수명: 남성 ' + le.male + '세 / 여성 ' + le.female + '세';
+  label.innerHTML = txt + '<br><span style="font-size:10px;color:var(--text-sub);opacity:0.7">(' + t('life.source') + ')</span>';
 }
 
 function saveLifeSetup() {
@@ -7966,9 +8561,20 @@ function updateLifeCounter() {
   const now = new Date();
   const diff = deathDate.getTime() - now.getTime();
   if (diff <= 0) {
-    labelEl.textContent = '⏳ ' + t('life.remaining');
-    line1.textContent = '--';
-    line2.textContent = '';
+    const overSec = Math.floor(-diff / 1000);
+    const overYears = Math.floor(overSec / (365.25 * 24 * 3600));
+    const overRemSec = overSec - overYears * Math.floor(365.25 * 24 * 3600);
+    const overDays = Math.floor(overRemSec / (24 * 3600));
+    labelEl.textContent = t('life.bonusTime');
+    line1.style.color = '#6366F1';
+    line1.textContent = `+${overYears}${t('life.years')} ${overDays}${t('life.days')}`;
+    line2.textContent = t('life.bonusMsg');
+    line2.style.fontSize = '11px';
+    line2.style.color = '#6366F1';
+    const dreamRow = document.getElementById('dream-counter-row');
+    if (dreamRow) dreamRow.style.display = 'none';
+    const grid = document.getElementById('life-counter-grid');
+    if (grid) grid.style.gridTemplateColumns = '1fr';
     return;
   }
 
@@ -8015,8 +8621,13 @@ function updateLifeCounter() {
 }
 
 function calcDreamRatio() {
-  // Calculate average dream time ratio from all recorded days (including partially classified)
-  const allDates = Object.keys(data.dates || {});
+  // Calculate dream time ratio from the last 28 days (4 weeks)
+  const today = new Date();
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() - 27); // 28 days including today
+  const cutoffStr = cutoff.getFullYear() + '-' + String(cutoff.getMonth()+1).padStart(2,'0') + '-' + String(cutoff.getDate()).padStart(2,'0');
+
+  const allDates = Object.keys(data.dates || {}).filter(d => d >= cutoffStr);
   let totalRecordedMin = 0;
   let totalDreamMin = 0;
   let dayCount = 0;
@@ -8032,7 +8643,6 @@ function calcDreamRatio() {
   });
 
   if (dayCount === 0 || totalRecordedMin === 0) return 0;
-  // ratio = dream time / total recorded time (which represents a full day)
   return totalDreamMin / totalRecordedMin;
 }
 
@@ -8421,8 +9031,11 @@ function renderGoalCards() {
       reminderActivities.push(name);
     }
 
+    const clickable = !isPast && prog.percent < 100;
+    const clickAttr = clickable ? `onclick="addEntry('${escAttr(goal.activity)}')" style="cursor:pointer"` : '';
+
     cardsHtml += `
-      <div class="goal-card">
+      <div class="goal-card" ${clickAttr}>
         <div class="goal-card-top">
           <span class="goal-activity">${icon} ${name}</span>
           ${statusHtml}
@@ -8766,6 +9379,10 @@ function renderMonthlyCalendar() {
         ${dayCells}
       </div>
       ${totalWithData > 0 ? `<div class="calendar-summary"><span class="star-count">★</span> ${t('calendar.achievement', {total: totalWithData, stars: starCount})}${diamondCount > 0 ? `<br><span class="diamond-count">💎</span> ${t('calendar.diamondDesc', {total: totalWithData, diamonds: diamondCount})}` : ''}</div>` : ''}
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--text-sub)">
+        <span>★ ${t('calendar.starLegend')}</span>
+        <span>💎 ${t('calendar.diamondLegend')}</span>
+      </div>
     </div>
   `;
 }
