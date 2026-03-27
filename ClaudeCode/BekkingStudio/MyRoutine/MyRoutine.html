@@ -2098,7 +2098,8 @@ body {
 }
 .virtue-grid .vg-label .vg-icon { font-size: 14px; flex-shrink: 0; }
 .virtue-grid .vg-label .vg-name { overflow: hidden; text-overflow: ellipsis; }
-.virtue-grid .vg-label.vg-focus { background: rgba(59,107,232,0.06); border-radius: 4px; }
+.virtue-grid .vg-label.vg-focus { background: rgba(59,107,232,0.10); border-radius: 4px; font-weight: 600; }
+.virtue-grid .vg-cell.vg-focus-row { background: rgba(59,107,232,0.06); }
 .virtue-grid .vg-cell {
   display: flex; align-items: center; justify-content: center;
   min-height: 32px; min-width: 32px; border-radius: 4px; cursor: default;
@@ -2842,6 +2843,7 @@ const TRANSLATIONS = {
     'virtue.tranquility': '평온', 'virtue.tranquilityDesc': '사소한 일에 마음을 어지럽히지 말라',
     'virtue.chastity': '순결', 'virtue.chastityDesc': '건강과 자손을 위해서만',
     'virtue.humility': '겸손', 'virtue.humilityDesc': '예수와 소크라테스를 본받으라',
+    'virtue.credit': '벤저민 프랭클린의 자서전(1791)에서 유래한 자기 수양법',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -3089,6 +3091,7 @@ const TRANSLATIONS = {
     'virtue.tranquility': '平穏', 'virtue.tranquilityDesc': '些細なことで心を乱さない',
     'virtue.chastity': '純潔', 'virtue.chastityDesc': '健康と子孫のためにのみ',
     'virtue.humility': '謙遜', 'virtue.humilityDesc': 'イエスとソクラテスに倣う',
+    'virtue.credit': 'ベンジャミン・フランクリンの自伝(1791)に由来する自己修養法',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -3336,6 +3339,7 @@ const TRANSLATIONS = {
     'virtue.tranquility': 'Tranquility', 'virtue.tranquilityDesc': 'Be not disturbed at trifles',
     'virtue.chastity': 'Chastity', 'virtue.chastityDesc': 'For health and offspring only',
     'virtue.humility': 'Humility', 'virtue.humilityDesc': 'Imitate Jesus and Socrates',
+    'virtue.credit': 'A self-improvement method from Benjamin Franklin\'s Autobiography (1791)',
   }
 };
 
@@ -7680,10 +7684,9 @@ function renderVirtueGrid() {
       const isFuture = d > todayStr;
       const log = data.virtues.log[d];
       const hasMark = log && log.includes(v.id);
-      const dd = data.dates[d];
-      const isCompleted = dd && dd.status === 'completed';
-      const editable = !isFuture; // 오늘 + 과거 날짜 모두 편집 가능
+      const editable = !isFuture;
       let cls = 'vg-cell';
+      if (isFocus) cls += ' vg-focus-row';
       if (isToday) cls += ' vg-today-col';
       if (isFuture) cls += ' vg-future';
       if (editable) cls += ' vg-editable';
@@ -7733,6 +7736,7 @@ function renderVirtueGrid() {
       ${cycleBanner}
       <div class="virtue-grid-wrap"><div class="virtue-grid">${gridHtml}</div></div>
       <div class="virtue-summary">${summaryText}</div>
+      <div style="font-size:11px;color:var(--text-light);margin-top:8px;text-align:right;font-style:italic">${t('virtue.credit')}</div>
     </div></div>`;
 }
 
