@@ -2083,7 +2083,7 @@ body {
   padding: 6px 10px; background: rgba(59,107,232,0.08); border-radius: var(--radius-sm);
 }
 .virtue-grid {
-  display: grid; grid-template-columns: 36px repeat(7, 1fr);
+  display: grid; grid-template-columns: 72px repeat(7, 1fr);
   gap: 1px; font-size: 12px; max-height: 420px; overflow-y: auto;
   min-width: 0;
 }
@@ -2096,8 +2096,8 @@ body {
   display: flex; align-items: center; gap: 2px; padding: 4px 2px; font-size: 11px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.virtue-grid .vg-label .vg-icon { font-size: 14px; }
-.virtue-grid .vg-label .vg-name { display: none; }
+.virtue-grid .vg-label .vg-icon { font-size: 14px; flex-shrink: 0; }
+.virtue-grid .vg-label .vg-name { overflow: hidden; text-overflow: ellipsis; }
 .virtue-grid .vg-label.vg-focus { background: rgba(59,107,232,0.06); border-radius: 4px; }
 .virtue-grid .vg-cell {
   display: flex; align-items: center; justify-content: center;
@@ -2109,9 +2109,10 @@ body {
 .virtue-grid .vg-cell.vg-editable { cursor: pointer; }
 .virtue-grid .vg-cell.vg-editable:hover { background: rgba(59,107,232,0.12); }
 .virtue-grid .vg-mark {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--text-sub);
+  width: 10px; height: 10px; border-radius: 50%; background: #555;
   transition: opacity 0.2s;
 }
+[data-theme="dark"] .virtue-grid .vg-mark { background: #ccc; }
 .virtue-summary {
   margin-top: 10px; font-size: 13px; color: var(--text-sub);
   display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
@@ -2137,9 +2138,9 @@ body {
 .virtue-pill .vp-icon { font-size: 16px; }
 .virtue-pill .vp-name { font-size: 14px; }
 
-@media (min-width: 500px) {
-  .virtue-grid { grid-template-columns: 80px repeat(7, 1fr); }
-  .virtue-grid .vg-label .vg-name { display: inline; }
+@media (max-width: 340px) {
+  .virtue-grid { grid-template-columns: 36px repeat(7, 1fr); }
+  .virtue-grid .vg-label .vg-name { display: none; }
 }
 
 /* Calendar virtue star */
@@ -7681,7 +7682,7 @@ function renderVirtueGrid() {
       const hasMark = log && log.includes(v.id);
       const dd = data.dates[d];
       const isCompleted = dd && dd.status === 'completed';
-      const editable = isToday && !isCompleted;
+      const editable = !isFuture; // 오늘 + 과거 날짜 모두 편집 가능
       let cls = 'vg-cell';
       if (isToday) cls += ' vg-today-col';
       if (isFuture) cls += ' vg-future';
