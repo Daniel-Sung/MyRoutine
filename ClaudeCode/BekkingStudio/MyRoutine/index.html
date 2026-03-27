@@ -3543,13 +3543,17 @@ function getWeekDates() {
 
   let weekStart;
   if (today < cycleStart) {
-    // 사이클 시작 전: 오늘이 속한 월~일 주를 표시
+    // 사이클 시작 전: 오늘이 속한 일~토 주를 표시
     weekStart = new Date(today);
     const dow = weekStart.getDay(); // 0=Sun
-    weekStart.setDate(weekStart.getDate() - (dow === 0 ? 6 : dow - 1)); // 이번 주 월요일
+    weekStart.setDate(weekStart.getDate() - dow); // 이번 주 일요일
   } else {
+    // 사이클 시작 후: 사이클 기준 주의 일요일부터
     weekStart = new Date(cycleStart);
     weekStart.setDate(weekStart.getDate() + info.weekIndex * 7);
+    // cycleStart가 월요일이면 하루 전(일요일)부터 시작
+    const dow = weekStart.getDay();
+    weekStart.setDate(weekStart.getDate() - dow); // 해당 주 일요일
   }
 
   const dates = [];
