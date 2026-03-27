@@ -10100,7 +10100,7 @@ function renderMonthlyCalendar() {
       </div>
       ${totalWithData > 0 ? `<div class="calendar-summary"><span class="star-count">★</span> ${t('calendar.achievement', {total: totalWithData, stars: starCount})}${diamondCount > 0 ? `<br><span class="diamond-count">💎</span> ${t('calendar.diamondDesc', {total: totalWithData, diamonds: diamondCount})}` : ''}</div>` : ''}
       <div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--text-sub);flex-wrap:wrap">
-        <span>★ ${t('calendar.starLegend')}</span>
+        <span><span style="color:#FFD700">★</span> ${t('calendar.starLegend')}</span>
         <span>💎 ${t('calendar.diamondLegend')}</span>
         ${getActiveVirtues().length > 0 ? `<span>🪶 ${t('virtue.starLegend')}</span>` : ''}
       </div>
