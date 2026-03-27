@@ -2829,7 +2829,7 @@ const TRANSLATIONS = {
     'virtue.editVirtue': '덕목 수정', 'virtue.deleteConfirm': '이 덕목을 삭제할까요?',
     'virtue.name': '덕목 이름', 'virtue.icon': '아이콘', 'virtue.description': '설명',
     'virtue.save': '저장', 'virtue.cancel': '취소', 'virtue.delete': '삭제',
-    'virtue.calendarStar': '⭐', 'virtue.starLegend': '모든 덕목 달성',
+    'virtue.calendarStar': '🪶', 'virtue.starLegend': '모든 덕목 달성',
     'virtue.temperance': '절제', 'virtue.temperanceDesc': '배부르도록 먹지 말고, 취하도록 마시지 말라',
     'virtue.silence': '침묵', 'virtue.silenceDesc': '자신과 타인에게 유익한 말만 하라',
     'virtue.order': '질서', 'virtue.orderDesc': '물건과 일에 각각의 자리를 정하라',
@@ -3077,7 +3077,7 @@ const TRANSLATIONS = {
     'virtue.editVirtue': '徳目を編集', 'virtue.deleteConfirm': 'この徳目を削除しますか？',
     'virtue.name': '徳目名', 'virtue.icon': 'アイコン', 'virtue.description': '説明',
     'virtue.save': '保存', 'virtue.cancel': 'キャンセル', 'virtue.delete': '削除',
-    'virtue.calendarStar': '⭐', 'virtue.starLegend': '全徳目達成',
+    'virtue.calendarStar': '🪶', 'virtue.starLegend': '全徳目達成',
     'virtue.temperance': '節制', 'virtue.temperanceDesc': '飽くほど食べず、酔うほど飲まない',
     'virtue.silence': '沈黙', 'virtue.silenceDesc': '自他に有益な話だけをする',
     'virtue.order': '秩序', 'virtue.orderDesc': '物事に所定の場所を定める',
@@ -3325,7 +3325,7 @@ const TRANSLATIONS = {
     'virtue.editVirtue': 'Edit Virtue', 'virtue.deleteConfirm': 'Delete this virtue?',
     'virtue.name': 'Virtue name', 'virtue.icon': 'Icon', 'virtue.description': 'Description',
     'virtue.save': 'Save', 'virtue.cancel': 'Cancel', 'virtue.delete': 'Delete',
-    'virtue.calendarStar': '⭐', 'virtue.starLegend': 'All virtues kept',
+    'virtue.calendarStar': '🪶', 'virtue.starLegend': 'All virtues kept',
     'virtue.temperance': 'Temperance', 'virtue.temperanceDesc': 'Eat not to dullness; drink not to elevation',
     'virtue.silence': 'Silence', 'virtue.silenceDesc': 'Speak only what may benefit others or yourself',
     'virtue.order': 'Order', 'virtue.orderDesc': 'Let all things have their places',
@@ -10075,7 +10075,7 @@ function renderMonthlyCalendar() {
       <span class="day-num">${d}</span>
       ${starred ? '<span class="day-star">★</span>' : ''}
       ${diamond ? '<span class="day-diamond">💎</span>' : ''}
-      ${virtueStar ? '<span class="day-virtue-star">⭐</span>' : ''}
+      ${virtueStar ? '<span class="day-virtue-star">🪶</span>' : ''}
       ${hasData ? `<span class="day-desired${needsReview ? ' needs-review' : ''}">${desiredHrs}</span>` : ''}
     </div>`;
   }
@@ -10102,7 +10102,7 @@ function renderMonthlyCalendar() {
       <div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--text-sub);flex-wrap:wrap">
         <span>★ ${t('calendar.starLegend')}</span>
         <span>💎 ${t('calendar.diamondLegend')}</span>
-        ${getActiveVirtues().length > 0 ? `<span>⭐ ${t('virtue.starLegend')}</span>` : ''}
+        ${getActiveVirtues().length > 0 ? `<span>🪶 ${t('virtue.starLegend')}</span>` : ''}
       </div>
     </div>
   `;
