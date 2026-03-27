@@ -3506,12 +3506,16 @@ function initDefaultVirtues() {
   saveData();
 }
 
+function localDateStr(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
 function getNextMonday(dateStr) {
   const d = new Date(dateStr + 'T00:00:00');
   const day = d.getDay(); // 0=Sun, 1=Mon...
   const diff = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
   d.setDate(d.getDate() + diff);
-  return d.toISOString().slice(0, 10);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
 function getActiveVirtues() {
@@ -3534,13 +3538,25 @@ function getVirtueWeekInfo() {
 function getWeekDates() {
   if (!data.virtues || !data.virtues.cycle) return [];
   const info = getVirtueWeekInfo();
-  const start = new Date(data.virtues.cycle.startDate + 'T00:00:00');
-  start.setDate(start.getDate() + info.weekIndex * 7);
+  const cycleStart = new Date(data.virtues.cycle.startDate + 'T00:00:00');
+  const today = new Date(getTodayStr() + 'T00:00:00');
+
+  let weekStart;
+  if (today < cycleStart) {
+    // 사이클 시작 전: 오늘이 속한 월~일 주를 표시
+    weekStart = new Date(today);
+    const dow = weekStart.getDay(); // 0=Sun
+    weekStart.setDate(weekStart.getDate() - (dow === 0 ? 6 : dow - 1)); // 이번 주 월요일
+  } else {
+    weekStart = new Date(cycleStart);
+    weekStart.setDate(weekStart.getDate() + info.weekIndex * 7);
+  }
+
   const dates = [];
   for (let i = 0; i < 7; i++) {
-    const d = new Date(start);
+    const d = new Date(weekStart);
     d.setDate(d.getDate() + i);
-    dates.push(d.toISOString().slice(0, 10));
+    dates.push(localDateStr(d));
   }
   return dates;
 }
@@ -7706,7 +7722,7 @@ function renderVirtueGrid() {
     startDate.setDate(startDate.getDate() + (weekInfo.weekIndex - 1) * 7);
     for (let i = 0; i < 7; i++) {
       const d = new Date(startDate); d.setDate(d.getDate() + i);
-      lastWeekDates.push(d.toISOString().slice(0, 10));
+      lastWeekDates.push(localDateStr(d));
     }
     const lastWeekMarks = lastWeekDates.reduce((sum, d) => sum + (data.virtues.log[d]?.length || 0), 0);
     const diff = lastWeekMarks - thisWeekMarks;
@@ -7766,21 +7782,21 @@ function handleCycleComplete() {
     let wMarks = 0;
     for (let d = 0; d < 7; d++) {
       const day = new Date(start); day.setDate(day.getDate() + w * 7 + d);
-      const ds = day.toISOString().slice(0, 10);
+      const ds = localDateStr(day);
       wMarks += (data.virtues.log[ds]?.length || 0);
     }
     weeklyMarks.push(wMarks);
   }
   data.virtues.history.push({
     cycleNumber: cycle.cycleNumber, startDate: cycle.startDate,
-    endDate: new Date(new Date(cycle.startDate + 'T00:00:00').getTime() + 13 * 7 * 86400000).toISOString().slice(0, 10),
+    endDate: localDateStr(new Date(new Date(cycle.startDate + 'T00:00:00').getTime() + 13 * 7 * 86400000)),
     totalMarks, weeklyMarks
   });
   // Start new cycle
   const newStart = new Date(new Date(cycle.startDate + 'T00:00:00').getTime() + 13 * 7 * 86400000);
   const activeVirtues = getActiveVirtues();
   cycle.cycleNumber++;
-  cycle.startDate = newStart.toISOString().slice(0, 10);
+  cycle.startDate = localDateStr(newStart);
   cycle.focusSequence = activeVirtues.map(v => v.id);
   data.virtues.log = {}; // archive done, clear log
   data.virtues._cycleHandled = true;
