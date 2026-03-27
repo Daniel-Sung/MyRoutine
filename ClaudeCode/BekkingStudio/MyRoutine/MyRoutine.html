@@ -2812,7 +2812,7 @@ const TRANSLATIONS = {
     'books.coverImage': '책 표지', 'books.coverUrlPlaceholder': '이미지 URL 붙여넣기', 'books.coverFile': '파일',
     'books.goalDate': '독서 목표일', 'books.goalOverdue': '목표일 초과!', 'books.goalToday': '오늘이 목표일!', 'books.goalTomorrow': '내일이 목표일!',
     // Virtue Tracker
-    'virtue.title': '덕목 추적표', 'virtue.focusThisWeek': '이번 주 집중',
+    'virtue.title': '벤저민 프랭클린 덕목 관리표', 'virtue.focusThisWeek': '이번 주 집중',
     'virtue.weekLabel': '{n}/13주차', 'virtue.cycleLabel': '{n}차 사이클',
     'virtue.markCount': '● {n}개', 'virtue.improved': '지난주 대비 {n}개 개선!',
     'virtue.worsened': '지난주 대비 {n}개 증가',
@@ -3060,7 +3060,7 @@ const TRANSLATIONS = {
     'books.coverImage': '表紙画像', 'books.coverUrlPlaceholder': '画像URLを貼り付け', 'books.coverFile': 'ファイル',
     'books.goalDate': '読書目標日', 'books.goalOverdue': '目標日超過！', 'books.goalToday': '今日が目標日！', 'books.goalTomorrow': '明日が目標日！',
     // Virtue Tracker
-    'virtue.title': '徳目トラッカー', 'virtue.focusThisWeek': '今週の集中徳目',
+    'virtue.title': 'B.フランクリン 徳目管理表', 'virtue.focusThisWeek': '今週の集中徳目',
     'virtue.weekLabel': '{n}/13週目', 'virtue.cycleLabel': '第{n}サイクル',
     'virtue.markCount': '● {n}個', 'virtue.improved': '先週比{n}件改善！',
     'virtue.worsened': '先週比{n}件増加',
@@ -3308,7 +3308,7 @@ const TRANSLATIONS = {
     'books.coverImage': 'Cover Image', 'books.coverUrlPlaceholder': 'Paste image URL', 'books.coverFile': 'File',
     'books.goalDate': 'Reading Goal', 'books.goalOverdue': 'Overdue!', 'books.goalToday': 'Due today!', 'books.goalTomorrow': 'Due tomorrow!',
     // Virtue Tracker
-    'virtue.title': 'Virtue Tracker', 'virtue.focusThisWeek': 'Focus this week',
+    'virtue.title': 'B. Franklin Virtue Chart', 'virtue.focusThisWeek': 'Focus this week',
     'virtue.weekLabel': 'Week {n}/13', 'virtue.cycleLabel': 'Cycle {n}',
     'virtue.markCount': '● {n}', 'virtue.improved': '{n} fewer than last week!',
     'virtue.worsened': '{n} more than last week',
@@ -7682,10 +7682,12 @@ function renderVirtueGrid() {
   }
 
   // Build header row
+  const weekMonth = weekDates[0].split('-')[1].replace(/^0/, '');
   let gridHtml = '<div class="vg-header"></div>'; // empty top-left
   weekDates.forEach((d, i) => {
     const isToday = d === todayStr;
-    gridHtml += `<div class="vg-header${isToday ? ' vg-today' : ''}">${dayNames[i]}</div>`;
+    const dayNum = d.split('-')[2].replace(/^0/, '');
+    gridHtml += `<div class="vg-header${isToday ? ' vg-today' : ''}"><span>${dayNames[i]}</span><br><span style="font-size:10px;font-weight:400">${dayNum}</span></div>`;
   });
 
   // Build virtue rows
@@ -7745,14 +7747,13 @@ function renderVirtueGrid() {
   container.innerHTML = `
     <div class="virtue-section"><div class="card">
       <div class="virtue-header">
-        <h3>📜 ${t('virtue.title')} <span class="virtue-week">${t('virtue.weekLabel', { n: Math.min(weekInfo.weekIndex + 1, 13) })}</span></h3>
+        <h3>📜 ${t('virtue.title')} <span class="virtue-week">${weekMonth}${currentLang === 'en' ? '/' : '월'} · ${t('virtue.weekLabel', { n: Math.min(weekInfo.weekIndex + 1, 13) })}</span></h3>
         <button class="icon-btn" onclick="showVirtueSettings()" title="${t('virtue.settings')}">⚙️</button>
       </div>
       ${focusLabel ? `<div class="virtue-focus">${focusLabel}</div>` : ''}
       ${cycleBanner}
       <div class="virtue-grid-wrap"><div class="virtue-grid">${gridHtml}</div></div>
       <div class="virtue-summary">${summaryText}</div>
-      <div style="font-size:11px;color:var(--text-light);margin-top:8px;text-align:right;font-style:italic">${t('virtue.credit')}</div>
     </div></div>`;
 }
 
