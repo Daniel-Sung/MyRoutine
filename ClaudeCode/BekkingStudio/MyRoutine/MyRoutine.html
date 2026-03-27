@@ -6,14 +6,14 @@
 <meta name="theme-color" content="#5B8DEF">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MyRoutine">
+<meta name="apple-mobile-web-app-title" content="GOD+生">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://www.gstatic.com https://apis.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.google.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https://fonts.gstatic.com; frame-src 'self' https://*.firebaseapp.com;">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>MyRoutine - 나의 하루 분석</title>
+<title>GOD+生 - 나의 하루 분석</title>
 <!-- Google Analytics (GA4) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HJVMWV011Z"></script>
 <script>
@@ -2083,37 +2083,43 @@ body {
   padding: 6px 10px; background: rgba(59,107,232,0.08); border-radius: var(--radius-sm);
 }
 .virtue-grid {
-  display: grid; grid-template-columns: 72px repeat(7, 1fr);
-  gap: 1px; font-size: 12px; max-height: 420px; overflow-y: auto;
-  min-width: 0;
+  display: grid; grid-template-columns: 64px repeat(7, 1fr);
+  gap: 0; font-size: 12px; min-width: 0;
 }
 .virtue-grid-wrap { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
 .virtue-grid .vg-header {
-  text-align: center; font-weight: 600; padding: 4px 2px; color: var(--text-sub); font-size: 11px;
+  text-align: center; font-weight: 600; padding: 3px 1px; color: var(--text-sub); font-size: 10px;
 }
 .virtue-grid .vg-header.vg-today { color: #3B6BE8; font-weight: 700; border-bottom: 2px solid #3B6BE8; }
 .virtue-grid .vg-label {
-  display: flex; align-items: center; gap: 2px; padding: 4px 2px; font-size: 11px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: flex; align-items: center; gap: 2px; padding: 2px 2px; font-size: 10px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
+  border-bottom: 1px solid rgba(128,128,128,0.1);
 }
-.virtue-grid .vg-label .vg-icon { font-size: 14px; flex-shrink: 0; }
+.virtue-grid .vg-label:active { opacity: 0.7; }
+.virtue-grid .vg-label .vg-icon { font-size: 12px; flex-shrink: 0; }
 .virtue-grid .vg-label .vg-name { overflow: hidden; text-overflow: ellipsis; }
 .virtue-grid .vg-label.vg-focus { background: rgba(59,107,232,0.10); border-radius: 4px; font-weight: 600; }
 .virtue-grid .vg-cell.vg-focus-row { background: rgba(59,107,232,0.06); }
 .virtue-grid .vg-cell {
   display: flex; align-items: center; justify-content: center;
-  min-height: 32px; min-width: 32px; border-radius: 4px; cursor: default;
-  transition: background 0.2s;
+  min-height: 26px; border-radius: 3px; cursor: default;
+  transition: background 0.2s; border-bottom: 1px solid rgba(128,128,128,0.1);
 }
 .virtue-grid .vg-cell.vg-today-col { background: rgba(59,107,232,0.06); }
-.virtue-grid .vg-cell.vg-future { background: var(--bg); opacity: 0.5; }
+.virtue-grid .vg-cell.vg-future { background: var(--bg); opacity: 0.4; }
 .virtue-grid .vg-cell.vg-editable { cursor: pointer; }
 .virtue-grid .vg-cell.vg-editable:hover { background: rgba(59,107,232,0.12); }
 .virtue-grid .vg-mark {
-  width: 10px; height: 10px; border-radius: 50%; background: #555;
+  width: 8px; height: 8px; border-radius: 50%; background: #555;
   transition: opacity 0.2s;
 }
 [data-theme="dark"] .virtue-grid .vg-mark { background: #ccc; }
+.virtue-desc-toast {
+  margin-top: 6px; padding: 6px 10px; font-size: 12px; color: var(--text-sub);
+  background: var(--card); border-radius: var(--radius-sm); border-left: 3px solid #3B6BE8;
+  display: none;
+}
 .virtue-summary {
   margin-top: 10px; font-size: 13px; color: var(--text-sub);
   display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
@@ -2554,9 +2560,9 @@ body {
 
 <!-- PWA Install Banner (Android) -->
 <div class="pwa-install-banner" id="pwa-install-banner">
-  <img class="pwa-install-icon" src="icon-192.png" alt="MyRoutine">
+  <img class="pwa-install-icon" src="icon-192.png" alt="GOD+生">
   <div class="pwa-install-text">
-    <div class="title" data-i18n="pwa.install">MyRoutine 설치</div>
+    <div class="title" data-i18n="pwa.install">GOD+生 설치</div>
     <div class="desc" data-i18n="pwa.installDesc">홈 화면에 추가하여 앱처럼 사용하세요</div>
   </div>
   <div class="pwa-install-actions">
@@ -2567,9 +2573,9 @@ body {
 
 <!-- PWA Install Banner (iOS Safari) -->
 <div class="pwa-install-banner" id="pwa-ios-banner">
-  <img class="pwa-install-icon" src="icon-192.png" alt="MyRoutine">
+  <img class="pwa-install-icon" src="icon-192.png" alt="GOD+生">
   <div class="pwa-install-text">
-    <div class="title" data-i18n="pwa.install">MyRoutine 설치</div>
+    <div class="title" data-i18n="pwa.install">GOD+生 설치</div>
     <div class="desc" data-i18n="pwa.iosDesc">Safari 하단의 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택하세요</div>
   </div>
   <div class="pwa-install-actions">
@@ -2636,8 +2642,8 @@ const TRANSLATIONS = {
     'modal.sleepTime': '취침 시간 (잠든 시간)', 'modal.closeDayBtn': '마감하기',
     'modal.dataManagement': '데이터 관리',
     'modal.exportJson': 'JSON 내보내기', 'modal.importJson': 'JSON 가져오기', 'modal.close': '닫기',
-    'about.title': 'MyRoutine 정보',
-    'about.version': 'v2.0 · Bekking Studio',
+    'about.title': 'GOD+生 정보',
+    'about.version': 'v3.0 · Bekking Studio',
     'about.updateToggle': '업데이트 내용 확인하기',
     'about.updateNote': '<strong>v2.0</strong> — 📋 일론 머스크의 시간 관리법 (브레인 덤프 → Big 3 → 타임 박싱), 📚 독서 기록 (읽는 중/완독 관리, 별점, 연간/월간 차트), 브라이언 트레이시의 목표 설정 7단계를 앱에 담았습니다.',
     'about.privacy': '개인정보 안내',
@@ -2695,7 +2701,7 @@ const TRANSLATIONS = {
     'plan.vsActualTitle': '계획 vs 실제', 'plan.big3Result': 'Big 3 달성: {done}/{total}',
     'plan.timeCompare': '시간 비교', 'plan.planned': '계획', 'plan.actual': '실제',
     'plan.accuracy': '계획 실행률', 'plan.taskCompletion': '전체 할 일 완료',
-    'pwa.install': 'MyRoutine 설치', 'pwa.installDesc': '홈 화면에 추가하여 앱처럼 사용하세요', 'pwa.installBtn': '설치',
+    'pwa.install': 'GOD+生 설치', 'pwa.installDesc': '홈 화면에 추가하여 앱처럼 사용하세요', 'pwa.installBtn': '설치',
     'pwa.iosDesc': 'Safari 하단의 공유 버튼(□↑)을 누른 후 "홈 화면에 추가"를 선택하세요',
     'memo.title': '오늘의 메모', 'memo.placeholder': '오늘 하루를 돌아보며 간단한 메모를 남겨보세요...',
     'sleep': '수면',
@@ -2884,8 +2890,8 @@ const TRANSLATIONS = {
     'modal.sleepTime': '就寝時間（寝た時間）', 'modal.closeDayBtn': '締める',
     'modal.dataManagement': 'データ管理',
     'modal.exportJson': 'JSONエクスポート', 'modal.importJson': 'JSONインポート', 'modal.close': '閉じる',
-    'about.title': 'MyRoutine について',
-    'about.version': 'v2.0 · Bekking Studio',
+    'about.title': 'GOD+生 について',
+    'about.version': 'v3.0 · Bekking Studio',
     'about.updateToggle': 'アップデート内容を確認',
     'about.updateNote': '<strong>v2.0</strong> — 📋 イーロン・マスクの時間管理法（ブレインダンプ → Big 3 → タイムボクシング）、📚 読書記録（読書中/読了管理、評価、年間/月間チャート）、ブライアン・トレーシーの目標設定7ステップを搭載。',
     'about.privacy': 'プライバシー',
@@ -2943,7 +2949,7 @@ const TRANSLATIONS = {
     'plan.vsActualTitle': '計画 vs 実際', 'plan.big3Result': 'Big 3 達成: {done}/{total}',
     'plan.timeCompare': '時間比較', 'plan.planned': '計画', 'plan.actual': '実際',
     'plan.accuracy': '計画実行率', 'plan.taskCompletion': '全タスク完了',
-    'pwa.install': 'MyRoutine インストール', 'pwa.installDesc': 'ホーム画面に追加してアプリのように使いましょう', 'pwa.installBtn': 'インストール',
+    'pwa.install': 'GOD+生 インストール', 'pwa.installDesc': 'ホーム画面に追加してアプリのように使いましょう', 'pwa.installBtn': 'インストール',
     'pwa.iosDesc': 'Safari下部の共有ボタン(□↑)をタップし「ホーム画面に追加」を選択してください',
     'memo.title': '今日のメモ', 'memo.placeholder': '今日一日を振り返りながら簡単なメモを残してみましょう...',
     'sleep': '睡眠',
@@ -3132,8 +3138,8 @@ const TRANSLATIONS = {
     'modal.sleepTime': 'Sleep time (when you fell asleep)', 'modal.closeDayBtn': 'Close',
     'modal.dataManagement': 'Data Management',
     'modal.exportJson': 'Export JSON', 'modal.importJson': 'Import JSON', 'modal.close': 'Close',
-    'about.title': 'About MyRoutine',
-    'about.version': 'v2.0 · Bekking Studio',
+    'about.title': 'About GOD+生',
+    'about.version': 'v3.0 · Bekking Studio',
     'about.updateToggle': 'View update details',
     'about.updateNote': "<strong>v2.0</strong> — 📋 Elon Musk's time management (Brain Dump → Big 3 → Time Boxing), 📚 Reading Log (track reading/completed books, ratings, yearly/monthly charts), Brian Tracy's 7-step goal setting formula.",
     'about.privacy': 'Privacy',
@@ -3191,7 +3197,7 @@ const TRANSLATIONS = {
     'plan.vsActualTitle': 'Plan vs Actual', 'plan.big3Result': 'Big 3 achieved: {done}/{total}',
     'plan.timeCompare': 'Time Comparison', 'plan.planned': 'Planned', 'plan.actual': 'Actual',
     'plan.accuracy': 'Plan Accuracy', 'plan.taskCompletion': 'Task Completion',
-    'pwa.install': 'Install MyRoutine', 'pwa.installDesc': 'Add to home screen and use like an app', 'pwa.installBtn': 'Install',
+    'pwa.install': 'Install GOD+生', 'pwa.installDesc': 'Add to home screen and use like an app', 'pwa.installBtn': 'Install',
     'pwa.iosDesc': 'Tap the share button (□↑) at the bottom of Safari, then select "Add to Home Screen"',
     'memo.title': "Today's Memo", 'memo.placeholder': 'Reflect on your day and leave a quick note...',
     'sleep': 'Sleep',
@@ -7697,7 +7703,8 @@ function renderVirtueGrid() {
   // Build virtue rows
   virtues.forEach(v => {
     const isFocus = v.id === weekInfo.focusId;
-    gridHtml += `<div class="vg-label${isFocus ? ' vg-focus' : ''}">
+    const desc = escAttr(getVirtueDesc(v));
+    gridHtml += `<div class="vg-label${isFocus ? ' vg-focus' : ''}" onclick="showVirtueDescToast('${v.icon}','${escAttr(getVirtueName(v))}','${desc}')">
       <span class="vg-icon">${v.icon}</span>
       <span class="vg-name">${escHtml(getVirtueName(v))}</span>
     </div>`;
@@ -7706,7 +7713,7 @@ function renderVirtueGrid() {
       const isFuture = d > todayStr;
       const log = data.virtues.log[d];
       const hasMark = log && log.includes(v.id);
-      const editable = !isFuture;
+      const editable = isToday; // 오늘만 편집 가능
       let cls = 'vg-cell';
       if (isFocus) cls += ' vg-focus-row';
       if (isToday) cls += ' vg-today-col';
@@ -7757,8 +7764,17 @@ function renderVirtueGrid() {
       ${focusLabel ? `<div class="virtue-focus">${focusLabel}</div>` : ''}
       ${cycleBanner}
       <div class="virtue-grid-wrap"><div class="virtue-grid">${gridHtml}</div></div>
+      <div id="virtue-desc-toast" class="virtue-desc-toast"></div>
       <div class="virtue-summary">${summaryText}</div>
     </div></div>`;
+}
+
+function showVirtueDescToast(icon, name, desc) {
+  const el = document.getElementById('virtue-desc-toast');
+  if (!el) return;
+  if (!desc) { el.style.display = 'none'; return; }
+  el.innerHTML = `<strong>${icon} ${escHtml(name)}</strong> — ${escHtml(desc)}`;
+  el.style.display = 'block';
 }
 
 function toggleVirtueMark(dateStr, virtueId) {
