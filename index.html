@@ -2069,6 +2069,81 @@ body {
 .tour-step-dots { display:flex; gap:6px; justify-content:center; margin-top:12px; }
 .tour-step-dots span { width:8px; height:8px; border-radius:50%; background:#ddd; }
 .tour-step-dots span.active { background:var(--mint); }
+
+/* Virtue Tracker Grid */
+.virtue-section { margin-bottom: 16px; }
+.virtue-section .card { padding: 16px; }
+.virtue-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;
+}
+.virtue-header h3 { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 4px; white-space: nowrap; }
+.virtue-header .virtue-week { font-size: 12px; color: var(--text-sub); font-weight: 400; }
+.virtue-focus {
+  font-size: 13px; color: var(--text-sub); margin-bottom: 12px;
+  padding: 6px 10px; background: rgba(59,107,232,0.08); border-radius: var(--radius-sm);
+}
+.virtue-grid {
+  display: grid; grid-template-columns: 36px repeat(7, 1fr);
+  gap: 1px; font-size: 12px; max-height: 420px; overflow-y: auto;
+  min-width: 0;
+}
+.virtue-grid-wrap { overflow-x: auto; margin: 0 -4px; padding: 0 4px; }
+.virtue-grid .vg-header {
+  text-align: center; font-weight: 600; padding: 4px 2px; color: var(--text-sub); font-size: 11px;
+}
+.virtue-grid .vg-header.vg-today { color: #3B6BE8; font-weight: 700; border-bottom: 2px solid #3B6BE8; }
+.virtue-grid .vg-label {
+  display: flex; align-items: center; gap: 2px; padding: 4px 2px; font-size: 11px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.virtue-grid .vg-label .vg-icon { font-size: 14px; }
+.virtue-grid .vg-label .vg-name { display: none; }
+.virtue-grid .vg-label.vg-focus { background: rgba(59,107,232,0.06); border-radius: 4px; }
+.virtue-grid .vg-cell {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 32px; min-width: 32px; border-radius: 4px; cursor: default;
+  transition: background 0.2s;
+}
+.virtue-grid .vg-cell.vg-today-col { background: rgba(59,107,232,0.06); }
+.virtue-grid .vg-cell.vg-future { background: var(--bg); opacity: 0.5; }
+.virtue-grid .vg-cell.vg-editable { cursor: pointer; }
+.virtue-grid .vg-cell.vg-editable:hover { background: rgba(59,107,232,0.12); }
+.virtue-grid .vg-mark {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--text-sub);
+  transition: opacity 0.2s;
+}
+.virtue-summary {
+  margin-top: 10px; font-size: 13px; color: var(--text-sub);
+  display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+}
+.virtue-empty {
+  text-align: center; padding: 24px 16px;
+  border: 1px dashed var(--text-light); border-radius: var(--radius-sm);
+}
+.virtue-empty h4 { font-size: 15px; margin-bottom: 6px; }
+.virtue-empty p { font-size: 13px; color: var(--text-sub); font-style: italic; margin-bottom: 16px; }
+.virtue-empty .btn { margin: 0 4px; }
+
+/* Virtue check modal pills */
+.virtue-check-list { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; margin: 12px 0; }
+.virtue-pill {
+  display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+  border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+  border: 1px solid transparent; user-select: none; min-height: 44px;
+}
+.virtue-pill.checked { background: var(--card); border-color: var(--text-light); }
+.virtue-pill.unchecked { background: transparent; color: var(--text-light); }
+.virtue-pill .vp-check { width: 20px; font-size: 14px; flex-shrink: 0; }
+.virtue-pill .vp-icon { font-size: 16px; }
+.virtue-pill .vp-name { font-size: 14px; }
+
+@media (min-width: 500px) {
+  .virtue-grid { grid-template-columns: 80px repeat(7, 1fr); }
+  .virtue-grid .vg-label .vg-name { display: inline; }
+}
+
+/* Calendar virtue star */
+.day-virtue-star { font-size: 8px; position: absolute; top: 1px; left: 1px; }
 </style>
 </head>
 <body>
@@ -2227,6 +2302,8 @@ body {
   <!-- Section: Analysis (분류+분석 통합) -->
   <div id="sec-analysis" class="section">
     <div id="past-date-banner"></div>
+
+    <div id="virtue-grid-section"></div>
 
     <div id="classify-section" class="card" style="display:none;">
       <div class="guide" data-i18n-html="classify.guide" style="margin-bottom:12px">
@@ -2442,6 +2519,9 @@ body {
     </button>
     <button class="btn btn-share btn-block" onclick="shareStats()" style="margin-top:8px" id="stats-share-btn">
       📤 <span data-i18n="share.stats">통계 공유하기</span>
+    </button>
+    <button class="btn btn-block" onclick="shareWeekly168()" style="margin-top:8px;background:linear-gradient(135deg,#3B6BE8,#8B5CF6);color:white" id="stats-weekly168-btn">
+      🗓️ <span data-i18n="share.weekly168">168시간 결산 카드</span>
     </button>
     <button class="btn btn-block" onclick="exportExcel()" style="margin-top:8px;background:#217346;color:white" id="stats-export-excel-btn">
       📊 <span data-i18n="stats.exportExcel">엑셀로 내보내기</span>
@@ -2688,18 +2768,21 @@ const TRANSLATIONS = {
     'life.dreamProjected': '꿈 투자 예상 시간', 'life.dreamRatio': '일평균 투자율',
     'life.bonusTime': '🎉 보너스 타임!', 'life.bonusMsg': '기대 수명을 넘겼습니다. 축하해요!',
     'life.source': 'UN WPP 2024 기준',
-    'share.daily': '공유하기', 'share.stats': '통계 공유하기',
+    'share.daily': '공유하기', 'share.stats': '통계 공유하기', 'share.weekly168': '168시간 결산 카드',
     'share.shareText': 'MyRoutine으로 분석한 나의 하루',
+    'share.weeklyTitle': '나의 168시간 결산', 'share.flexTime': '유동 시간', 'share.dreamInvest': '꿈 투자',
+    'share.starDays': '⭐ 달성', 'share.noWeeklyData': '이번 주 기록이 없습니다', 'share.weeklyDesc': '일주일 168시간, 나의 유동 시간과 꿈 투자 비율',
+    'share.dreamRatio': '꿈 투자 비율', 'share.starDesc': '유동 시간의 80% 이상을 꿈에 투자한 날', 'share.booksCount': '권 완독',
     'share.generating': '이미지 생성 중...', 'share.shared': '공유 완료!',
     'share.downloaded': '이미지가 저장되었습니다', 'share.failed': '공유에 실패했습니다',
-    'tour.welcome.title': '환영합니다!', 'tour.welcome.desc': 'MyRoutine으로 하루를 계획하고, 기록하고, 분석해 보세요.',
-    'tour.plan.title': '📋 계획', 'tour.plan.desc': '브레인 덤프로 할 일을 꺼내고, Big 3로 우선순위를 정하고, 타임 박싱으로 시간을 배정하세요. (일론 머스크의 시간 관리법)',
-    'tour.record.title': '✏️ 기록', 'tour.record.desc': '프리셋 버튼을 눌러 지금 하는 활동을 기록하세요. 타임라인에서 하루 흐름을 한눈에 볼 수 있어요.',
-    'tour.analyze.title': '📊 분석', 'tour.analyze.desc': '활동을 고정/유동으로 분류하면 시간 분배를 분석해줍니다. 계획 vs 실제 비교도 가능해요.',
+    'tour.welcome.title': '🕐 168시간 챌린지', 'tour.welcome.desc': '일주일은 168시간. 당신의 유동 시간은 몇 시간인가요? 기록하면 보입니다 — 기록이 변화를 만듭니다.',
+    'tour.plan.title': '📋 계획', 'tour.plan.desc': '브레인 덤프로 할 일을 꺼내고, Big 3로 우선순위를 정하고, 타임 박싱으로 시간을 배정하세요.',
+    'tour.record.title': '✏️ 기록', 'tour.record.desc': '지금 하는 활동을 기록하세요. 유튜브도, 독서도, 운동도 — 솔직하게 기록하는 것이 시작입니다.',
+    'tour.analyze.title': '📊 분석', 'tour.analyze.desc': '고정 시간(수면, 출근)과 유동 시간(자유 시간)으로 분류하세요. 유동 시간 중 꿈에 투자한 시간을 볼 수 있어요.',
     'tour.goals.title': '🎯 목표', 'tour.goals.desc': '인생 목표를 설정하고 매일 한 걸음씩 실행하세요. 📚 독서 기록으로 읽은 책도 관리할 수 있어요.',
-    'tour.stats.title': '📈 통계', 'tour.stats.desc': '주간·월간 통계로 나의 시간 사용 패턴을 확인하세요. 활동 랭킹과 달성률 추이를 볼 수 있어요.',
+    'tour.stats.title': '📈 통계', 'tour.stats.desc': '168시간 도넛으로 한 주를 한눈에! 유동 시간의 80%를 꿈에 투자하면 ⭐별을 받아요.',
     'tour.closeday.title': '하루 마감', 'tour.closeday.desc': '하루가 끝나면 마감 버튼을 눌러 정리하세요. 마감 후에도 분석 탭에서 수정할 수 있어요.',
-    'tour.done.title': '준비 완료!', 'tour.done.desc': '지금 바로 시작해 보세요! Google 로그인하면 데이터가 자동 백업됩니다.',
+    'tour.done.title': '챌린지 시작!', 'tour.done.desc': '이번 주 168시간, 꿈에 얼마나 투자할 수 있을까요? 매주 결산 카드로 성장을 확인하세요!',
     'tour.next': '다음', 'tour.skip': '건너뛰기', 'tour.start': '시작하기', 'tour.replay': '사용법 다시 보기',
     'books.title': '독서 기록', 'books.reading': '읽는 중', 'books.completed': '완독',
     'books.addTitle': '새 책 등록', 'books.editTitle': '책 정보 수정',
@@ -2726,6 +2809,38 @@ const TRANSLATIONS = {
     'books.stepProgress': '{n}/5', 'books.lifeBook': '인생책',
     'books.coverImage': '책 표지', 'books.coverUrlPlaceholder': '이미지 URL 붙여넣기', 'books.coverFile': '파일',
     'books.goalDate': '독서 목표일', 'books.goalOverdue': '목표일 초과!', 'books.goalToday': '오늘이 목표일!', 'books.goalTomorrow': '내일이 목표일!',
+    // Virtue Tracker
+    'virtue.title': '덕목 추적표', 'virtue.focusThisWeek': '이번 주 집중',
+    'virtue.weekLabel': '{n}/13주차', 'virtue.cycleLabel': '{n}차 사이클',
+    'virtue.markCount': '● {n}개', 'virtue.improved': '지난주 대비 {n}개 개선!',
+    'virtue.worsened': '지난주 대비 {n}개 증가',
+    'virtue.perfect': '완벽한 하루!', 'virtue.perfectWeek': '완벽한 한 주!',
+    'virtue.firstWeek': '첫 주입니다! 이번 주가 끝나면 비교 데이터를 볼 수 있어요 💪',
+    'virtue.settings': '덕목 설정', 'virtue.addCustom': '나만의 덕목 추가',
+    'virtue.closeDayPrompt': '오늘의 덕목을 돌아볼까요?',
+    'virtue.skip': '건너뛰기', 'virtue.confirm': '확인',
+    'virtue.emptyTitle': '나만의 덕목을 설정해보세요',
+    'virtue.emptyQuote': '"매일 조금씩 더 나은 사람이 되자"',
+    'virtue.startFranklin': '프랭클린 13덕목으로 시작',
+    'virtue.startCustom': '직접 만들기',
+    'virtue.cycleComplete': '🎉 {n}차 사이클 완료! 총 ● {marks}개',
+    'virtue.editVirtue': '덕목 수정', 'virtue.deleteConfirm': '이 덕목을 삭제할까요?',
+    'virtue.name': '덕목 이름', 'virtue.icon': '아이콘', 'virtue.description': '설명',
+    'virtue.save': '저장', 'virtue.cancel': '취소', 'virtue.delete': '삭제',
+    'virtue.calendarStar': '⭐', 'virtue.starLegend': '모든 덕목 달성',
+    'virtue.temperance': '절제', 'virtue.temperanceDesc': '배부르도록 먹지 말고, 취하도록 마시지 말라',
+    'virtue.silence': '침묵', 'virtue.silenceDesc': '자신과 타인에게 유익한 말만 하라',
+    'virtue.order': '질서', 'virtue.orderDesc': '물건과 일에 각각의 자리를 정하라',
+    'virtue.resolution': '결단', 'virtue.resolutionDesc': '해야 할 일을 하겠다고 결심하라',
+    'virtue.frugality': '검약', 'virtue.frugalityDesc': '낭비하지 말라',
+    'virtue.industry': '근면', 'virtue.industryDesc': '시간을 허비하지 말라',
+    'virtue.sincerity': '진실', 'virtue.sincerityDesc': '속이지 말라, 순수하고 공정하게 생각하라',
+    'virtue.justice': '정의', 'virtue.justiceDesc': '남에게 해를 끼치지 말라',
+    'virtue.moderation': '중용', 'virtue.moderationDesc': '극단을 피하라',
+    'virtue.cleanliness': '청결', 'virtue.cleanlinessDesc': '몸, 옷, 주거를 불결하게 하지 말라',
+    'virtue.tranquility': '평온', 'virtue.tranquilityDesc': '사소한 일에 마음을 어지럽히지 말라',
+    'virtue.chastity': '순결', 'virtue.chastityDesc': '건강과 자손을 위해서만',
+    'virtue.humility': '겸손', 'virtue.humilityDesc': '예수와 소크라테스를 본받으라',
   },
   ja: {
     'app.subtitle': '一日の分析',
@@ -2900,18 +3015,21 @@ const TRANSLATIONS = {
     'life.dreamProjected': '夢の投資予想時間', 'life.dreamRatio': '日平均投資率',
     'life.bonusTime': '🎉 ボーナスタイム!', 'life.bonusMsg': '平均寿命を超えました。おめでとうございます!',
     'life.source': 'UN WPP 2024年基準',
-    'share.daily': 'シェアする', 'share.stats': '統計をシェアする',
+    'share.daily': 'シェアする', 'share.stats': '統計をシェアする', 'share.weekly168': '168時間レポートカード',
     'share.shareText': 'MyRoutineで分析した一日',
+    'share.weeklyTitle': '私の168時間レポート', 'share.flexTime': '自由時間', 'share.dreamInvest': '夢への投資',
+    'share.starDays': '⭐ 達成', 'share.noWeeklyData': '今週の記録がありません', 'share.weeklyDesc': '一週間168時間、自由時間と夢への投資割合',
+    'share.dreamRatio': '夢への投資割合', 'share.starDesc': '自由時間の80%以上を夢に投資した日', 'share.booksCount': '冊読了',
     'share.generating': '画像を生成中...', 'share.shared': 'シェア完了！',
     'share.downloaded': '画像を保存しました', 'share.failed': 'シェアに失敗しました',
-    'tour.welcome.title': 'ようこそ！', 'tour.welcome.desc': 'MyRoutineで一日を計画し、記録し、分析しましょう。',
-    'tour.plan.title': '📋 計画', 'tour.plan.desc': 'ブレインダンプでタスクを出し、Big 3で優先順位を決め、タイムボクシングで時間を割り当てましょう。（イーロン・マスクの時間管理法）',
-    'tour.record.title': '✏️ 記録', 'tour.record.desc': 'プリセットボタンで今の活動を記録。タイムラインで一日の流れを一目で確認できます。',
-    'tour.analyze.title': '📊 分析', 'tour.analyze.desc': '活動を固定/自由に分類すると時間配分を分析します。計画vs実際の比較もできます。',
+    'tour.welcome.title': '🕐 168時間チャレンジ', 'tour.welcome.desc': '一週間は168時間。あなたの自由時間は何時間？記録すれば見えてきます — 記録が変化を生みます。',
+    'tour.plan.title': '📋 計画', 'tour.plan.desc': 'ブレインダンプでタスクを出し、Big 3で優先順位を決め、タイムボクシングで時間を割り当てましょう。',
+    'tour.record.title': '✏️ 記録', 'tour.record.desc': '今の活動を記録しましょう。YouTubeも、読書も、運動も — 正直に記録することが始まりです。',
+    'tour.analyze.title': '📊 分析', 'tour.analyze.desc': '固定時間（睡眠、通勤）と自由時間に分類。自由時間のうち夢に投資した時間が見えます。',
     'tour.goals.title': '🎯 目標', 'tour.goals.desc': '人生の目標を設定し、毎日一歩ずつ実行しましょう。📚 読書記録で読んだ本も管理できます。',
-    'tour.stats.title': '📈 統計', 'tour.stats.desc': '週間・月間統計で時間の使い方を確認。活動ランキングと達成率の推移を見られます。',
+    'tour.stats.title': '📈 統計', 'tour.stats.desc': '168時間ドーナツで一週間を一目で！自由時間の80%を夢に投資すれば⭐がもらえます。',
     'tour.closeday.title': '一日の締め', 'tour.closeday.desc': '一日の終わりに締めボタンで整理しましょう。締め後も分析タブで修正できます。',
-    'tour.done.title': '準備完了！', 'tour.done.desc': 'さあ始めましょう！Googleログインでデータが自動バックアップされます。',
+    'tour.done.title': 'チャレンジ開始！', 'tour.done.desc': '今週の168時間、夢にどれだけ投資できる？毎週レポートカードで成長を確認しましょう！',
     'tour.next': '次へ', 'tour.skip': 'スキップ', 'tour.start': '始める', 'tour.replay': '使い方を見る',
     'books.title': '読書記録', 'books.reading': '読書中', 'books.completed': '読了',
     'books.addTitle': '新しい本を登録', 'books.editTitle': '本の情報を編集',
@@ -2938,6 +3056,38 @@ const TRANSLATIONS = {
     'books.stepProgress': '{n}/5', 'books.lifeBook': '人生の一冊',
     'books.coverImage': '表紙画像', 'books.coverUrlPlaceholder': '画像URLを貼り付け', 'books.coverFile': 'ファイル',
     'books.goalDate': '読書目標日', 'books.goalOverdue': '目標日超過！', 'books.goalToday': '今日が目標日！', 'books.goalTomorrow': '明日が目標日！',
+    // Virtue Tracker
+    'virtue.title': '徳目トラッカー', 'virtue.focusThisWeek': '今週の集中徳目',
+    'virtue.weekLabel': '{n}/13週目', 'virtue.cycleLabel': '第{n}サイクル',
+    'virtue.markCount': '● {n}個', 'virtue.improved': '先週比{n}件改善！',
+    'virtue.worsened': '先週比{n}件増加',
+    'virtue.perfect': '完璧な一日！', 'virtue.perfectWeek': '完璧な一週間！',
+    'virtue.firstWeek': '最初の週です！今週が終わると比較データが見られます 💪',
+    'virtue.settings': '徳目設定', 'virtue.addCustom': 'カスタム徳目を追加',
+    'virtue.closeDayPrompt': '今日の徳目を振り返りましょう',
+    'virtue.skip': 'スキップ', 'virtue.confirm': '確認',
+    'virtue.emptyTitle': '自分だけの徳目を設定しましょう',
+    'virtue.emptyQuote': '「毎日少しずつ、より良い自分に」',
+    'virtue.startFranklin': 'フランクリン13徳目で開始',
+    'virtue.startCustom': '自分で作る',
+    'virtue.cycleComplete': '🎉 第{n}サイクル完了！合計 ● {marks}個',
+    'virtue.editVirtue': '徳目を編集', 'virtue.deleteConfirm': 'この徳目を削除しますか？',
+    'virtue.name': '徳目名', 'virtue.icon': 'アイコン', 'virtue.description': '説明',
+    'virtue.save': '保存', 'virtue.cancel': 'キャンセル', 'virtue.delete': '削除',
+    'virtue.calendarStar': '⭐', 'virtue.starLegend': '全徳目達成',
+    'virtue.temperance': '節制', 'virtue.temperanceDesc': '飽くほど食べず、酔うほど飲まない',
+    'virtue.silence': '沈黙', 'virtue.silenceDesc': '自他に有益な話だけをする',
+    'virtue.order': '秩序', 'virtue.orderDesc': '物事に所定の場所を定める',
+    'virtue.resolution': '決断', 'virtue.resolutionDesc': 'やるべきことをやると決意する',
+    'virtue.frugality': '倹約', 'virtue.frugalityDesc': '浪費しない',
+    'virtue.industry': '勤勉', 'virtue.industryDesc': '時間を無駄にしない',
+    'virtue.sincerity': '誠実', 'virtue.sincerityDesc': '欺かず、純粋かつ公正に考える',
+    'virtue.justice': '正義', 'virtue.justiceDesc': '他人に害を与えない',
+    'virtue.moderation': '中庸', 'virtue.moderationDesc': '極端を避ける',
+    'virtue.cleanliness': '清潔', 'virtue.cleanlinessDesc': '身体・衣服・住居を不潔にしない',
+    'virtue.tranquility': '平穏', 'virtue.tranquilityDesc': '些細なことで心を乱さない',
+    'virtue.chastity': '純潔', 'virtue.chastityDesc': '健康と子孫のためにのみ',
+    'virtue.humility': '謙遜', 'virtue.humilityDesc': 'イエスとソクラテスに倣う',
   },
   en: {
     'app.subtitle': 'Daily Analysis',
@@ -3112,18 +3262,21 @@ const TRANSLATIONS = {
     'life.dreamProjected': 'Dream Investment Time', 'life.dreamRatio': 'Daily avg ratio',
     'life.bonusTime': '🎉 Bonus Time!', 'life.bonusMsg': 'You\'ve exceeded life expectancy. Congrats!',
     'life.source': 'Based on UN WPP 2024',
-    'share.daily': 'Share', 'share.stats': 'Share Stats',
+    'share.daily': 'Share', 'share.stats': 'Share Stats', 'share.weekly168': '168-Hour Report Card',
     'share.shareText': 'My day analyzed with MyRoutine',
+    'share.weeklyTitle': 'My 168-Hour Report', 'share.flexTime': 'Free Time', 'share.dreamInvest': 'Dream Investment',
+    'share.starDays': '⭐ Achieved', 'share.noWeeklyData': 'No records this week', 'share.weeklyDesc': '168 hours in a week — my free time and dream investment ratio',
+    'share.dreamRatio': 'Dream Investment Ratio', 'share.starDesc': 'Days with 80%+ free time invested in dreams', 'share.booksCount': ' books read',
     'share.generating': 'Generating image...', 'share.shared': 'Shared!',
     'share.downloaded': 'Image saved', 'share.failed': 'Failed to share',
-    'tour.welcome.title': 'Welcome!', 'tour.welcome.desc': 'Plan, record, and analyze your day with MyRoutine.',
-    'tour.plan.title': '📋 Plan', 'tour.plan.desc': 'Brain Dump your tasks, pick Big 3 priorities, and Time Box them. (Elon Musk\'s time management method)',
-    'tour.record.title': '✏️ Record', 'tour.record.desc': 'Tap presets to record what you\'re doing now. See your day unfold on the timeline.',
-    'tour.analyze.title': '📊 Analysis', 'tour.analyze.desc': 'Classify activities as fixed/flexible to analyze your time distribution. Compare plan vs actual.',
+    'tour.welcome.title': '🕐 168-Hour Challenge', 'tour.welcome.desc': 'A week has 168 hours. How many are your free time? Track honestly — awareness creates change.',
+    'tour.plan.title': '📋 Plan', 'tour.plan.desc': 'Brain Dump your tasks, pick Big 3 priorities, and Time Box them.',
+    'tour.record.title': '✏️ Record', 'tour.record.desc': 'Record what you\'re doing now. YouTube, reading, exercise — honest recording is the first step.',
+    'tour.analyze.title': '📊 Analysis', 'tour.analyze.desc': 'Classify into fixed (sleep, commute) and free time. See how much of your free time goes to your dreams.',
     'tour.goals.title': '🎯 Goals', 'tour.goals.desc': 'Set life goals and take one step each day. 📚 Track your reading list with the Reading Log.',
-    'tour.stats.title': '📈 Stats', 'tour.stats.desc': 'Weekly and monthly stats show your time patterns. View activity rankings and achievement trends.',
+    'tour.stats.title': '📈 Stats', 'tour.stats.desc': '168-hour donut shows your whole week! Invest 80% of free time in dreams to earn a ⭐.',
     'tour.closeday.title': 'Close Day', 'tour.closeday.desc': 'Tap close when your day is done. You can still edit in the Analysis tab afterward.',
-    'tour.done.title': 'All Set!', 'tour.done.desc': 'Start now! Sign in with Google to auto-backup your data.',
+    'tour.done.title': 'Challenge On!', 'tour.done.desc': 'How much of your 168 hours will you invest in your dreams? Check your weekly report card!',
     'tour.next': 'Next', 'tour.skip': 'Skip', 'tour.start': 'Get Started', 'tour.replay': 'Replay Tour',
     'books.title': 'Reading Log', 'books.reading': 'Reading', 'books.completed': 'Completed',
     'books.addTitle': 'Add New Book', 'books.editTitle': 'Edit Book',
@@ -3150,6 +3303,38 @@ const TRANSLATIONS = {
     'books.stepProgress': '{n}/5', 'books.lifeBook': 'Life-changing Book',
     'books.coverImage': 'Cover Image', 'books.coverUrlPlaceholder': 'Paste image URL', 'books.coverFile': 'File',
     'books.goalDate': 'Reading Goal', 'books.goalOverdue': 'Overdue!', 'books.goalToday': 'Due today!', 'books.goalTomorrow': 'Due tomorrow!',
+    // Virtue Tracker
+    'virtue.title': 'Virtue Tracker', 'virtue.focusThisWeek': 'Focus this week',
+    'virtue.weekLabel': 'Week {n}/13', 'virtue.cycleLabel': 'Cycle {n}',
+    'virtue.markCount': '● {n}', 'virtue.improved': '{n} fewer than last week!',
+    'virtue.worsened': '{n} more than last week',
+    'virtue.perfect': 'Perfect day!', 'virtue.perfectWeek': 'Perfect week!',
+    'virtue.firstWeek': 'First week! You\'ll see comparison data after this week ends 💪',
+    'virtue.settings': 'Virtue Settings', 'virtue.addCustom': 'Add custom virtue',
+    'virtue.closeDayPrompt': 'Review today\'s virtues?',
+    'virtue.skip': 'Skip', 'virtue.confirm': 'Confirm',
+    'virtue.emptyTitle': 'Set up your own virtues',
+    'virtue.emptyQuote': '"Every day, a little better."',
+    'virtue.startFranklin': 'Start with Franklin\'s 13',
+    'virtue.startCustom': 'Create your own',
+    'virtue.cycleComplete': '🎉 Cycle {n} complete! Total ● {marks}',
+    'virtue.editVirtue': 'Edit Virtue', 'virtue.deleteConfirm': 'Delete this virtue?',
+    'virtue.name': 'Virtue name', 'virtue.icon': 'Icon', 'virtue.description': 'Description',
+    'virtue.save': 'Save', 'virtue.cancel': 'Cancel', 'virtue.delete': 'Delete',
+    'virtue.calendarStar': '⭐', 'virtue.starLegend': 'All virtues kept',
+    'virtue.temperance': 'Temperance', 'virtue.temperanceDesc': 'Eat not to dullness; drink not to elevation',
+    'virtue.silence': 'Silence', 'virtue.silenceDesc': 'Speak only what may benefit others or yourself',
+    'virtue.order': 'Order', 'virtue.orderDesc': 'Let all things have their places',
+    'virtue.resolution': 'Resolution', 'virtue.resolutionDesc': 'Resolve to perform what you ought',
+    'virtue.frugality': 'Frugality', 'virtue.frugalityDesc': 'Waste nothing',
+    'virtue.industry': 'Industry', 'virtue.industryDesc': 'Lose no time; be always employed in something useful',
+    'virtue.sincerity': 'Sincerity', 'virtue.sincerityDesc': 'Use no hurtful deceit; think innocently and justly',
+    'virtue.justice': 'Justice', 'virtue.justiceDesc': 'Wrong none by doing injuries',
+    'virtue.moderation': 'Moderation', 'virtue.moderationDesc': 'Avoid extremes',
+    'virtue.cleanliness': 'Cleanliness', 'virtue.cleanlinessDesc': 'Tolerate no uncleanliness in body, clothes, or habitation',
+    'virtue.tranquility': 'Tranquility', 'virtue.tranquilityDesc': 'Be not disturbed at trifles',
+    'virtue.chastity': 'Chastity', 'virtue.chastityDesc': 'For health and offspring only',
+    'virtue.humility': 'Humility', 'virtue.humilityDesc': 'Imitate Jesus and Socrates',
   }
 };
 
@@ -3275,7 +3460,96 @@ function getPresetColor(activity) {
   }
   return null;
 }
-let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [], books: [] };
+let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [], books: [], virtues: null };
+
+// ============== Franklin 13 Virtues Preset ==============
+const FRANKLIN_VIRTUES = [
+  { id: 'vp_temperance', nameKey: 'virtue.temperance', descKey: 'virtue.temperanceDesc', icon: '🍽️' },
+  { id: 'vp_silence', nameKey: 'virtue.silence', descKey: 'virtue.silenceDesc', icon: '🤫' },
+  { id: 'vp_order', nameKey: 'virtue.order', descKey: 'virtue.orderDesc', icon: '📐' },
+  { id: 'vp_resolution', nameKey: 'virtue.resolution', descKey: 'virtue.resolutionDesc', icon: '💪' },
+  { id: 'vp_frugality', nameKey: 'virtue.frugality', descKey: 'virtue.frugalityDesc', icon: '💰' },
+  { id: 'vp_industry', nameKey: 'virtue.industry', descKey: 'virtue.industryDesc', icon: '🔨' },
+  { id: 'vp_sincerity', nameKey: 'virtue.sincerity', descKey: 'virtue.sincerityDesc', icon: '💬' },
+  { id: 'vp_justice', nameKey: 'virtue.justice', descKey: 'virtue.justiceDesc', icon: '⚖️' },
+  { id: 'vp_moderation', nameKey: 'virtue.moderation', descKey: 'virtue.moderationDesc', icon: '🧘' },
+  { id: 'vp_cleanliness', nameKey: 'virtue.cleanliness', descKey: 'virtue.cleanlinessDesc', icon: '🧹' },
+  { id: 'vp_tranquility', nameKey: 'virtue.tranquility', descKey: 'virtue.tranquilityDesc', icon: '😌' },
+  { id: 'vp_chastity', nameKey: 'virtue.chastity', descKey: 'virtue.chastityDesc', icon: '💎' },
+  { id: 'vp_humility', nameKey: 'virtue.humility', descKey: 'virtue.humilityDesc', icon: '🙏' },
+];
+
+function getVirtueName(item) {
+  return item.nameKey ? t(item.nameKey) : item.name;
+}
+function getVirtueDesc(item) {
+  return item.descKey ? t(item.descKey) : (item.description || '');
+}
+
+function initDefaultVirtues() {
+  if (data.virtues) return;
+  const nextMonday = getNextMonday(getTodayStr());
+  data.virtues = {
+    items: FRANKLIN_VIRTUES.map(v => ({
+      id: v.id, nameKey: v.nameKey, descKey: v.descKey, name: null, description: null,
+      icon: v.icon, isPreset: true, hidden: false
+    })),
+    cycle: { startDate: nextMonday, cycleNumber: 1, focusSequence: FRANKLIN_VIRTUES.map(v => v.id) },
+    log: {},
+    history: []
+  };
+  saveData();
+}
+
+function getNextMonday(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun, 1=Mon...
+  const diff = day === 0 ? 1 : day === 1 ? 0 : 8 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toISOString().slice(0, 10);
+}
+
+function getActiveVirtues() {
+  if (!data.virtues) return [];
+  return data.virtues.items.filter(v => !v.hidden);
+}
+
+function getVirtueWeekInfo() {
+  if (!data.virtues || !data.virtues.cycle) return { weekIndex: 0, focusId: null, cycleComplete: false };
+  const start = new Date(data.virtues.cycle.startDate + 'T00:00:00');
+  const today = new Date(getTodayStr() + 'T00:00:00');
+  const daysDiff = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+  if (daysDiff < 0) return { weekIndex: 0, focusId: data.virtues.cycle.focusSequence?.[0] || null, cycleComplete: false };
+  const weekIndex = Math.floor(daysDiff / 7);
+  const seq = data.virtues.cycle.focusSequence || [];
+  const focusId = weekIndex < seq.length ? seq[weekIndex] : (seq[seq.length - 1] || null);
+  return { weekIndex, focusId, cycleComplete: weekIndex >= 13 };
+}
+
+function getWeekDates() {
+  if (!data.virtues || !data.virtues.cycle) return [];
+  const info = getVirtueWeekInfo();
+  const start = new Date(data.virtues.cycle.startDate + 'T00:00:00');
+  start.setDate(start.getDate() + info.weekIndex * 7);
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    dates.push(d.toISOString().slice(0, 10));
+  }
+  return dates;
+}
+
+function allVirtuesKeptForDate(dateStr) {
+  if (!data.virtues || getActiveVirtues().length === 0) return false;
+  const log = data.virtues.log[dateStr];
+  if (!log) {
+    // 기록이 없으면: 해당 날짜가 마감(completed)됐는지 확인
+    const dd = data.dates[dateStr];
+    return dd && dd.status === 'completed';
+  }
+  return log.length === 0;
+}
 let currentDate = getTodayStr();
 let donutChart = null;
 let calendarMonth = null;
@@ -3464,6 +3738,7 @@ async function syncToCloud() {
       goals: data.goals || [],
       lifeGoals: data.lifeGoals || [],
       books: booksForCloud,
+      virtues: data.virtues || null,
       lastSync: now
     }, { merge: true });
 
@@ -3519,6 +3794,7 @@ async function syncFromCloud() {
           return b;
         });
       }
+      if (cfg.virtues !== undefined) data.virtues = cfg.virtues;
     }
 
     // 2. Read all dates
@@ -3635,6 +3911,7 @@ function autoClosePastDays() {
 function init() {
   loadData();
   autoClosePastDays();
+  initDefaultVirtues();
   lastSyncTime = parseInt(localStorage.getItem('myRoutineLastSync')) || null;
   applyStaticTranslations();
   updateClock();
@@ -3763,6 +4040,7 @@ function loadData() {
     }
     if (!data.goals) data.goals = [];
     if (!data.books) data.books = [];
+    if (!data.virtues) data.virtues = null; // will be initialized by initDefaultVirtues()
   } catch(e) { console.warn('localStorage load error', e); }
 }
 
@@ -6940,7 +7218,12 @@ function confirmCloseDay() {
 
   saveData();
   closeModal();
-  switchTab('analysis');
+  // Show virtue check modal if virtues are configured
+  if (data.virtues && getActiveVirtues().length > 0) {
+    setTimeout(() => showVirtueCheckModal(currentDate), 300);
+  } else {
+    switchTab('analysis');
+  }
   if (typeof gtag === 'function') gtag('event', 'close_day', { entry_count: dd.entries.length });
 }
 
@@ -7350,9 +7633,303 @@ function setCategory(id, cat) {
   }
 }
 
+// ============== Virtue Tracker ==============
+function renderVirtueGrid() {
+  const container = document.getElementById('virtue-grid-section');
+  if (!container) return;
+
+  const virtues = getActiveVirtues();
+  if (!data.virtues || virtues.length === 0) {
+    container.innerHTML = `
+      <div class="virtue-section"><div class="card virtue-empty">
+        <h4>📜 ${t('virtue.emptyTitle')}</h4>
+        <p>${t('virtue.emptyQuote')}</p>
+        <button class="btn btn-coral" onclick="initFranklinAndRender()" style="font-size:13px">${t('virtue.startFranklin')}</button>
+        <button class="btn btn-outline" onclick="showAddVirtueModal()" style="font-size:13px;margin-left:6px">${t('virtue.startCustom')}</button>
+      </div></div>`;
+    return;
+  }
+
+  const weekInfo = getVirtueWeekInfo();
+  const weekDates = getWeekDates();
+  const todayStr = getTodayStr();
+  const dayNames = getDayNames();
+
+  // Check cycle completion
+  if (weekInfo.cycleComplete && !data.virtues._cycleHandled) {
+    handleCycleComplete();
+  }
+
+  // Build header row
+  let gridHtml = '<div class="vg-header"></div>'; // empty top-left
+  weekDates.forEach((d, i) => {
+    const isToday = d === todayStr;
+    gridHtml += `<div class="vg-header${isToday ? ' vg-today' : ''}">${dayNames[i]}</div>`;
+  });
+
+  // Build virtue rows
+  virtues.forEach(v => {
+    const isFocus = v.id === weekInfo.focusId;
+    gridHtml += `<div class="vg-label${isFocus ? ' vg-focus' : ''}">
+      <span class="vg-icon">${v.icon}</span>
+      <span class="vg-name">${escHtml(getVirtueName(v))}</span>
+    </div>`;
+    weekDates.forEach(d => {
+      const isToday = d === todayStr;
+      const isFuture = d > todayStr;
+      const log = data.virtues.log[d];
+      const hasMark = log && log.includes(v.id);
+      const dd = data.dates[d];
+      const isCompleted = dd && dd.status === 'completed';
+      const editable = isToday && !isCompleted;
+      let cls = 'vg-cell';
+      if (isToday) cls += ' vg-today-col';
+      if (isFuture) cls += ' vg-future';
+      if (editable) cls += ' vg-editable';
+      const onclick = editable ? ` onclick="toggleVirtueMark('${d}','${v.id}')"` : '';
+      gridHtml += `<div class="${cls}"${onclick}>${hasMark ? '<span class="vg-mark"></span>' : ''}</div>`;
+    });
+  });
+
+  // Summary
+  const thisWeekMarks = weekDates.reduce((sum, d) => sum + (data.virtues.log[d]?.length || 0), 0);
+  let summaryText = t('virtue.markCount', { n: thisWeekMarks });
+
+  // Last week comparison
+  if (weekInfo.weekIndex > 0) {
+    const lastWeekDates = [];
+    const startDate = new Date(data.virtues.cycle.startDate + 'T00:00:00');
+    startDate.setDate(startDate.getDate() + (weekInfo.weekIndex - 1) * 7);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(startDate); d.setDate(d.getDate() + i);
+      lastWeekDates.push(d.toISOString().slice(0, 10));
+    }
+    const lastWeekMarks = lastWeekDates.reduce((sum, d) => sum + (data.virtues.log[d]?.length || 0), 0);
+    const diff = lastWeekMarks - thisWeekMarks;
+    if (diff > 0) summaryText += ` | ${t('virtue.improved', { n: diff })}`;
+    else if (diff < 0) summaryText += ` | ${t('virtue.worsened', { n: Math.abs(diff) })}`;
+  } else {
+    summaryText += ` | ${t('virtue.firstWeek')}`;
+  }
+
+  const focusVirtue = virtues.find(v => v.id === weekInfo.focusId);
+  const focusLabel = focusVirtue ? `✨ ${t('virtue.focusThisWeek')}: ${focusVirtue.icon} ${escHtml(getVirtueName(focusVirtue))}` : '';
+
+  // Cycle complete banner
+  let cycleBanner = '';
+  if (weekInfo.cycleComplete) {
+    const totalMarks = Object.values(data.virtues.log).reduce((s, arr) => s + arr.length, 0);
+    cycleBanner = `<div style="padding:8px 12px;background:var(--card);border-radius:var(--radius-sm);margin-bottom:8px;font-size:13px;text-align:center">${t('virtue.cycleComplete', { n: data.virtues.cycle.cycleNumber, marks: totalMarks })}</div>`;
+  }
+
+  container.innerHTML = `
+    <div class="virtue-section"><div class="card">
+      <div class="virtue-header">
+        <h3>📜 ${t('virtue.title')} <span class="virtue-week">${t('virtue.weekLabel', { n: Math.min(weekInfo.weekIndex + 1, 13) })}</span></h3>
+        <button class="icon-btn" onclick="showVirtueSettings()" title="${t('virtue.settings')}">⚙️</button>
+      </div>
+      ${focusLabel ? `<div class="virtue-focus">${focusLabel}</div>` : ''}
+      ${cycleBanner}
+      <div class="virtue-grid-wrap"><div class="virtue-grid">${gridHtml}</div></div>
+      <div class="virtue-summary">${summaryText}</div>
+    </div></div>`;
+}
+
+function toggleVirtueMark(dateStr, virtueId) {
+  if (!data.virtues) return;
+  if (!data.virtues.log[dateStr]) data.virtues.log[dateStr] = [];
+  const idx = data.virtues.log[dateStr].indexOf(virtueId);
+  if (idx >= 0) data.virtues.log[dateStr].splice(idx, 1);
+  else data.virtues.log[dateStr].push(virtueId);
+  saveData();
+  renderVirtueGrid();
+}
+
+function initFranklinAndRender() {
+  data.virtues = null;
+  initDefaultVirtues();
+  renderVirtueGrid();
+}
+
+function handleCycleComplete() {
+  if (!data.virtues) return;
+  const cycle = data.virtues.cycle;
+  const totalMarks = Object.values(data.virtues.log).reduce((s, arr) => s + arr.length, 0);
+  const weeklyMarks = [];
+  const start = new Date(cycle.startDate + 'T00:00:00');
+  for (let w = 0; w < 13; w++) {
+    let wMarks = 0;
+    for (let d = 0; d < 7; d++) {
+      const day = new Date(start); day.setDate(day.getDate() + w * 7 + d);
+      const ds = day.toISOString().slice(0, 10);
+      wMarks += (data.virtues.log[ds]?.length || 0);
+    }
+    weeklyMarks.push(wMarks);
+  }
+  data.virtues.history.push({
+    cycleNumber: cycle.cycleNumber, startDate: cycle.startDate,
+    endDate: new Date(new Date(cycle.startDate + 'T00:00:00').getTime() + 13 * 7 * 86400000).toISOString().slice(0, 10),
+    totalMarks, weeklyMarks
+  });
+  // Start new cycle
+  const newStart = new Date(new Date(cycle.startDate + 'T00:00:00').getTime() + 13 * 7 * 86400000);
+  const activeVirtues = getActiveVirtues();
+  cycle.cycleNumber++;
+  cycle.startDate = newStart.toISOString().slice(0, 10);
+  cycle.focusSequence = activeVirtues.map(v => v.id);
+  data.virtues.log = {}; // archive done, clear log
+  data.virtues._cycleHandled = true;
+  saveData();
+  if (typeof gtag === 'function') gtag('event', 'cycle_complete', { cycle: cycle.cycleNumber - 1, marks: totalMarks });
+}
+
+// ============== Virtue Check Modal (after close day) ==============
+function showVirtueCheckModal(dateStr) {
+  const virtues = getActiveVirtues();
+  if (virtues.length === 0) return;
+  const weekInfo = getVirtueWeekInfo();
+  const focusVirtue = virtues.find(v => v.id === weekInfo.focusId);
+
+  let pillsHtml = virtues.map(v => {
+    const isFocus = v.id === weekInfo.focusId;
+    return `<div class="virtue-pill checked" data-vid="${v.id}" onclick="toggleVirtuePill(this)"${isFocus ? ' style="border-color:#3B6BE8"' : ''}>
+      <span class="vp-check">✔</span>
+      <span class="vp-icon">${v.icon}</span>
+      <span class="vp-name">${escHtml(getVirtueName(v))}</span>
+    </div>`;
+  }).join('');
+
+  showModal(`
+    <h3>${t('virtue.closeDayPrompt')}</h3>
+    ${focusVirtue ? `<div style="font-size:13px;color:var(--text-sub);margin:8px 0">✨ ${t('virtue.focusThisWeek')}: ${focusVirtue.icon} ${escHtml(getVirtueName(focusVirtue))}</div>` : ''}
+    <div class="virtue-check-list">${pillsHtml}</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="skipVirtueCheck('${dateStr}')">${t('virtue.skip')}</button>
+      <button class="btn btn-coral" onclick="confirmVirtueCheck('${dateStr}')">${t('virtue.confirm')}</button>
+    </div>
+  `);
+}
+
+function toggleVirtuePill(el) {
+  const isChecked = el.classList.contains('checked');
+  el.classList.toggle('checked', !isChecked);
+  el.classList.toggle('unchecked', isChecked);
+  el.querySelector('.vp-check').textContent = isChecked ? '○' : '✔';
+}
+
+function confirmVirtueCheck(dateStr) {
+  const unchecked = [...document.querySelectorAll('.virtue-pill.unchecked')].map(el => el.dataset.vid);
+  if (!data.virtues) return;
+  data.virtues.log[dateStr] = unchecked;
+  saveData();
+  closeModal();
+  if (unchecked.length === 0) showToast(t('virtue.perfect'));
+  if (typeof gtag === 'function') gtag('event', 'virtue_check', { date: dateStr, marks: unchecked.length });
+  switchTab('analysis');
+}
+
+function skipVirtueCheck(dateStr) {
+  closeModal();
+  switchTab('analysis');
+}
+
+// ============== Virtue Settings Modal ==============
+function showVirtueSettings() {
+  const virtues = data.virtues ? data.virtues.items : [];
+  let listHtml = virtues.filter(v => !v.hidden).map((v, i) => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--text-light)">
+      <span style="font-size:18px">${v.icon}</span>
+      <span style="flex:1;font-size:14px">${escHtml(getVirtueName(v))}</span>
+      <button class="icon-btn" style="width:28px;height:28px;font-size:12px" onclick="showEditVirtueModal('${v.id}')">✏️</button>
+      <button class="icon-btn" style="width:28px;height:28px;font-size:12px" onclick="deleteVirtue('${v.id}')">🗑️</button>
+    </div>
+  `).join('');
+
+  showModal(`
+    <h3>${t('virtue.settings')}</h3>
+    <div style="max-height:360px;overflow-y:auto;margin:12px 0">${listHtml || '<p style="color:var(--text-sub);text-align:center">' + t('virtue.emptyTitle') + '</p>'}</div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">${t('virtue.cancel')}</button>
+      <button class="btn btn-coral" onclick="showAddVirtueModal()">${t('virtue.addCustom')}</button>
+    </div>
+  `);
+}
+
+function showAddVirtueModal() {
+  showModal(`
+    <h3>${t('virtue.addCustom')}</h3>
+    <label style="font-size:13px;color:var(--text-sub)">${t('virtue.icon')}</label>
+    <input type="text" id="virtue-icon-input" value="⭐" maxlength="4" style="width:60px;font-size:20px;text-align:center;margin-bottom:8px">
+    <label style="font-size:13px;color:var(--text-sub)">${t('virtue.name')}</label>
+    <input type="text" id="virtue-name-input" placeholder="${t('virtue.name')}" style="margin-bottom:8px">
+    <label style="font-size:13px;color:var(--text-sub)">${t('virtue.description')}</label>
+    <input type="text" id="virtue-desc-input" placeholder="${t('virtue.description')}" style="margin-bottom:12px">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="showVirtueSettings()">${t('virtue.cancel')}</button>
+      <button class="btn btn-coral" onclick="saveNewVirtue()">${t('virtue.save')}</button>
+    </div>
+  `);
+}
+
+function saveNewVirtue() {
+  const icon = document.getElementById('virtue-icon-input').value.trim() || '⭐';
+  const name = document.getElementById('virtue-name-input').value.trim();
+  if (!name) return;
+  if (!data.virtues) initDefaultVirtues();
+  const id = 'v_' + Date.now();
+  data.virtues.items.push({ id, name, icon, description: document.getElementById('virtue-desc-input').value.trim(), isPreset: false, hidden: false });
+  // Update focus sequence for current cycle
+  if (data.virtues.cycle.focusSequence) data.virtues.cycle.focusSequence.push(id);
+  saveData();
+  showVirtueSettings();
+  renderVirtueGrid();
+}
+
+function showEditVirtueModal(virtueId) {
+  const v = data.virtues?.items.find(i => i.id === virtueId);
+  if (!v) return;
+  showModal(`
+    <h3>${t('virtue.editVirtue')}</h3>
+    <label style="font-size:13px;color:var(--text-sub)">${t('virtue.icon')}</label>
+    <input type="text" id="virtue-icon-input" value="${v.icon}" maxlength="4" style="width:60px;font-size:20px;text-align:center;margin-bottom:8px">
+    <label style="font-size:13px;color:var(--text-sub)">${t('virtue.name')}</label>
+    <input type="text" id="virtue-name-input" value="${escAttr(getVirtueName(v))}" style="margin-bottom:8px">
+    <label style="font-size:13px;color:var(--text-sub)">${t('virtue.description')}</label>
+    <input type="text" id="virtue-desc-input" value="${escAttr(getVirtueDesc(v))}" style="margin-bottom:12px">
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="showVirtueSettings()">${t('virtue.cancel')}</button>
+      <button class="btn btn-coral" onclick="saveEditVirtue('${virtueId}')">${t('virtue.save')}</button>
+    </div>
+  `);
+}
+
+function saveEditVirtue(virtueId) {
+  const v = data.virtues?.items.find(i => i.id === virtueId);
+  if (!v) return;
+  v.icon = document.getElementById('virtue-icon-input').value.trim() || v.icon;
+  v.name = document.getElementById('virtue-name-input').value.trim() || v.name;
+  v.nameKey = null; // custom override
+  v.description = document.getElementById('virtue-desc-input').value.trim();
+  v.descKey = null;
+  saveData();
+  showVirtueSettings();
+  renderVirtueGrid();
+}
+
+function deleteVirtue(virtueId) {
+  if (!confirm(t('virtue.deleteConfirm'))) return;
+  const v = data.virtues?.items.find(i => i.id === virtueId);
+  if (!v) return;
+  v.hidden = true;
+  saveData();
+  showVirtueSettings();
+  renderVirtueGrid();
+}
+
 // ============== Mission 3: Analysis ==============
 function renderAnalysis() {
   renderMonthlyCalendar();
+  renderVirtueGrid();
   renderPastDateBanner();
   renderSaveReturnBtn();
   renderClassifyInAnalysis();
@@ -8066,7 +8643,7 @@ function renderShareCard(html) {
     const card = container.firstElementChild;
     setTimeout(() => {
       html2canvas(card, {
-        scale: 2, useCORS: true, logging: false, backgroundColor: '#FFFFFF', width: 540, height: 540
+        scale: 2, useCORS: true, logging: false, backgroundColor: '#FFFFFF', width: card.offsetWidth, height: card.offsetHeight
       }).then(canvas => {
         container.innerHTML = '';
         canvas.toBlob(blob => {
@@ -8358,6 +8935,121 @@ async function shareStats() {
     const blob = await renderShareCard(html);
     const safeName = formatStatsPeriodLabel().replace(/[^a-zA-Z0-9가-힣]/g, '_');
     await shareImage(blob, `MyRoutine_Stats_${safeName}.png`);
+  } catch (e) {
+    showToast(t('share.failed'));
+  }
+}
+
+// ============== 168-Hour Weekly Report Card ==============
+function buildWeekly168CardHTML() {
+  // Use the stats period dates (respects user's selected week/month)
+  const weekDates = getStatsPeriodDates();
+
+  let totalFlexMin = 0, totalDreamMin = 0, totalFixedMin = 0, totalSleepMin = 0;
+  let starDays = 0, recordedDays = 0;
+
+  weekDates.forEach(dateStr => {
+    const dd = data.dates[dateStr];
+    if (!dd || !dd.entries || dd.entries.length === 0) return;
+    recordedDays++;
+    const stats = calcStats(dd);
+    totalFixedMin += stats.fixedMin;
+    totalFlexMin += stats.flexMin;
+    totalDreamMin += stats.desiredMin;
+    totalSleepMin += stats.sleepMin || 0;
+    // Star day: 80%+ dream investment in flexible time
+    if (stats.flexMin > 0 && (stats.desiredMin / stats.flexMin) >= 0.8) starDays++;
+  });
+
+  if (recordedDays === 0) return null;
+
+  const totalMin = totalFixedMin + totalFlexMin;
+  const dreamPct = totalFlexMin > 0 ? Math.round(totalDreamMin / totalFlexMin * 100) : 0;
+  const flexHours = Math.round(totalFlexMin / 60 * 10) / 10;
+  const dreamHours = Math.round(totalDreamMin / 60 * 10) / 10;
+
+  // Date range label (with year)
+  const startDate = new Date(weekDates[0]);
+  const endDate = new Date(weekDates[weekDates.length - 1]);
+  const rangeLabel = `${startDate.getFullYear()}.${startDate.getMonth()+1}/${startDate.getDate()} - ${endDate.getMonth()+1}/${endDate.getDate()}`;
+
+  // Best book of the period
+  const lastDateStr = weekDates[weekDates.length - 1];
+  const weekBooks = (data.books || []).filter(b => b.endDate && b.endDate >= weekDates[0] && b.endDate <= lastDateStr);
+  const weekBookCount = weekBooks.length;
+  const bestBook = weekBooks.length > 0 ? weekBooks.reduce((best, b) => (b.rating || 0) > (best.rating || 0) ? b : best, weekBooks[0]) : null;
+
+  // Motto
+  const motto = data.motto || '';
+
+  // Progress bar width
+  const barWidth = Math.min(100, dreamPct);
+  const barColor = dreamPct >= 80 ? '#6366F1' : dreamPct >= 50 ? '#5B8DEF' : '#9B6DD7';
+
+  return `<div style="width:540px;min-height:720px;background:linear-gradient(135deg,#F5F6FA,#EBF0FB);border-radius:24px;padding:36px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Pretendard',sans-serif;display:flex;flex-direction:column;position:relative;overflow:hidden;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:36px;font-weight:800;color:#2D3436;">GOD+生</div>
+      <div style="font-size:24px;color:#636E72;font-weight:600;">${rangeLabel}</div>
+    </div>
+    <div style="font-size:32px;font-weight:800;color:#2D3436;margin-bottom:24px;">${t('share.weeklyTitle')}</div>
+    <div style="display:flex;gap:12px;margin-bottom:24px;">
+      <div style="flex:1;background:#FFFFFF;border-radius:16px;padding:20px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:44px;font-weight:800;color:#5B8DEF;">${flexHours}h</div>
+        <div style="font-size:20px;color:#636E72;margin-top:4px;">${t('share.flexTime')}</div>
+      </div>
+      <div style="flex:1;background:#FFFFFF;border-radius:16px;padding:20px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:44px;font-weight:800;color:#6366F1;">${dreamHours}h</div>
+        <div style="font-size:20px;color:#636E72;margin-top:4px;">${t('share.dreamInvest')}</div>
+      </div>
+      <div style="flex:1;background:#FFFFFF;border-radius:16px;padding:20px 12px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        <div style="font-size:44px;font-weight:800;color:#F59E0B;">${starDays}/${recordedDays}</div>
+        <div style="font-size:20px;color:#636E72;margin-top:4px;">${t('share.starDays')}</div>
+      </div>
+    </div>
+    <div style="background:#FFFFFF;border-radius:16px;padding:24px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:20px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div style="font-size:24px;font-weight:700;color:#2D3436;">${t('share.dreamRatio')}</div>
+        <div style="font-size:40px;font-weight:800;color:${barColor};">${dreamPct}%</div>
+      </div>
+      <div style="background:#E5E7EB;border-radius:8px;height:16px;overflow:hidden;">
+        <div style="background:linear-gradient(90deg,#5B8DEF,#6366F1);width:${barWidth}%;height:100%;border-radius:8px;"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${weekDates.map(dateStr => {
+        const dd = data.dates[dateStr];
+        const hasData = dd && dd.entries && dd.entries.length > 0;
+        const dayStats = hasData ? calcStats(dd) : null;
+        const isStar = dayStats && dayStats.flexMin > 0 && (dayStats.desiredMin / dayStats.flexMin) >= 0.8;
+        const dayNum = new Date(dateStr).getDate();
+        const bg = isStar ? '#6366F1' : hasData ? '#5B8DEF' : '#E5E7EB';
+        const color = hasData ? '#FFFFFF' : '#9CA3AF';
+        return `<div style="width:58px;height:58px;border-radius:12px;background:${bg};display:flex;flex-direction:column;align-items:center;justify-content:center;">
+          <div style="font-size:22px;font-weight:700;color:${color};">${dayNum}</div>
+          ${isStar ? '<div style="font-size:14px;">⭐</div>' : ''}
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-top:8px;font-size:18px;color:#636E72;">⭐ = ${t('share.starDesc')}</div>
+    ${bestBook ? `<div style="margin-top:10px;font-size:18px;color:#2D3436;">📚 ${escHtml(bestBook.title)}${'⭐'.repeat(bestBook.rating || 0)} · ${weekBookCount}${t('share.booksCount')}</div>` : ''}
+    ${motto ? `<div style="margin-top:8px;font-size:18px;font-style:italic;color:#636E72;">"${escHtml(motto)}"</div>` : ''}
+    <div style="text-align:center;margin-top:auto;padding-top:8px;font-size:18px;color:#9CA3AF;">${t('share.weeklyDesc')}</div>
+  </div>`;
+}
+
+async function shareWeekly168() {
+  if (typeof gtag === 'function') gtag('event', 'weekly_card_share', { content_type: '168_weekly' });
+  const html = buildWeekly168CardHTML();
+  if (!html) {
+    showToast(t('share.noWeeklyData'));
+    return;
+  }
+  showToast(t('share.generating'));
+  try {
+    const blob = await renderShareCard(html);
+    const today = new Date();
+    const dateStr = today.getFullYear() + String(today.getMonth()+1).padStart(2,'0') + String(today.getDate()).padStart(2,'0');
+    await shareImage(blob, `GOD_168h_${dateStr}.png`);
   } catch (e) {
     showToast(t('share.failed'));
   }
@@ -9335,6 +10027,7 @@ function renderMonthlyCalendar() {
     const hasData = result !== null;
     const starred = hasData && result.flexMin > 0 && result.desiredPct >= 80;
     const diamond = hasData && allGoalsAchievedForDate(dateStr);
+    const virtueStar = allVirtuesKeptForDate(dateStr);
 
     if (hasData) totalWithData++;
     if (starred) starCount++;
@@ -9352,10 +10045,11 @@ function renderMonthlyCalendar() {
       : (hasData ? '0h' : '');
     const needsReview = hasData && result.desiredMin === 0;
 
-    dayCells += `<div class="${classes.join(' ')}"${onclick}>
+    dayCells += `<div class="${classes.join(' ')}"${onclick} style="position:relative">
       <span class="day-num">${d}</span>
       ${starred ? '<span class="day-star">★</span>' : ''}
       ${diamond ? '<span class="day-diamond">💎</span>' : ''}
+      ${virtueStar ? '<span class="day-virtue-star">⭐</span>' : ''}
       ${hasData ? `<span class="day-desired${needsReview ? ' needs-review' : ''}">${desiredHrs}</span>` : ''}
     </div>`;
   }
@@ -9379,9 +10073,10 @@ function renderMonthlyCalendar() {
         ${dayCells}
       </div>
       ${totalWithData > 0 ? `<div class="calendar-summary"><span class="star-count">★</span> ${t('calendar.achievement', {total: totalWithData, stars: starCount})}${diamondCount > 0 ? `<br><span class="diamond-count">💎</span> ${t('calendar.diamondDesc', {total: totalWithData, diamonds: diamondCount})}` : ''}</div>` : ''}
-      <div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--text-sub)">
+      <div style="display:flex;gap:12px;justify-content:center;margin-top:6px;font-size:11px;color:var(--text-sub);flex-wrap:wrap">
         <span>★ ${t('calendar.starLegend')}</span>
         <span>💎 ${t('calendar.diamondLegend')}</span>
+        ${getActiveVirtues().length > 0 ? `<span>⭐ ${t('virtue.starLegend')}</span>` : ''}
       </div>
     </div>
   `;
