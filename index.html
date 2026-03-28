@@ -2444,6 +2444,9 @@ body {
       <div id="books-nav" style="text-align:center;margin-top:12px"></div>
       <div id="books-summary" style="text-align:center;margin-top:8px;font-size:13px;color:var(--text-sub)"></div>
       <div class="stats-chart-container" style="margin-top:12px"><canvas id="books-chart"></canvas></div>
+      <button class="btn btn-block" onclick="exportBooksExcel()" style="margin-top:16px;background:#217346;color:white" id="books-export-excel-btn">
+        📊 <span data-i18n="books.exportExcel">독서 기록 엑셀로 내보내기</span>
+      </button>
     </div>
   </div>
 
@@ -2833,7 +2836,7 @@ const TRANSLATIONS = {
     'tour.closeday.title': '하루 마감', 'tour.closeday.desc': '하루가 끝나면 마감 버튼을 눌러 정리하세요. 마감 후에도 분석 탭에서 수정할 수 있어요.',
     'tour.done.title': '챌린지 시작!', 'tour.done.desc': '이번 주 168시간, 꿈에 얼마나 투자할 수 있을까요? 매주 결산 카드로 성장을 확인하세요!',
     'tour.next': '다음', 'tour.skip': '건너뛰기', 'tour.start': '시작하기', 'tour.replay': '사용법 다시 보기',
-    'books.title': '독서 기록', 'books.reading': '읽는 중', 'books.completed': '완독',
+    'books.title': '독서 기록', 'books.reading': '읽는 중', 'books.completed': '완독', 'books.exportExcel': '독서 기록 엑셀로 내보내기',
     'books.addTitle': '새 책 등록', 'books.editTitle': '책 정보 수정',
     'books.bookTitle': '책 제목', 'books.author': '저자', 'books.startDate': '시작일',
     'books.endDate': '완독일', 'books.rating': '별점', 'books.memo': '한줄 메모',
@@ -3095,7 +3098,7 @@ const TRANSLATIONS = {
     'tour.closeday.title': '一日の締め', 'tour.closeday.desc': '一日の終わりに締めボタンで整理しましょう。締め後も分析タブで修正できます。',
     'tour.done.title': 'チャレンジ開始！', 'tour.done.desc': '今週の168時間、夢にどれだけ投資できる？毎週レポートカードで成長を確認しましょう！',
     'tour.next': '次へ', 'tour.skip': 'スキップ', 'tour.start': '始める', 'tour.replay': '使い方を見る',
-    'books.title': '読書記録', 'books.reading': '読書中', 'books.completed': '読了',
+    'books.title': '読書記録', 'books.reading': '読書中', 'books.completed': '読了', 'books.exportExcel': '読書記録をExcelにエクスポート',
     'books.addTitle': '新しい本を登録', 'books.editTitle': '本の情報を編集',
     'books.bookTitle': '本のタイトル', 'books.author': '著者', 'books.startDate': '開始日',
     'books.endDate': '読了日', 'books.rating': '評価', 'books.memo': 'ひとこと感想',
@@ -3357,7 +3360,7 @@ const TRANSLATIONS = {
     'tour.closeday.title': 'Close Day', 'tour.closeday.desc': 'Tap close when your day is done. You can still edit in the Analysis tab afterward.',
     'tour.done.title': 'Challenge On!', 'tour.done.desc': 'How much of your 168 hours will you invest in your dreams? Check your weekly report card!',
     'tour.next': 'Next', 'tour.skip': 'Skip', 'tour.start': 'Get Started', 'tour.replay': 'Replay Tour',
-    'books.title': 'Reading Log', 'books.reading': 'Reading', 'books.completed': 'Completed',
+    'books.title': 'Reading Log', 'books.reading': 'Reading', 'books.completed': 'Completed', 'books.exportExcel': 'Export Reading Log as Excel',
     'books.addTitle': 'Add New Book', 'books.editTitle': 'Edit Book',
     'books.bookTitle': 'Book Title', 'books.author': 'Author', 'books.startDate': 'Start Date',
     'books.endDate': 'Finish Date', 'books.rating': 'Rating', 'books.memo': 'Note',
@@ -8913,6 +8916,135 @@ function returnToToday() {
   const currentTab = activeSection ? activeSection.id.replace('sec-', '') : 'record';
   switchTab(currentTab);
   renderAll();
+}
+
+// ============== Books Excel Export ==============
+async function exportBooksExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel 라이브러리 로딩 중... 잠시 후 다시 시도해주세요.');
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = () => showToast('로딩 완료! 다시 버튼을 눌러주세요.');
+    s.onerror = () => showToast('Excel 라이브러리를 불러올 수 없습니다.');
+    document.head.appendChild(s);
+    return;
+  }
+  const btn = document.getElementById('books-export-excel-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ ' + (currentLang === 'ja' ? 'エクスポート中...' : currentLang === 'en' ? 'Exporting...' : '내보내는 중...'); }
+
+  try {
+    if (!data.books || data.books.length === 0) {
+      showToast(currentLang === 'ja' ? 'エクスポートする本がありません' : currentLang === 'en' ? 'No books to export' : '내보낼 책이 없습니다');
+      return;
+    }
+
+    const books = data.books.map(b => { migrateBookData(b); return b; });
+    const completed = books.filter(b => b.endDate).sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    const reading = books.filter(b => !b.endDate).sort((a, b) => (a.startDate || '').localeCompare(b.startDate || ''));
+    const sorted = [...completed, ...reading];
+
+    const wb = XLSX.utils.book_new();
+
+    // ---- Sheet 1: Book List ----
+    const isJa = currentLang === 'ja';
+    const isEn = currentLang === 'en';
+    const h = {
+      title: isJa ? 'タイトル' : isEn ? 'Title' : '제목',
+      author: isJa ? '著者' : isEn ? 'Author' : '저자',
+      status: isJa ? '状態' : isEn ? 'Status' : '상태',
+      start: isJa ? '開始日' : isEn ? 'Start Date' : '시작일',
+      end: isJa ? '読了日' : isEn ? 'Completed' : '완독일',
+      rating: isJa ? '評価' : isEn ? 'Rating' : '별점',
+      lifeBook: isJa ? '人生の一冊' : isEn ? 'Life Book' : '인생책',
+      readCount: isJa ? '読了回数' : isEn ? 'Read Count' : '회독수',
+      question: isJa ? '読む前の質問' : isEn ? 'Pre-reading Question' : '읽기전 질문',
+      action: isJa ? '実行すること' : isEn ? 'Action Item' : '실행할 한 가지',
+      actionDone: isJa ? '実行完了' : isEn ? 'Action Done' : '실행완료',
+      shared: isJa ? '共有' : isEn ? 'Shared' : '공유여부',
+      shareNote: isJa ? '共有メモ' : isEn ? 'Share Note' : '공유메모'
+    };
+
+    const listData = [
+      [h.title, h.author, h.status, h.start, h.end, h.rating, h.lifeBook, h.readCount, h.question, h.action, h.actionDone, h.shared, h.shareNote]
+    ];
+    sorted.forEach(b => {
+      const stars = b.rating ? '★'.repeat(b.rating) + '☆'.repeat(5 - b.rating) : '';
+      listData.push([
+        b.title || '',
+        b.author || '',
+        b.endDate ? (isJa ? '読了' : isEn ? 'Completed' : '완독') : (isJa ? '読書中' : isEn ? 'Reading' : '읽는 중'),
+        b.startDate || '',
+        b.endDate || '',
+        stars,
+        b.lifeBook ? '❤️' : '',
+        b.readCount || 1,
+        b.question || '',
+        b.actionItem || '',
+        b.actionDone ? '✓' : '',
+        b.shared ? '✓' : '',
+        b.shareNote || ''
+      ]);
+    });
+
+    const ws1 = XLSX.utils.aoa_to_sheet(listData);
+    ws1['!cols'] = [
+      { wch: 25 }, { wch: 15 }, { wch: 8 }, { wch: 12 }, { wch: 12 },
+      { wch: 8 }, { wch: 6 }, { wch: 6 }, { wch: 30 }, { wch: 25 },
+      { wch: 6 }, { wch: 6 }, { wch: 20 }
+    ];
+    XLSX.utils.book_append_sheet(wb, ws1, isJa ? '読書リスト' : isEn ? 'Book List' : '독서 목록');
+
+    // ---- Sheet 2: Reading Notes ----
+    const noteH = {
+      title: isJa ? '本のタイトル' : isEn ? 'Book Title' : '책 제목',
+      note: isJa ? 'ノート' : isEn ? 'Note' : '노트 내용',
+      date: isJa ? '作成日' : isEn ? 'Date' : '작성일'
+    };
+
+    const noteData = [[noteH.title, noteH.note, noteH.date]];
+    sorted.forEach(b => {
+      if (b.notes && b.notes.length > 0) {
+        b.notes.forEach(n => {
+          noteData.push([b.title || '', n.text || '', n.createdAt || '']);
+        });
+      }
+    });
+
+    const ws2 = XLSX.utils.aoa_to_sheet(noteData);
+    ws2['!cols'] = [{ wch: 25 }, { wch: 50 }, { wch: 12 }];
+    XLSX.utils.book_append_sheet(wb, ws2, isJa ? '読書ノート' : isEn ? 'Reading Notes' : '독서 노트');
+
+    // ---- Download / Share ----
+    const fileName = `GOD+生_${isJa ? '読書記録' : isEn ? 'ReadingLog' : '독서기록'}_${getTodayStr()}.xlsx`;
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [new File([blob], fileName)] })) {
+      try {
+        await navigator.share({ files: [new File([blob], fileName, { type: blob.type })], title: fileName });
+        showToast(isJa ? '共有完了' : isEn ? 'Shared!' : '공유 완료');
+      } catch (e) {
+        if (e.name !== 'AbortError') downloadBlob(blob, fileName);
+      }
+    } else {
+      downloadBlob(blob, fileName);
+    }
+    if (typeof gtag === 'function') gtag('event', 'books_excel_export', { book_count: sorted.length });
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '📊 <span data-i18n="books.exportExcel">' + t('books.exportExcel') + '</span>'; }
+  }
+}
+
+function downloadBlob(blob, fileName) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(currentLang === 'ja' ? 'ダウンロード完了' : currentLang === 'en' ? 'Downloaded!' : '다운로드 완료');
 }
 
 // ============== PDF Export ==============
