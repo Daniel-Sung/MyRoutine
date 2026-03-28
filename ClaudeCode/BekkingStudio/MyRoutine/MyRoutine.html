@@ -2212,12 +2212,6 @@ body {
       </div>
     </div>
 
-    <!-- Daily Wisdom -->
-    <div id="daily-wisdom" style="margin-bottom:8px;padding:12px 16px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);text-align:center">
-      <div id="daily-wisdom-text" style="font-size:14px;font-weight:600;line-height:1.6;color:var(--text);margin-bottom:6px;font-style:italic"></div>
-      <div id="daily-wisdom-author" style="font-size:12px;color:var(--text-sub);font-weight:600"></div>
-    </div>
-
     <!-- Life Counter -->
     <div id="life-counter" style="display:none;cursor:pointer;margin-bottom:8px" onclick="showLifeSetup()">
       <div id="life-counter-grid" style="display:grid;grid-template-columns:1fr;gap:6px">
@@ -2231,6 +2225,18 @@ body {
           <div id="dream-counter-line1" style="font-size:15px;font-weight:800;color:#6366F1;font-variant-numeric:tabular-nums"></div>
           <div id="dream-counter-line2" style="font-size:12px;font-weight:600;color:#6366F1;font-variant-numeric:tabular-nums;opacity:0.8"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Daily Wisdom -->
+    <div id="daily-wisdom" style="margin-bottom:8px;padding:14px 16px;background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);text-align:center">
+      <div style="display:flex;align-items:flex-start;justify-content:center;gap:6px">
+        <span style="font-size:28px;line-height:1;color:var(--mint);opacity:0.4;font-family:Georgia,serif;flex-shrink:0">"</span>
+        <div style="flex:1;max-width:270px;padding-top:6px">
+          <div id="daily-wisdom-text" style="font-size:13px;font-weight:600;line-height:1.7;color:var(--text)"></div>
+          <div id="daily-wisdom-author" style="font-size:11px;color:var(--text-sub);font-weight:600;margin-top:4px"></div>
+        </div>
+        <span style="font-size:28px;line-height:1;color:var(--mint);opacity:0.4;font-family:Georgia,serif;flex-shrink:0;align-self:flex-end">"</span>
       </div>
     </div>
 
@@ -3620,7 +3626,7 @@ function renderDailyWisdom() {
   if (!w) return;
   const textEl = document.getElementById('daily-wisdom-text');
   const authorEl = document.getElementById('daily-wisdom-author');
-  if (textEl) textEl.textContent = '"' + w.t + '"';
+  if (textEl) textEl.textContent = w.t;
   if (authorEl) authorEl.textContent = '— ' + w.a;
 }
 
