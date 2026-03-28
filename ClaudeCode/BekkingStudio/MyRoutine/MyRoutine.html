@@ -489,6 +489,34 @@ body {
 .lg-stats-medal-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
 .lg-stats-medal-item { display: flex; align-items: center; gap: 4px; font-size: 13px; background: var(--bg); padding: 4px 10px; border-radius: 20px; }
 
+/* Dream Management */
+.dream-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 150; background: var(--bg); overflow-y: auto; padding: 16px; display: none; }
+.dream-overlay.active { display: block; }
+.dream-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.dream-header h3 { font-size: 18px; font-weight: 800; margin: 0; }
+.dream-back { font-size: 14px; color: var(--mint); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.dream-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.dream-card { background: var(--card); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: transform 0.1s; position: relative; overflow: hidden; }
+.dream-card:active { transform: scale(0.97); }
+.dream-card-icon { font-size: 32px; margin-bottom: 8px; }
+.dream-card-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dream-card-meta { font-size: 11px; color: var(--text-sub); }
+.dream-card-stripe { position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+.dream-add-card { background: var(--card); border: 2px dashed var(--text-light); border-radius: var(--radius); padding: 16px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100px; color: var(--text-sub); font-size: 14px; gap: 4px; }
+.dream-add-card:hover { border-color: var(--mint); color: var(--mint); }
+.dream-detail-why { font-size: 14px; color: var(--text-sub); font-style: italic; margin-bottom: 16px; padding: 10px 14px; background: var(--bg); border-radius: var(--radius-sm); border-left: 3px solid var(--mint); }
+.dream-milestone { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--bg); font-size: 13px; }
+.dream-milestone-dot { width: 10px; height: 10px; border-radius: 50%; border: 2px solid var(--text-light); flex-shrink: 0; }
+.dream-milestone-dot.done { background: var(--mint); border-color: var(--mint); }
+.dream-milestone-text { flex: 1; }
+.dream-milestone-text.done { text-decoration: line-through; color: var(--text-light); }
+.dream-milestone-date { font-size: 11px; color: var(--text-sub); }
+.dream-milestone-del { background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 12px; padding: 2px; }
+.dream-category-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; display: inline-block; margin-bottom: 8px; }
+.dream-section-title { font-size: 14px; font-weight: 700; margin: 16px 0 8px; display: flex; align-items: center; gap: 6px; }
+.dream-achieved { opacity: 0.6; }
+.dream-achieved .dream-card-title { text-decoration: line-through; }
+
 .timeline-duration {
   font-size: 11px;
   color: var(--text-light);
@@ -2161,6 +2189,7 @@ body {
   <div class="header">
     <h1 data-i18n="app.name">GOD+生</h1>
     <div class="header-actions">
+      <button class="icon-btn" onclick="openDreamView()" data-i18n-title="header.dreams" title="나의 꿈">🌟</button>
       <button class="icon-btn" onclick="switchTab('history')" data-i18n-title="header.history" title="히스토리">📅</button>
       <button class="icon-btn" onclick="toggleDarkMode()" data-i18n-title="header.darkMode" title="다크 모드">🌙</button>
       <button class="icon-btn" onclick="showAboutModal()" data-i18n-title="header.about" title="앱 정보">ℹ️</button>
@@ -2396,19 +2425,15 @@ body {
     </div>
   </div>
 
-  <!-- Section: Life Goals -->
+  <!-- Section: Books (formerly Goals/Books) -->
   <div id="sec-goals" class="section">
-    <div id="lg-list-view">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <h3 style="margin:0;" data-i18n="lg.title">나의 목표</h3>
-      </div>
-      <div id="lg-active-goals"></div>
-      <div id="lg-completed-section"></div>
-      <button class="btn btn-primary btn-block" onclick="showAddLifeGoalModal()" style="margin-top:12px;">+ <span data-i18n="lg.add">새 목표 추가</span></button>
-    </div>
-    <div id="lg-detail-view" style="display:none;"></div>
+    <!-- Life Goals UI moved to dream overlay -->
+    <div id="lg-list-view" style="display:none"></div>
+    <div id="lg-detail-view" style="display:none"></div>
+    <div id="lg-active-goals" style="display:none"></div>
+    <div id="lg-completed-section" style="display:none"></div>
 
-    <div class="card" id="books-card" style="margin-top:16px;">
+    <div class="card" id="books-card">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <h3 style="margin:0">📚 <span data-i18n="books.title">독서 기록</span></h3>
         <div style="display:flex;gap:4px;align-items:center">
@@ -2537,6 +2562,20 @@ body {
   </div>
 </div>
 
+<!-- Dream/Goal Overlay -->
+<div id="dream-overlay" class="dream-overlay">
+  <div id="dream-list-view">
+    <div class="dream-header">
+      <h3>🌟 <span data-i18n="dream.title">나의 꿈</span></h3>
+      <span class="dream-back" onclick="closeDreamView()">✕</span>
+    </div>
+    <div id="dream-grid" class="dream-grid"></div>
+    <div class="dream-section-title" id="dream-independent-title" style="display:none">🎯 <span data-i18n="dream.independentGoals">독립 목표</span></div>
+    <div id="dream-independent-goals"></div>
+  </div>
+  <div id="dream-detail-view" style="display:none"></div>
+</div>
+
 <!-- Bottom Tab Bar -->
 <div class="tab-bar">
   <div class="tab-bar-inner">
@@ -2549,11 +2588,11 @@ body {
     <button class="tab" data-tab="analysis" onclick="switchTab('analysis')">
       <span class="tab-icon">📊</span><span data-i18n="tab.analysis">분석</span>
     </button>
-    <button class="tab" data-tab="goals" onclick="switchTab('goals')">
-      <span class="tab-icon">🎯</span><span data-i18n="tab.goals">목표/독서</span>
-    </button>
     <button class="tab" data-tab="stats" onclick="switchTab('stats')">
       <span class="tab-icon">📈</span><span data-i18n="tab.stats">통계</span>
+    </button>
+    <button class="tab" data-tab="goals" onclick="switchTab('goals')">
+      <span class="tab-icon">📚</span><span data-i18n="tab.books">독서</span>
     </button>
   </div>
 </div>
@@ -2605,7 +2644,21 @@ let currentLang = detectLang();
 const TRANSLATIONS = {
   ko: {
     'app.subtitle': '나의 하루 분석',
-    'header.history': '히스토리', 'header.darkMode': '다크 모드', 'header.about': '앱 정보',
+    'header.history': '히스토리', 'header.darkMode': '다크 모드', 'header.about': '앱 정보', 'header.dreams': '나의 꿈',
+    'tab.books': '독서',
+    'dream.title': '나의 꿈', 'dream.add': '꿈 추가', 'dream.addNew': '새로운 꿈',
+    'dream.name': '꿈 이름', 'dream.namePlaceholder': '베스트셀러 작가, 건강한 60대...',
+    'dream.why': '왜 이 꿈인가?', 'dream.whyPlaceholder': '이 꿈이 나에게 중요한 이유를 적어보세요',
+    'dream.category': '분야', 'dream.catCareer': '커리어', 'dream.catHealth': '건강',
+    'dream.catRelationship': '관계', 'dream.catFinance': '재정', 'dream.catGrowth': '성장', 'dream.catFreedom': '자유',
+    'dream.milestones': '이정표', 'dream.addMilestone': '이정표 추가', 'dream.milestonePlaceholder': '중간 목표를 적어보세요',
+    'dream.linkedGoals': '연결된 목표', 'dream.addGoalToDream': '이 꿈에 목표 추가',
+    'dream.independentGoals': '독립 목표', 'dream.noGoals': '아직 연결된 목표가 없어요',
+    'dream.achieve': '꿈 달성!', 'dream.achieved': '달성한 꿈', 'dream.edit': '수정', 'dream.delete': '삭제',
+    'dream.deleteConfirm': '이 꿈을 삭제할까요? 연결된 목표는 독립 목표로 유지됩니다.',
+    'dream.saved': '꿈이 저장되었습니다', 'dream.achievedMsg': '축하합니다! 꿈을 이루셨네요! 🎉',
+    'dream.goalCount': '목표 {n}개', 'dream.selectDream': '연결할 꿈 선택', 'dream.noDream': '없음 (독립 목표)',
+    'dream.empty': '꿈을 등록하고\n목표를 연결해보세요!',
     'record.quickRecord': '빠른 기록', 'record.presetEdit': '프리셋 편집',
     'record.placeholder': '글쓰기, 명상, 산책...', 'record.record': '기록',
     'record.todayTimeline': '오늘의 타임라인',
@@ -2680,7 +2733,7 @@ const TRANSLATIONS = {
     'month.5': '5월', 'month.6': '6월', 'month.7': '7월', 'month.8': '8월',
     'month.9': '9월', 'month.10': '10월', 'month.11': '11월', 'month.12': '12월',
     'app.name': 'GOD+生',
-    'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '목표/독서', 'tab.stats': '통계',
+    'tab.plan': '계획', 'tab.record': '기록', 'tab.analysis': '분석', 'tab.goals': '독서', 'tab.stats': '통계',
     'plan.mottoTitle': '나의 모토', 'plan.mottoPlaceholder': '인생 모토나 좋은 글귀를 적어보세요...', 'plan.mottoPhoto': '사진 추가',
     'affirm.title': '아침 확언', 'affirm.start': '읽기', 'affirm.desc': '매일 아침 확언을 소리 내어 읽으세요',
     'affirm.edit': '확언 편집', 'affirm.editTitle': '확언 편집', 'affirm.editDesc': '한 줄에 하나씩 입력하세요',
@@ -2787,7 +2840,7 @@ const TRANSLATIONS = {
     'tour.plan.title': '📋 계획', 'tour.plan.desc': '브레인 덤프로 할 일을 꺼내고, Big 3로 우선순위를 정하고, 타임 박싱으로 시간을 배정하세요.',
     'tour.record.title': '✏️ 기록', 'tour.record.desc': '지금 하는 활동을 기록하세요. 유튜브도, 독서도, 운동도 — 솔직하게 기록하는 것이 시작입니다.',
     'tour.analyze.title': '📊 분석', 'tour.analyze.desc': '고정 시간(수면, 출근)과 유동 시간(자유 시간)으로 분류하세요. 유동 시간 중 꿈에 투자한 시간을 볼 수 있어요.',
-    'tour.goals.title': '🎯 목표', 'tour.goals.desc': '인생 목표를 설정하고 매일 한 걸음씩 실행하세요. 📚 독서 기록으로 읽은 책도 관리할 수 있어요.',
+    'tour.goals.title': '📚 독서', 'tour.goals.desc': '씹어먹기 독서법 5단계로 책을 관리하세요. 🌟 나의 꿈과 목표는 상단 🌟 아이콘에서!',
     'tour.stats.title': '📈 통계', 'tour.stats.desc': '168시간 도넛으로 한 주를 한눈에! 유동 시간의 80%를 꿈에 투자하면 ⭐별을 받아요.',
     'tour.closeday.title': '하루 마감', 'tour.closeday.desc': '하루가 끝나면 마감 버튼을 눌러 정리하세요. 마감 후에도 분석 탭에서 수정할 수 있어요.',
     'tour.done.title': '챌린지 시작!', 'tour.done.desc': '이번 주 168시간, 꿈에 얼마나 투자할 수 있을까요? 매주 결산 카드로 성장을 확인하세요!',
@@ -2853,7 +2906,21 @@ const TRANSLATIONS = {
   },
   ja: {
     'app.subtitle': '一日の分析',
-    'header.history': '履歴', 'header.darkMode': 'ダークモード', 'header.about': 'アプリ情報',
+    'header.history': '履歴', 'header.darkMode': 'ダークモード', 'header.about': 'アプリ情報', 'header.dreams': '私の夢',
+    'tab.books': '読書',
+    'dream.title': '私の夢', 'dream.add': '夢を追加', 'dream.addNew': '新しい夢',
+    'dream.name': '夢の名前', 'dream.namePlaceholder': 'ベストセラー作家、健康な60代...',
+    'dream.why': 'なぜこの夢？', 'dream.whyPlaceholder': 'この夢が大切な理由を書いてみま���ょう',
+    'dream.category': '分野', 'dream.catCareer': 'キャリア', 'dream.catHealth': '健康',
+    'dream.catRelationship': '人間関係', 'dream.catFinance': '財務', 'dream.catGrowth': '成長', 'dream.catFreedom': '自由',
+    'dream.milestones': 'マイルストーン', 'dream.addMilestone': 'マイルストーン追加', 'dream.milestonePlaceholder': '中間目標を書いてみましょう',
+    'dream.linkedGoals': '連結された目標', 'dream.addGoalToDream': 'この夢に目標を追加',
+    'dream.independentGoals': '独立目標', 'dream.noGoals': 'まだ連結された目標がありません',
+    'dream.achieve': '夢達成！', 'dream.achieved': '達成した夢', 'dream.edit': '修正', 'dream.delete': '削除',
+    'dream.deleteConfirm': 'この夢を削除しますか？連結された目標は独立目標として維持されます。',
+    'dream.saved': '夢が保存されました', 'dream.achievedMsg': 'おめでとうございます！夢を叶えましたね！🎉',
+    'dream.goalCount': '目標 {n}個', 'dream.selectDream': '連結する夢を選択', 'dream.noDream': 'なし（独立目標）',
+    'dream.empty': '夢を登録して\n目標を連結してみましょう！',
     'record.quickRecord': 'クイック記録', 'record.presetEdit': 'プリセット編集',
     'record.placeholder': '執筆、瞑想、散歩...', 'record.record': '記録',
     'record.todayTimeline': '今日のタイムライン',
@@ -2928,7 +2995,7 @@ const TRANSLATIONS = {
     'month.5': '5月', 'month.6': '6月', 'month.7': '7月', 'month.8': '8月',
     'month.9': '9月', 'month.10': '10月', 'month.11': '11月', 'month.12': '12月',
     'app.name': 'GOD+生',
-    'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '目標/読書', 'tab.stats': '統計',
+    'tab.plan': '計画', 'tab.record': '記録', 'tab.analysis': '分析', 'tab.goals': '読書', 'tab.stats': '統計',
     'plan.mottoTitle': '私のモットー', 'plan.mottoPlaceholder': '人生のモットーや良い言葉を書いてみましょう...', 'plan.mottoPhoto': '写真を追加',
     'affirm.title': '朝のアファメーション', 'affirm.start': '読む', 'affirm.desc': '毎朝アファメーションを声に出して読みましょう',
     'affirm.edit': 'アファメーション編集', 'affirm.editTitle': 'アファメーション編集', 'affirm.editDesc': '1行に1つずつ入力してください',
@@ -3035,7 +3102,7 @@ const TRANSLATIONS = {
     'tour.plan.title': '📋 計画', 'tour.plan.desc': 'ブレインダンプでタスクを出し、Big 3で優先順位を決め、タイムボクシングで時間を割り当てましょう。',
     'tour.record.title': '✏️ 記録', 'tour.record.desc': '今の活動を記録しましょう。YouTubeも、読書も、運動も — 正直に記録することが始まりです。',
     'tour.analyze.title': '📊 分析', 'tour.analyze.desc': '固定時間（睡眠、通勤）と自由時間に分類。自由時間のうち夢に投資した時間が見えます。',
-    'tour.goals.title': '🎯 目標', 'tour.goals.desc': '人生の目標を設定し、毎日一歩ずつ実行しましょう。📚 読書記録で読んだ本も管理できます。',
+    'tour.goals.title': '📚 読書', 'tour.goals.desc': '5ステップ読書法で本を管理しましょう。🌟 夢と目標は上部の🌟アイコンから！',
     'tour.stats.title': '📈 統計', 'tour.stats.desc': '168時間ドーナツで一週間を一目で！自由時間の80%を夢に投資すれば⭐がもらえます。',
     'tour.closeday.title': '一日の締め', 'tour.closeday.desc': '一日の終わりに締めボタンで整理しましょう。締め後も分析タブで修正できます。',
     'tour.done.title': 'チャレンジ開始！', 'tour.done.desc': '今週の168時間、夢にどれだけ投資できる？毎週レポートカードで成長を確認しましょう！',
@@ -3101,7 +3168,21 @@ const TRANSLATIONS = {
   },
   en: {
     'app.subtitle': 'Daily Analysis',
-    'header.history': 'History', 'header.darkMode': 'Dark Mode', 'header.about': 'About',
+    'header.history': 'History', 'header.darkMode': 'Dark Mode', 'header.about': 'About', 'header.dreams': 'My Dreams',
+    'tab.books': 'Books',
+    'dream.title': 'My Dreams', 'dream.add': 'Add Dream', 'dream.addNew': 'New Dream',
+    'dream.name': 'Dream Name', 'dream.namePlaceholder': 'Bestselling author, Healthy at 60...',
+    'dream.why': 'Why this dream?', 'dream.whyPlaceholder': 'Write why this dream matters to you',
+    'dream.category': 'Category', 'dream.catCareer': 'Career', 'dream.catHealth': 'Health',
+    'dream.catRelationship': 'Relationships', 'dream.catFinance': 'Finance', 'dream.catGrowth': 'Growth', 'dream.catFreedom': 'Freedom',
+    'dream.milestones': 'Milestones', 'dream.addMilestone': 'Add Milestone', 'dream.milestonePlaceholder': 'Write an intermediate goal',
+    'dream.linkedGoals': 'Linked Goals', 'dream.addGoalToDream': 'Add Goal to This Dream',
+    'dream.independentGoals': 'Independent Goals', 'dream.noGoals': 'No linked goals yet',
+    'dream.achieve': 'Dream Achieved!', 'dream.achieved': 'Achieved Dreams', 'dream.edit': 'Edit', 'dream.delete': 'Delete',
+    'dream.deleteConfirm': 'Delete this dream? Linked goals will become independent.',
+    'dream.saved': 'Dream saved', 'dream.achievedMsg': 'Congratulations! You achieved your dream! 🎉',
+    'dream.goalCount': '{n} goals', 'dream.selectDream': 'Select Dream', 'dream.noDream': 'None (Independent)',
+    'dream.empty': 'Add your dreams and\nlink goals to them!',
     'record.quickRecord': 'Quick Record', 'record.presetEdit': 'Edit Presets',
     'record.placeholder': 'Writing, meditation, walking...', 'record.record': 'Record',
     'record.todayTimeline': "Today's Timeline",
@@ -3176,7 +3257,7 @@ const TRANSLATIONS = {
     'month.5': 'May', 'month.6': 'Jun', 'month.7': 'Jul', 'month.8': 'Aug',
     'month.9': 'Sep', 'month.10': 'Oct', 'month.11': 'Nov', 'month.12': 'Dec',
     'app.name': 'GOD+生',
-    'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Goals/Books', 'tab.stats': 'Stats',
+    'tab.plan': 'Plan', 'tab.record': 'Record', 'tab.analysis': 'Analysis', 'tab.goals': 'Books', 'tab.stats': 'Stats',
     'plan.mottoTitle': 'My Motto', 'plan.mottoPlaceholder': 'Write your life motto or favorite quotes...', 'plan.mottoPhoto': 'Add photo',
     'affirm.title': 'Morning Affirmations', 'affirm.start': 'Read', 'affirm.desc': 'Read your affirmations aloud every morning',
     'affirm.edit': 'Edit affirmations', 'affirm.editTitle': 'Edit Affirmations', 'affirm.editDesc': 'Enter one affirmation per line',
@@ -3283,7 +3364,7 @@ const TRANSLATIONS = {
     'tour.plan.title': '📋 Plan', 'tour.plan.desc': 'Brain Dump your tasks, pick Big 3 priorities, and Time Box them.',
     'tour.record.title': '✏️ Record', 'tour.record.desc': 'Record what you\'re doing now. YouTube, reading, exercise — honest recording is the first step.',
     'tour.analyze.title': '📊 Analysis', 'tour.analyze.desc': 'Classify into fixed (sleep, commute) and free time. See how much of your free time goes to your dreams.',
-    'tour.goals.title': '🎯 Goals', 'tour.goals.desc': 'Set life goals and take one step each day. 📚 Track your reading list with the Reading Log.',
+    'tour.goals.title': '📚 Books', 'tour.goals.desc': 'Manage books with the 5-step reading method. 🌟 Dreams & goals are in the 🌟 icon above!',
     'tour.stats.title': '📈 Stats', 'tour.stats.desc': '168-hour donut shows your whole week! Invest 80% of free time in dreams to earn a ⭐.',
     'tour.closeday.title': 'Close Day', 'tour.closeday.desc': 'Tap close when your day is done. You can still edit in the Analysis tab afterward.',
     'tour.done.title': 'Challenge On!', 'tour.done.desc': 'How much of your 168 hours will you invest in your dreams? Check your weekly report card!',
@@ -3471,7 +3552,7 @@ function getPresetColor(activity) {
   }
   return null;
 }
-let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [], books: [], virtues: null };
+let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [], books: [], virtues: null, dreams: [] };
 
 // ============== Franklin 13 Virtues Preset ==============
 const FRANKLIN_VIRTUES = [
@@ -3768,6 +3849,7 @@ async function syncToCloud() {
       settings: data.settings || {},
       goals: data.goals || [],
       lifeGoals: data.lifeGoals || [],
+      dreams: data.dreams || [],
       books: booksForCloud,
       virtues: data.virtues || null,
       lastSync: now
@@ -3825,6 +3907,7 @@ async function syncFromCloud() {
           return b;
         });
       }
+      if (cfg.dreams) data.dreams = cfg.dreams;
       if (cfg.virtues !== undefined) data.virtues = cfg.virtues;
     }
 
@@ -4204,6 +4287,433 @@ function formatStatsPeriodLabel() {
   }
 }
 
+// ============== Dream Management ==============
+const DREAM_CATEGORIES = [
+  { id: 'career', icon: '💼' },
+  { id: 'health', icon: '💪' },
+  { id: 'relationship', icon: '❤️' },
+  { id: 'finance', icon: '💰' },
+  { id: 'growth', icon: '🌱' },
+  { id: 'freedom', icon: '🕊️' }
+];
+
+const DREAM_ICONS = ['🌟','✍️','💼','💪','🎨','🏠','💰','✈️','🎓','❤️','🌱','🏆','🎯','🔥','💎','🎸','📚','🧘','🏃','🌍','🚀','🕊️','👨‍👩‍👧','🏖️'];
+
+function initDreams() {
+  if (!data.dreams) data.dreams = [];
+}
+
+function getDreamCategoryLabel(catId) {
+  const key = 'dream.cat' + catId.charAt(0).toUpperCase() + catId.slice(1);
+  return t(key);
+}
+
+function getDreamCategoryColor(catId) {
+  const colors = { career: '#3B6BE8', health: '#10B981', relationship: '#EC4899', finance: '#F59E0B', growth: '#8B5CF6', freedom: '#06B6D4' };
+  return colors[catId] || '#6366F1';
+}
+
+function openDreamView() {
+  initDreams();
+  const overlay = document.getElementById('dream-overlay');
+  overlay.classList.add('active');
+  renderDreamList();
+  if (typeof gtag === 'function') gtag('event', 'dream_view');
+}
+
+function closeDreamView() {
+  document.getElementById('dream-overlay').classList.remove('active');
+}
+
+function renderDreamList() {
+  initDreams();
+  initLifeGoals();
+  document.getElementById('dream-list-view').style.display = '';
+  document.getElementById('dream-detail-view').style.display = 'none';
+
+  const grid = document.getElementById('dream-grid');
+  const active = data.dreams.filter(d => d.status === 'active');
+  const achieved = data.dreams.filter(d => d.status === 'achieved');
+
+  let html = '';
+
+  // Active dream cards
+  active.forEach(d => {
+    const goalCount = (data.lifeGoals || []).filter(g => g.dreamId === d.id && g.status === 'active').length;
+    const catColor = d.color || getDreamCategoryColor(d.category || 'growth');
+    html += `<div class="dream-card" onclick="showDreamDetail('${d.id}')">
+      <div class="dream-card-stripe" style="background:${catColor}"></div>
+      <div class="dream-card-icon">${d.icon || '🌟'}</div>
+      <div class="dream-card-title">${escHtml(d.title)}</div>
+      <div class="dream-card-meta">${goalCount > 0 ? t('dream.goalCount', { n: goalCount }) : ''}</div>
+    </div>`;
+  });
+
+  // Add button
+  html += `<div class="dream-add-card" onclick="showAddDreamModal()">
+    <span style="font-size:24px">+</span>
+    <span>${t('dream.addNew')}</span>
+  </div>`;
+
+  grid.innerHTML = html;
+
+  // Achieved dreams
+  if (achieved.length > 0) {
+    grid.innerHTML += `<div style="grid-column:1/-1;margin-top:8px">
+      <div class="dream-section-title" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+        🏆 ${t('dream.achieved')} (${achieved.length}) ▾
+      </div>
+      <div style="display:none">
+        <div class="dream-grid">${achieved.map(d => `<div class="dream-card dream-achieved" onclick="showDreamDetail('${d.id}')">
+          <div class="dream-card-stripe" style="background:${d.color || '#999'}"></div>
+          <div class="dream-card-icon">${d.icon || '🌟'}</div>
+          <div class="dream-card-title">${escHtml(d.title)}</div>
+        </div>`).join('')}</div>
+      </div>
+    </div>`;
+  }
+
+  // Independent goals (not linked to any dream)
+  const independent = (data.lifeGoals || []).filter(g => !g.dreamId && g.status === 'active');
+  const indTitle = document.getElementById('dream-independent-title');
+  const indGoals = document.getElementById('dream-independent-goals');
+
+  if (independent.length > 0) {
+    indTitle.style.display = '';
+    indGoals.innerHTML = independent.map(g => {
+      const dday = calcDDay(g.deadline);
+      const ddayText = getDDayText(dday);
+      const ddayClass = getDDayClass(dday);
+      const tasks = g.tasks || [];
+      const done = tasks.filter(tk => tk.done).length;
+      const total = tasks.length;
+      const pct = total > 0 ? Math.round(done / total * 100) : (g.progress || 0);
+      return `<div class="lg-card" style="border-left-color:${g.color || 'var(--mint)'}" onclick="showDreamGoalDetail('${g.id}')">
+        <div class="lg-card-header">
+          <span class="lg-card-icon">${g.icon || '🎯'}</span>
+          <span class="lg-card-title">${escHtml(g.title)}</span>
+          ${ddayText ? `<span class="lg-card-dday ${ddayClass}">${ddayText}</span>` : ''}
+        </div>
+        <div class="lg-card-progress">
+          <div class="lg-card-progress-bar"><div class="lg-card-progress-fill" style="width:${pct}%;background:${g.color || 'var(--mint)'}"></div></div>
+          <span>${total > 0 ? t('lg.progress', { done, total }) : pct + '%'}</span>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    indTitle.style.display = 'none';
+    indGoals.innerHTML = '';
+  }
+}
+
+function showDreamDetail(dreamId) {
+  initDreams();
+  initLifeGoals();
+  const dream = data.dreams.find(d => d.id === dreamId);
+  if (!dream) return;
+
+  document.getElementById('dream-list-view').style.display = 'none';
+  const detailView = document.getElementById('dream-detail-view');
+  detailView.style.display = '';
+
+  const isAchieved = dream.status === 'achieved';
+  const catLabel = dream.category ? getDreamCategoryLabel(dream.category) : '';
+  const catColor = dream.color || getDreamCategoryColor(dream.category || 'growth');
+  const linkedGoals = (data.lifeGoals || []).filter(g => g.dreamId === dreamId);
+  const activeGoals = linkedGoals.filter(g => g.status === 'active');
+  const completedGoals = linkedGoals.filter(g => g.status === 'completed');
+  const milestones = dream.milestones || [];
+
+  detailView.innerHTML = `
+    <div class="dream-back" onclick="renderDreamList()">← ${t('lg.back')}</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+      <span style="font-size:36px">${dream.icon || '🌟'}</span>
+      ${isAchieved ? '<span style="font-size:24px">🏆</span>' : ''}
+    </div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:4px">${escHtml(dream.title)}</div>
+    ${catLabel ? `<span class="dream-category-badge" style="background:${catColor}20;color:${catColor}">${catLabel}</span>` : ''}
+    ${dream.why ? `<div class="dream-detail-why">"${escHtml(dream.why)}"</div>` : ''}
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      ${!isAchieved ? `<button class="btn btn-outline" style="flex:1;font-size:12px;" onclick="showAddDreamModal('${dream.id}')">✏️ ${t('dream.edit')}</button>` : ''}
+      <button class="btn btn-outline" style="flex:1;font-size:12px;color:#ef4444;border-color:#ef4444;" onclick="deleteDream('${dream.id}')">🗑️ ${t('dream.delete')}</button>
+    </div>
+
+    ${milestones.length > 0 ? `
+    <div class="card" style="margin-bottom:12px">
+      <div class="dream-section-title">📍 ${t('dream.milestones')}</div>
+      ${milestones.map((ms, i) => `<div class="dream-milestone">
+        <div class="dream-milestone-dot ${ms.done ? 'done' : ''}" onclick="toggleDreamMilestone('${dream.id}',${i})" style="cursor:pointer"></div>
+        <span class="dream-milestone-text ${ms.done ? 'done' : ''}">${escHtml(ms.title)}</span>
+        ${ms.targetDate ? `<span class="dream-milestone-date">${ms.targetDate}</span>` : ''}
+        ${!isAchieved ? `<button class="dream-milestone-del" onclick="deleteDreamMilestone('${dream.id}',${i})">✕</button>` : ''}
+      </div>`).join('')}
+      ${!isAchieved ? `<div style="display:flex;gap:6px;margin-top:8px">
+        <input type="text" id="dream-ms-text" placeholder="${t('dream.milestonePlaceholder')}" class="lg-action-input" style="flex:1" onkeydown="if(event.key==='Enter')addDreamMilestone('${dream.id}')">
+        <input type="month" id="dream-ms-date" class="lg-action-input" style="width:120px">
+        <button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addDreamMilestone('${dream.id}')">+</button>
+      </div>` : ''}
+    </div>` : (!isAchieved ? `
+    <div class="card" style="margin-bottom:12px">
+      <div class="dream-section-title">📍 ${t('dream.milestones')}</div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="dream-ms-text" placeholder="${t('dream.milestonePlaceholder')}" class="lg-action-input" style="flex:1" onkeydown="if(event.key==='Enter')addDreamMilestone('${dream.id}')">
+        <input type="month" id="dream-ms-date" class="lg-action-input" style="width:120px">
+        <button class="btn btn-primary" style="padding:6px 12px;font-size:12px" onclick="addDreamMilestone('${dream.id}')">+</button>
+      </div>
+    </div>` : '')}
+
+    <div class="card" style="margin-bottom:12px">
+      <div class="dream-section-title">🎯 ${t('dream.linkedGoals')} (${activeGoals.length})</div>
+      ${activeGoals.length === 0 ? `<p style="font-size:13px;color:var(--text-sub);text-align:center;padding:8px 0">${t('dream.noGoals')}</p>` : ''}
+      ${activeGoals.map(g => {
+        const dday = calcDDay(g.deadline);
+        const ddayText = getDDayText(dday);
+        const ddayClass = getDDayClass(dday);
+        const tasks = g.tasks || [];
+        const done = tasks.filter(tk => tk.done).length;
+        const total = tasks.length;
+        const pct = total > 0 ? Math.round(done / total * 100) : (g.progress || 0);
+        return `<div class="lg-card" style="border-left-color:${g.color || catColor}" onclick="showDreamGoalDetail('${g.id}')">
+          <div class="lg-card-header">
+            <span class="lg-card-icon">${g.icon || '🎯'}</span>
+            <span class="lg-card-title">${escHtml(g.title)}</span>
+            ${ddayText ? `<span class="lg-card-dday ${ddayClass}">${ddayText}</span>` : ''}
+          </div>
+          <div class="lg-card-progress">
+            <div class="lg-card-progress-bar"><div class="lg-card-progress-fill" style="width:${pct}%;background:${g.color || catColor}"></div></div>
+            <span>${total > 0 ? t('lg.progress', { done, total }) : pct + '%'}</span>
+          </div>
+        </div>`;
+      }).join('')}
+      ${completedGoals.length > 0 ? `
+      <div class="lg-section-title" style="margin-top:12px" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'">
+        ${t('lg.completed')} (${completedGoals.length}) ▾
+      </div>
+      <div style="display:none">
+        ${completedGoals.map(g => `<div class="lg-card lg-completed-card" style="border-left-color:${g.color || 'var(--text-light)'}" onclick="showDreamGoalDetail('${g.id}')">
+          <div class="lg-card-header">
+            <span class="lg-medal">${getGoalMedal(g)}</span>
+            <span class="lg-card-title">${escHtml(g.title)}</span>
+            <span style="font-size:11px;color:var(--text-light)">${g.completedAt || ''}</span>
+          </div>
+        </div>`).join('')}
+      </div>` : ''}
+      ${!isAchieved ? `<button class="btn btn-primary btn-block" style="margin-top:10px;font-size:13px" onclick="showAddLifeGoalModal(null,'${dream.id}')">+ ${t('dream.addGoalToDream')}</button>` : ''}
+    </div>
+
+    ${!isAchieved ? `<button class="btn btn-primary btn-block" style="margin-top:12px;background:#F59E0B" onclick="achieveDream('${dream.id}')">🏆 ${t('dream.achieve')}</button>` : ''}
+  `;
+}
+
+function showDreamGoalDetail(goalId) {
+  // Reuse the existing life goal detail view within the dream overlay
+  initLifeGoals();
+  const goal = data.lifeGoals.find(g => g.id === goalId);
+  if (!goal) return;
+
+  const detailView = document.getElementById('dream-detail-view');
+  detailView.style.display = '';
+  document.getElementById('dream-list-view').style.display = 'none';
+
+  const dday = calcDDay(goal.deadline);
+  const ddayText = getDDayText(dday);
+  const ddayClass = getDDayClass(dday);
+  const tasks = goal.tasks || [];
+  const isCompleted = goal.status === 'completed';
+  const medal = getGoalMedal(goal);
+  const today = getTodayStr();
+  const todayAction = (goal.dailyActions && goal.dailyActions[today]) || '';
+  const actionDates = goal.dailyActions ? Object.keys(goal.dailyActions).sort().reverse() : [];
+  const backTarget = goal.dreamId ? `showDreamDetail('${goal.dreamId}')` : 'renderDreamList()';
+
+  detailView.innerHTML = `
+    <div class="dream-back" onclick="${backTarget}">← ${t('lg.back')}</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+      <span style="font-size:28px">${goal.icon || '🎯'}</span>
+      ${isCompleted ? `<span class="lg-medal">${medal}</span>` : ''}
+    </div>
+    <div class="lg-detail-title">${escHtml(goal.title)}</div>
+    ${goal.description ? `<div style="font-size:13px;color:var(--text-sub);margin-bottom:8px;">${escHtml(goal.description)}</div>` : ''}
+    <div class="lg-detail-deadline">
+      ${goal.deadline ? `📅 ${goal.deadline} ${ddayText ? `<span class="lg-card-dday ${ddayClass}" style="margin-left:6px">${ddayText}</span>` : ''}` : ''}
+      ${isCompleted ? `<br>${t('lg.completedAt')}: ${goal.completedAt}` : ''}
+    </div>
+
+    <div style="display:flex;gap:8px;margin-bottom:16px;">
+      ${!isCompleted ? `<button class="btn btn-outline" style="flex:1;font-size:12px;" onclick="showEditLifeGoalModal('${goal.id}')">✏️ ${t('lg.editGoal')}</button>` : ''}
+      <button class="btn btn-outline" style="flex:1;font-size:12px;color:#ef4444;border-color:#ef4444;" onclick="deleteLifeGoal('${goal.id}');${backTarget}">🗑️ ${t('lg.delete')}</button>
+    </div>
+
+    <div class="card" style="margin-bottom:10px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">📋 ${t('lg.tasks')}</h4>
+      <div id="lg-task-list">
+        ${tasks.map((tk, i) => `<div class="lg-task-item ${tk.done ? 'done' : ''}">
+          <input type="checkbox" ${tk.done ? 'checked' : ''} onchange="toggleLifeGoalTask('${goal.id}',${i});showDreamGoalDetail('${goal.id}')" ${isCompleted ? 'disabled' : ''}>
+          <span style="flex:1">${escHtml(tk.text)}</span>
+          ${tk.priority === 1 ? '<span class="lg-task-priority">★</span>' : ''}
+          ${!isCompleted ? `<button class="lg-task-del" onclick="deleteLifeGoalTask('${goal.id}',${i});showDreamGoalDetail('${goal.id}')">✕</button>` : ''}
+        </div>`).join('')}
+      </div>
+      ${!isCompleted ? `<div style="display:flex;gap:6px;margin-top:8px;">
+        <input type="text" id="lg-new-task" placeholder="${t('lg.addTask')}" class="lg-action-input" style="flex:1" onkeydown="if(event.key==='Enter'){addLifeGoalTask('${goal.id}');showDreamGoalDetail('${goal.id}')}">
+        <button class="btn btn-primary" style="padding:6px 12px;font-size:12px;" onclick="addLifeGoalTask('${goal.id}');showDreamGoalDetail('${goal.id}')">+</button>
+      </div>` : ''}
+    </div>
+
+    ${goal.obstacles ? `<div class="card" style="margin-bottom:10px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">⚠️ ${t('lg.obstacles')}</h4>
+      <div class="lg-obstacle-box">${escHtml(goal.obstacles)}</div>
+    </div>` : ''}
+
+    ${!isCompleted ? `<div class="card" style="margin-bottom:10px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">🚀 ${t('lg.dailyAction')}</h4>
+      <input type="text" class="lg-action-input" value="${escAttr(todayAction)}" placeholder="${t('lg.dailyActionPlaceholder')}"
+        onchange="saveLifeGoalDailyAction('${goal.id}', this.value)">
+    </div>` : ''}
+
+    ${actionDates.length > 0 ? `<div class="card" style="margin-bottom:10px;">
+      <h4 style="font-size:14px;margin-bottom:8px;">📅 ${t('lg.actionHistory')}</h4>
+      <div class="lg-action-history">
+        ${actionDates.slice(0, 14).map(d => `<div><span class="lg-action-date">${d}</span>${escHtml(goal.dailyActions[d])}</div>`).join('')}
+      </div>
+    </div>` : ''}
+
+    ${!isCompleted ? `<button class="btn btn-primary btn-block" style="margin-top:12px;" onclick="completeLifeGoal('${goal.id}');${backTarget}">🏅 ${t('lg.complete')}</button>` : ''}
+  `;
+}
+
+function showAddDreamModal(editId) {
+  initDreams();
+  const dream = editId ? data.dreams.find(d => d.id === editId) : null;
+  const selIcon = dream ? (dream.icon || '🌟') : '🌟';
+  const selColor = dream ? (dream.color || null) : null;
+  const colors = ['#3B6BE8','#6366F1','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981','#06B6D4'];
+
+  showModal(`
+    <h3>${dream ? t('dream.edit') : t('dream.addNew')}</h3>
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${t('dream.name')}</div>
+      <input type="text" id="dream-modal-title" value="${escAttr(dream ? dream.title : '')}" class="lg-action-input" placeholder="${t('dream.namePlaceholder')}" autofocus>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${t('dream.why')}</div>
+      <textarea id="dream-modal-why" class="lg-action-input" rows="2" placeholder="${t('dream.whyPlaceholder')}" style="resize:vertical">${escHtml(dream ? (dream.why || '') : '')}</textarea>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">${t('dream.category')}</div>
+      <select id="dream-modal-category" class="lg-action-input">
+        <option value="">-</option>
+        ${DREAM_CATEGORIES.map(c => `<option value="${c.id}" ${dream && dream.category === c.id ? 'selected' : ''}>${c.icon} ${getDreamCategoryLabel(c.id)}</option>`).join('')}
+      </select>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">아이콘</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px" id="dream-icon-grid">
+        ${DREAM_ICONS.map(ic => `<button style="font-size:20px;padding:4px 6px;border:2px solid ${ic === selIcon ? 'var(--mint)' : 'transparent'};border-radius:8px;background:none;cursor:pointer" onclick="document.querySelectorAll('#dream-icon-grid button').forEach(b=>{b.style.borderColor='transparent';delete b.dataset.sel});this.style.borderColor='var(--mint)';this.dataset.sel='1'" data-icon="${ic}" ${ic === selIcon ? 'data-sel="1"' : ''}>${ic}</button>`).join('')}
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">색상</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px" id="dream-color-grid">
+        ${colors.map(c => `<button style="width:28px;height:28px;border-radius:50%;background:${c};border:3px solid ${c === selColor ? '#fff' : 'transparent'};outline:${c === selColor ? '2px solid var(--mint)' : 'none'};cursor:pointer" onclick="document.querySelectorAll('#dream-color-grid button').forEach(b=>{b.style.borderColor='transparent';b.style.outline='none';delete b.dataset.sel});this.style.borderColor='#fff';this.style.outline='2px solid var(--mint)';this.dataset.sel='1'" data-color="${c}" ${c === selColor ? 'data-sel="1"' : ''}></button>`).join('')}
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">${t('modal.cancel')}</button>
+      <button class="btn btn-primary" onclick="saveDream('${editId || ''}')">${t('modal.confirm')}</button>
+    </div>
+  `);
+}
+
+function saveDream(editId) {
+  initDreams();
+  const title = document.getElementById('dream-modal-title').value.trim();
+  if (!title) { showToast(t('dream.name')); return; }
+
+  const why = document.getElementById('dream-modal-why').value.trim();
+  const category = document.getElementById('dream-modal-category').value;
+  const iconBtn = document.querySelector('#dream-icon-grid button[data-sel="1"]');
+  const icon = iconBtn ? iconBtn.dataset.icon : '🌟';
+  const colorBtn = document.querySelector('#dream-color-grid button[data-sel="1"]');
+  const color = colorBtn ? colorBtn.dataset.color : '#6366F1';
+
+  if (editId) {
+    const dream = data.dreams.find(d => d.id === editId);
+    if (dream) {
+      dream.title = title;
+      dream.why = why;
+      dream.category = category;
+      dream.icon = icon;
+      dream.color = color;
+    }
+  } else {
+    data.dreams.push({
+      id: 'dream_' + Date.now(),
+      title, why, category, icon, color,
+      milestones: [],
+      createdAt: getTodayStr(),
+      status: 'active'
+    });
+  }
+  saveData();
+  closeModal();
+  if (editId) showDreamDetail(editId);
+  else renderDreamList();
+  showToast(t('dream.saved'));
+  if (typeof gtag === 'function') gtag('event', 'dream_save', { is_edit: !!editId });
+}
+
+function deleteDream(dreamId) {
+  showConfirm(t('dream.deleteConfirm'), () => {
+    // Unlink goals
+    (data.lifeGoals || []).forEach(g => { if (g.dreamId === dreamId) g.dreamId = null; });
+    data.dreams = data.dreams.filter(d => d.id !== dreamId);
+    saveData();
+    renderDreamList();
+  });
+}
+
+function achieveDream(dreamId) {
+  const dream = data.dreams.find(d => d.id === dreamId);
+  if (!dream) return;
+  dream.status = 'achieved';
+  dream.achievedAt = getTodayStr();
+  saveData();
+  showToast(t('dream.achievedMsg'));
+  renderDreamList();
+  if (typeof gtag === 'function') gtag('event', 'dream_achieve');
+}
+
+function addDreamMilestone(dreamId) {
+  const dream = data.dreams.find(d => d.id === dreamId);
+  if (!dream) return;
+  const textEl = document.getElementById('dream-ms-text');
+  const dateEl = document.getElementById('dream-ms-date');
+  const text = textEl.value.trim();
+  if (!text) return;
+  if (!dream.milestones) dream.milestones = [];
+  dream.milestones.push({ id: 'ms_' + Date.now(), title: text, targetDate: dateEl.value || '', done: false });
+  saveData();
+  showDreamDetail(dreamId);
+}
+
+function toggleDreamMilestone(dreamId, idx) {
+  const dream = data.dreams.find(d => d.id === dreamId);
+  if (!dream || !dream.milestones || !dream.milestones[idx]) return;
+  dream.milestones[idx].done = !dream.milestones[idx].done;
+  saveData();
+  showDreamDetail(dreamId);
+}
+
+function deleteDreamMilestone(dreamId, idx) {
+  const dream = data.dreams.find(d => d.id === dreamId);
+  if (!dream || !dream.milestones) return;
+  dream.milestones.splice(idx, 1);
+  saveData();
+  showDreamDetail(dreamId);
+}
+
 // ============== Life Goals ==============
 function initLifeGoals() {
   if (!data.lifeGoals) data.lifeGoals = [];
@@ -4381,8 +4891,9 @@ function showLifeGoalDetail(goalId) {
   `;
 }
 
-function showAddLifeGoalModal(editId) {
+function showAddLifeGoalModal(editId, presetDreamId) {
   initLifeGoals();
+  initDreams();
   const goal = editId ? data.lifeGoals.find(g => g.id === editId) : null;
   const title = goal ? goal.title : '';
   const desc = goal ? (goal.description || '') : '';
@@ -4391,12 +4902,21 @@ function showAddLifeGoalModal(editId) {
   const progress = goal ? (goal.progress || 0) : 0;
   const selIcon = goal ? (goal.icon || '🎯') : '🎯';
   const selColor = goal ? (goal.color || null) : null;
+  const selDreamId = goal ? (goal.dreamId || '') : (presetDreamId || '');
+  const activeDreams = (data.dreams || []).filter(d => d.status === 'active');
 
   const icons = ['🎯','🚀','💼','📚','💪','🏠','💰','🎨','✈️','🎓','❤️','🌱','🏆','⭐','🔥','💎'];
   const colors = ['#7ECEC1','#6366F1','#F59E0B','#EF4444','#10B981','#EC4899','#8B5CF6','#F97316'];
 
   showModal(`
     <h3>${goal ? t('lg.editGoal') : t('lg.add')}</h3>
+    ${activeDreams.length > 0 ? `<div style="margin-bottom:10px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:4px">🌟 ${t('dream.selectDream')}</div>
+      <select id="lg-modal-dreamId" class="lg-action-input">
+        <option value="">${t('dream.noDream')}</option>
+        ${activeDreams.map(d => `<option value="${d.id}" ${d.id === selDreamId ? 'selected' : ''}>${d.icon} ${escHtml(d.title)}</option>`).join('')}
+      </select>
+    </div>` : ''}
     <div style="margin-bottom:10px;">
       <div style="font-size:13px;font-weight:600;margin-bottom:4px">${t('lg.goalTitle')}</div>
       <input type="text" id="lg-modal-title" value="${escAttr(title)}" class="lg-action-input" autofocus>
@@ -4459,6 +4979,8 @@ function saveLifeGoal(editId) {
   const icon = iconBtn ? iconBtn.dataset.icon : '🎯';
   const colorBtn = document.querySelector('#lg-color-grid button[data-sel="1"]');
   const color = colorBtn ? colorBtn.dataset.color : '#7ECEC1';
+  const dreamSelect = document.getElementById('lg-modal-dreamId');
+  const dreamId = dreamSelect ? (dreamSelect.value || null) : null;
 
   if (editId) {
     const goal = data.lifeGoals.find(g => g.id === editId);
@@ -4470,12 +4992,13 @@ function saveLifeGoal(editId) {
       goal.progress = progress;
       goal.icon = icon;
       goal.color = color;
+      goal.dreamId = dreamId;
     }
   } else {
     data.lifeGoals.push({
       id: 'lg_' + Date.now(),
       title, description: desc, deadline, obstacles, progress,
-      tasks: [], dailyActions: {},
+      tasks: [], dailyActions: {}, dreamId,
       status: 'active', completedAt: null,
       createdAt: getTodayStr(), icon, color
     });
@@ -6347,7 +6870,7 @@ function switchTab(tab) {
   if (tab === 'record') { renderBig3Mini(); renderGoalCards(); renderRecordPastBanner(); }
   if (tab === 'analysis') renderAnalysis();
   if (tab === 'history') renderHistory();
-  if (tab === 'goals') { renderLifeGoals(); renderBooks(); }
+  if (tab === 'goals') { renderBooks(); }
   if (tab === 'stats') renderStats();
   if (typeof gtag === 'function') gtag('event', 'tab_switch', { tab_name: tab });
 }
@@ -10348,7 +10871,7 @@ function endTour() {
 
 // ============== Touch Swipe ==============
 (function() {
-  const TAB_ORDER = ['plan', 'record', 'analysis', 'goals', 'stats'];
+  const TAB_ORDER = ['plan', 'record', 'analysis', 'stats', 'goals'];
   let touchStartX = 0, touchStartY = 0;
   document.addEventListener('touchstart', e => {
     touchStartX = e.changedTouches[0].screenX;
