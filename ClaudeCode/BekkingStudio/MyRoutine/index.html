@@ -2387,12 +2387,6 @@ body {
 
     <div id="save-return-btn"></div>
 
-    <button class="btn btn-coral btn-block" onclick="exportPDF()" style="margin-top:16px">
-      📄 <span data-i18n="analysis.exportPdf">PDF로 내보내기</span>
-    </button>
-    <button class="btn btn-share btn-block" onclick="shareDaily()" style="margin-top:8px">
-      📤 <span data-i18n="share.daily">공유하기</span>
-    </button>
   </div>
 
   <!-- Section: History -->
@@ -2547,13 +2541,7 @@ body {
       <div class="stats-chart-container" style="margin-top:12px"><canvas id="stats-plan-chart"></canvas></div>
     </div>
 
-    <button class="btn btn-coral btn-block" onclick="exportStatsPDF()" style="margin-top:16px" id="stats-export-pdf-btn">
-      📄 <span data-i18n="stats.exportPdf">PDF로 내보내기</span>
-    </button>
-    <button class="btn btn-share btn-block" onclick="shareStats()" style="margin-top:8px" id="stats-share-btn">
-      📤 <span data-i18n="share.stats">통계 공유하기</span>
-    </button>
-    <button class="btn btn-block" onclick="shareWeekly168()" style="margin-top:8px;background:linear-gradient(135deg,#3B6BE8,#8B5CF6);color:white" id="stats-weekly168-btn">
+    <button class="btn btn-block" onclick="shareWeekly168()" style="margin-top:16px;background:linear-gradient(135deg,#3B6BE8,#8B5CF6);color:white" id="stats-weekly168-btn">
       🗓️ <span data-i18n="share.weekly168">168시간 결산 카드</span>
     </button>
     <button class="btn btn-block" onclick="exportExcel()" style="margin-top:8px;background:#217346;color:white" id="stats-export-excel-btn">
