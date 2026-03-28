@@ -1793,8 +1793,8 @@ body {
 
 /* Record Status Badge */
 .record-status {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   margin: 4px 0 2px;
   display: flex;
   align-items: center;
@@ -8420,11 +8420,16 @@ function showVirtueSettings() {
   `);
 }
 
+const VIRTUE_ICONS = ['⭐','🍽️','🤫','📐','💪','💰','🔨','💬','⚖️','🧹','😌','🤝','🙏','❤️','📚','🧘','🏃','🌱','🎯','🔥','💎','🕊️','👁️','🛡️','✨','🌟','🏆','🎓','💡','🌊'];
+
 function showAddVirtueModal() {
+  const selIcon = '⭐';
   showModal(`
     <h3>${t('virtue.addCustom')}</h3>
     <label style="font-size:13px;color:var(--text-sub)">${t('virtue.icon')}</label>
-    <input type="text" id="virtue-icon-input" value="⭐" maxlength="4" style="width:60px;font-size:20px;text-align:center;margin-bottom:8px">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px" id="virtue-icon-grid">
+      ${VIRTUE_ICONS.map(ic => `<button style="font-size:20px;padding:4px 6px;border:2px solid ${ic === selIcon ? 'var(--mint)' : 'transparent'};border-radius:8px;background:none;cursor:pointer" onclick="document.querySelectorAll('#virtue-icon-grid button').forEach(b=>{b.style.borderColor='transparent';delete b.dataset.sel});this.style.borderColor='var(--mint)';this.dataset.sel='1'" data-icon="${ic}" ${ic === selIcon ? 'data-sel="1"' : ''}>${ic}</button>`).join('')}
+    </div>
     <label style="font-size:13px;color:var(--text-sub)">${t('virtue.name')}</label>
     <input type="text" id="virtue-name-input" placeholder="${t('virtue.name')}" style="margin-bottom:8px">
     <label style="font-size:13px;color:var(--text-sub)">${t('virtue.description')}</label>
@@ -8437,7 +8442,8 @@ function showAddVirtueModal() {
 }
 
 function saveNewVirtue() {
-  const icon = document.getElementById('virtue-icon-input').value.trim() || '⭐';
+  const iconBtn = document.querySelector('#virtue-icon-grid button[data-sel="1"]');
+  const icon = iconBtn ? iconBtn.dataset.icon : '⭐';
   const name = document.getElementById('virtue-name-input').value.trim();
   if (!name) return;
   if (!data.virtues) initDefaultVirtues();
@@ -8453,10 +8459,13 @@ function saveNewVirtue() {
 function showEditVirtueModal(virtueId) {
   const v = data.virtues?.items.find(i => i.id === virtueId);
   if (!v) return;
+  const selIcon = v.icon || '⭐';
   showModal(`
     <h3>${t('virtue.editVirtue')}</h3>
     <label style="font-size:13px;color:var(--text-sub)">${t('virtue.icon')}</label>
-    <input type="text" id="virtue-icon-input" value="${v.icon}" maxlength="4" style="width:60px;font-size:20px;text-align:center;margin-bottom:8px">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px" id="virtue-icon-grid">
+      ${VIRTUE_ICONS.map(ic => `<button style="font-size:20px;padding:4px 6px;border:2px solid ${ic === selIcon ? 'var(--mint)' : 'transparent'};border-radius:8px;background:none;cursor:pointer" onclick="document.querySelectorAll('#virtue-icon-grid button').forEach(b=>{b.style.borderColor='transparent';delete b.dataset.sel});this.style.borderColor='var(--mint)';this.dataset.sel='1'" data-icon="${ic}" ${ic === selIcon ? 'data-sel="1"' : ''}>${ic}</button>`).join('')}
+    </div>
     <label style="font-size:13px;color:var(--text-sub)">${t('virtue.name')}</label>
     <input type="text" id="virtue-name-input" value="${escAttr(getVirtueName(v))}" style="margin-bottom:8px">
     <label style="font-size:13px;color:var(--text-sub)">${t('virtue.description')}</label>
@@ -8471,7 +8480,8 @@ function showEditVirtueModal(virtueId) {
 function saveEditVirtue(virtueId) {
   const v = data.virtues?.items.find(i => i.id === virtueId);
   if (!v) return;
-  v.icon = document.getElementById('virtue-icon-input').value.trim() || v.icon;
+  const iconBtn = document.querySelector('#virtue-icon-grid button[data-sel="1"]');
+  v.icon = iconBtn ? iconBtn.dataset.icon : v.icon;
   v.name = document.getElementById('virtue-name-input').value.trim() || v.name;
   v.nameKey = null; // custom override
   v.description = document.getElementById('virtue-desc-input').value.trim();
