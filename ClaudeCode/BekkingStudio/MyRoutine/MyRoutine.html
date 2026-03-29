@@ -2065,6 +2065,12 @@ body {
 }
 .goal-empty { text-align:center; padding:12px; color:var(--text-sub); font-size:13px; }
 .goal-achieved-badge { color:var(--success); font-weight:700; font-size:12px; }
+.goal-record-btn {
+  padding: 3px 10px; border-radius: 12px; border: none;
+  background: var(--mint); color: #fff; font-size: 11px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; -webkit-tap-highlight-color: transparent;
+}
+.goal-record-btn:active { opacity: 0.7; transform: scale(0.95); }
 
 /* Onboarding Tour */
 .tour-overlay {
@@ -2793,7 +2799,7 @@ const TRANSLATIONS = {
     'goals.title': '일일 루틴', 'goals.dateTitle': '{date} 루틴 달성', 'goals.manage': '루틴 관리', 'goals.add': '새 루틴 추가',
     'goals.selectActivity': '활동 선택', 'goals.targetTime': '목표 시간',
     'goals.hours': '시간', 'goals.minutes': '분',
-    'goals.streak': '{n}일 연속 달성 🔥', 'goals.achieved': '달성!',
+    'goals.streak': '{n}일 연속 달성 🔥', 'goals.achieved': '달성!', 'goals.record': '▶ 기록',
     'goals.remaining': '남은 시간: {t}', 'goals.noGoals': '루틴을 설정하면 여기에 진행률이 표시됩니다',
     'goals.reminder': '오늘 아직 {activity} 기록이 없어요',
     'goals.delete': '이 루틴을 삭제할까요?', 'goals.saved': '루틴이 저장되었습니다',
@@ -3055,7 +3061,7 @@ const TRANSLATIONS = {
     'goals.title': 'デイリールーティン', 'goals.dateTitle': '{date} ルーティン達成', 'goals.manage': 'ルーティン管理', 'goals.add': '新しいルーティンを追加',
     'goals.selectActivity': 'アクティビティ選択', 'goals.targetTime': '目標時間',
     'goals.hours': '時間', 'goals.minutes': '分',
-    'goals.streak': '{n}日連続達成 🔥', 'goals.achieved': '達成！',
+    'goals.streak': '{n}日連続達成 🔥', 'goals.achieved': '達成！', 'goals.record': '▶ 記録',
     'goals.remaining': '残り: {t}', 'goals.noGoals': 'ルーティンを設定すると進捗が表示されます',
     'goals.reminder': '今日まだ{activity}の記録がありません',
     'goals.delete': 'このルーティンを削除しますか？', 'goals.saved': 'ルーティンが保存されました',
@@ -3317,7 +3323,7 @@ const TRANSLATIONS = {
     'goals.title': 'Daily Routines', 'goals.dateTitle': '{date} Routines', 'goals.manage': 'Manage Routines', 'goals.add': 'Add New Routine',
     'goals.selectActivity': 'Select Activity', 'goals.targetTime': 'Target Time',
     'goals.hours': 'hours', 'goals.minutes': 'minutes',
-    'goals.streak': '{n} day streak 🔥', 'goals.achieved': 'Done!',
+    'goals.streak': '{n} day streak 🔥', 'goals.achieved': 'Done!', 'goals.record': '▶ Record',
     'goals.remaining': '{t} remaining', 'goals.noGoals': 'Set routines to see progress here',
     'goals.reminder': 'No {activity} recorded today yet',
     'goals.delete': 'Delete this routine?', 'goals.saved': 'Routine saved',
@@ -10838,19 +10844,23 @@ function renderGoalCards() {
       reminderActivities.push(name);
     }
 
-    const clickable = !isPast;
-    const clickAttr = clickable ? `onclick="addEntry('${escAttr(goal.activity)}')" style="cursor:pointer"` : '';
+    const recordBtnHtml = !isPast
+      ? `<button class="goal-record-btn" onclick="event.stopPropagation();addEntry('${escAttr(goal.activity)}')">${t('goals.record')}</button>`
+      : '';
 
     cardsHtml += `
-      <div class="goal-card" ${clickAttr}>
+      <div class="goal-card">
         <div class="goal-card-top">
           <span class="goal-activity">${icon} ${name}</span>
           ${statusHtml}
         </div>
         <div class="goal-bar"><div class="goal-bar-fill" style="width:${barWidth}%;background:${barColor}"></div></div>
-        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
           <span style="font-size:11px;color:var(--text-sub)">${formatMin(prog.currentMin)} / ${formatMin(prog.targetMin)}</span>
-          <span style="font-size:11px;font-weight:700;color:${prog.percent >= 100 ? 'var(--success)' : 'var(--text-sub)'}">${prog.percent}%</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:11px;font-weight:700;color:${prog.percent >= 100 ? 'var(--success)' : 'var(--text-sub)'}">${prog.percent}%</span>
+            ${recordBtnHtml}
+          </div>
         </div>
         ${streakHtml}
       </div>
