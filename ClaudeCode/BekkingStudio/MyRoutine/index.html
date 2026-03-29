@@ -9289,7 +9289,9 @@ function renderHistory() {
 
       days.forEach(d => {
         const dd = data.dates[d];
-        const preview = dd.entries.slice(0, 3).map(e => displayActivity(e.activity)).join(', ');
+        const readingBooks = (data.books || []).filter(b =>
+          b.startDate <= d && (!b.endDate || b.endDate >= d)
+        ).map(b => `📖 ${b.title}`).join(', ');
         const statusClass = dd.status === 'completed' ? 'completed' : 'recording';
         const statusText = dd.status === 'completed' ? t('history.completed') : t('history.recording');
         const memoText = dd.memo ? escHtml(dd.memo.length > 30 ? dd.memo.slice(0, 30) + '...' : dd.memo) : '';
@@ -9297,7 +9299,7 @@ function renderHistory() {
           <div class="history-item" onclick="loadHistoryDate('${d}')">
             <div>
               <div class="history-date">${formatDateKr(d)}</div>
-              <div class="history-preview">${escHtml(preview)}${dd.entries.length > 3 ? '...' : ''}</div>
+              ${readingBooks ? `<div class="history-preview">${escHtml(readingBooks)}</div>` : ''}
               ${memoText ? `<div class="history-memo">${memoText}</div>` : ''}
             </div>
             <span class="history-status ${statusClass}">${statusText}</span>
