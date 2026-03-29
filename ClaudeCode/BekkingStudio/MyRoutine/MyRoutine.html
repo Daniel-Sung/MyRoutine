@@ -7944,7 +7944,12 @@ function guessDesiredLife(activity) {
   return totalCount >= 2 && desiredCount / totalCount > 0.5;
 }
 
+let _addEntryLock = 0;
 function addEntry(activityName) {
+  const now0 = Date.now();
+  if (now0 - _addEntryLock < 500) return;
+  _addEntryLock = now0;
+
   const input = document.getElementById('activity-input');
   const activity = activityName || input.value.trim();
   if (!activity) return;
@@ -8356,8 +8361,7 @@ function initChipDragReorder(container) {
     chip.addEventListener('touchend', onChipTouchEnd);
     chip.addEventListener('touchcancel', onChipTouchEnd);
     chip.addEventListener('contextmenu', e => e.preventDefault());
-    chip.addEventListener('click', e => {
-      if (chip._touchHandled) { chip._touchHandled = false; return; }
+    chip.addEventListener('click', () => {
       const name = chip.dataset.chipName;
       if (name) addEntry(name);
     });
@@ -8396,9 +8400,8 @@ function onChipTouchEnd(e) {
   clearTimeout(chipLongPressState.longPressTimer);
   const state = chipLongPressState;
   chipLongPressState = null;
-  if (state.fired) { state.chip._touchHandled = true; return; }
+  if (state.fired) return;
   if (!state.cancelled) {
-    state.chip._touchHandled = true;
     const name = state.chip.dataset.chipName;
     if (name) addEntry(name);
   }
