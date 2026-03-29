@@ -8345,8 +8345,8 @@ let chipLongPressState = null;
 function initChipDragReorder(container) {
   const chips = container.querySelectorAll('.chip');
   chips.forEach(chip => {
-    chip.addEventListener('touchstart', onChipTouchStart, { passive: false });
-    chip.addEventListener('touchmove', onChipTouchMove, { passive: false });
+    chip.addEventListener('touchstart', onChipTouchStart, { passive: true });
+    chip.addEventListener('touchmove', onChipTouchMove, { passive: true });
     chip.addEventListener('touchend', onChipTouchEnd);
     chip.addEventListener('touchcancel', onChipTouchEnd);
     chip.addEventListener('contextmenu', e => e.preventDefault());
@@ -8359,8 +8359,14 @@ function onChipTouchStart(e) {
     chip,
     startX: e.touches[0].clientX,
     startY: e.touches[0].clientY,
-    longPressTimer: setTimeout(() => showChipContextMenu(chip, e.touches[0].clientX, e.touches[0].clientY), 500),
-    fired: false
+    longPressTimer: setTimeout(() => {
+      if (chipLongPressState && !chipLongPressState.cancelled) {
+        chipLongPressState.fired = true;
+        showChipContextMenu(chip, chipLongPressState.startX, chipLongPressState.startY);
+      }
+    }, 500),
+    fired: false,
+    cancelled: false
   };
 }
 
@@ -8379,10 +8385,8 @@ function onChipTouchEnd(e) {
   clearTimeout(chipLongPressState.longPressTimer);
   const state = chipLongPressState;
   chipLongPressState = null;
-  if (state.fired) {
-    e.preventDefault();
-  } else if (!state.cancelled) {
-    e.preventDefault();
+  if (state.fired) return;
+  if (!state.cancelled) {
     const name = state.chip.dataset.chipName;
     if (name) addEntry(name);
   }
