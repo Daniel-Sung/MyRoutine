@@ -8339,7 +8339,7 @@ function renderChips() {
   container.innerHTML = chips.map((c, i) => {
     const color = getPresetColor(c);
     const style = color ? `background:${color}20;color:${color};--chip-active:${color};` : '';
-    return `<button class="chip" data-chip-index="${i}" data-chip-name="${escAttr(c)}" style="${style}" onmousedown="event.preventDefault()" onclick="addEntry('${escAttr(c)}')">${getIcon(c)} ${escHtml(displayActivity(c))}</button>`;
+    return `<button class="chip" data-chip-index="${i}" data-chip-name="${escAttr(c)}" style="${style}" onmousedown="event.preventDefault()">${getIcon(c)} ${escHtml(displayActivity(c))}</button>`;
   }).join('');
 
   initChipDragReorder(container);
@@ -8356,6 +8356,11 @@ function initChipDragReorder(container) {
     chip.addEventListener('touchend', onChipTouchEnd);
     chip.addEventListener('touchcancel', onChipTouchEnd);
     chip.addEventListener('contextmenu', e => e.preventDefault());
+    chip.addEventListener('click', e => {
+      if (chip._touchHandled) { chip._touchHandled = false; return; }
+      const name = chip.dataset.chipName;
+      if (name) addEntry(name);
+    });
   });
 }
 
@@ -8391,8 +8396,9 @@ function onChipTouchEnd(e) {
   clearTimeout(chipLongPressState.longPressTimer);
   const state = chipLongPressState;
   chipLongPressState = null;
-  if (state.fired) return;
+  if (state.fired) { state.chip._touchHandled = true; return; }
   if (!state.cancelled) {
+    state.chip._touchHandled = true;
     const name = state.chip.dataset.chipName;
     if (name) addEntry(name);
   }
