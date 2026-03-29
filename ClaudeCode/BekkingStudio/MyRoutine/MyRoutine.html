@@ -8377,8 +8377,15 @@ function onChipTouchMove(e) {
 function onChipTouchEnd(e) {
   if (!chipLongPressState) return;
   clearTimeout(chipLongPressState.longPressTimer);
-  if (chipLongPressState.fired) e.preventDefault();
+  const state = chipLongPressState;
   chipLongPressState = null;
+  if (state.fired) {
+    e.preventDefault();
+  } else {
+    e.preventDefault();
+    const name = state.chip.dataset.chipName;
+    if (name) addEntry(name);
+  }
 }
 
 function showChipContextMenu(chip, touchX, touchY) {
