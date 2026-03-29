@@ -9289,17 +9289,20 @@ function renderHistory() {
 
       days.forEach(d => {
         const dd = data.dates[d];
-        const readingBooks = (data.books || []).filter(b =>
-          b.startDate <= d && (!b.endDate || b.endDate >= d)
-        ).map(b => `📖 ${b.title}`).join(', ');
+        const books = data.books || [];
+        const startedBooks = books.filter(b => b.startDate === d).map(b => b.title);
+        const finishedBooks = books.filter(b => b.endDate === d).map(b => b.title);
         const statusClass = dd.status === 'completed' ? 'completed' : 'recording';
         const statusText = dd.status === 'completed' ? t('history.completed') : t('history.recording');
         const memoText = dd.memo ? escHtml(dd.memo.length > 30 ? dd.memo.slice(0, 30) + '...' : dd.memo) : '';
+        let bookLines = '';
+        if (startedBooks.length > 0) bookLines += `<div class="history-preview">📖 ${escHtml(startedBooks.join(', '))}</div>`;
+        if (finishedBooks.length > 0) bookLines += `<div class="history-preview">✅ ${escHtml(finishedBooks.join(', '))}</div>`;
         html += `
           <div class="history-item" onclick="loadHistoryDate('${d}')">
             <div>
               <div class="history-date">${formatDateKr(d)}</div>
-              ${readingBooks ? `<div class="history-preview">${escHtml(readingBooks)}</div>` : ''}
+              ${bookLines}
               ${memoText ? `<div class="history-memo">${memoText}</div>` : ''}
             </div>
             <span class="history-status ${statusClass}">${statusText}</span>
