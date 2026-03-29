@@ -10838,7 +10838,7 @@ function renderGoalCards() {
       reminderActivities.push(name);
     }
 
-    const clickable = !isPast && prog.percent < 100;
+    const clickable = !isPast;
     const clickAttr = clickable ? `onclick="addEntry('${escAttr(goal.activity)}')" style="cursor:pointer"` : '';
 
     cardsHtml += `
