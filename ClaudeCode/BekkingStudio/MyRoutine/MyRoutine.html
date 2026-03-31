@@ -2672,7 +2672,6 @@ const TRANSLATIONS = {
     'record.placeholder': '글쓰기, 명상, 산책...', 'record.record': '기록',
     'record.todayTimeline': '오늘의 타임라인',
     'record.emptyMsg': '아직 기록이 없어요<br>지금 하고 있는 활동을 기록해보세요!',
-    'record.welcomeMsg': '모든 변화는 기록에서 시작됩니다<br>위 버튼에서 지금 하고 있는 활동을 선택하세요.<br>쌓인 기록이 당신을 갓생으로 이끌어 줄 거예요.',
     'record.statusRecording': '기록 중', 'record.statusRecordingActivity': '{activity} 기록 중({elapsed})',
     'record.statusCompleted': '완료',
     'record.closeDay': '하루 마감하기', 'record.reopenDay': '마감 취소 (다시 기록하기)',
@@ -2935,7 +2934,6 @@ const TRANSLATIONS = {
     'record.placeholder': '執筆、瞑想、散歩...', 'record.record': '記録',
     'record.todayTimeline': '今日のタイムライン',
     'record.emptyMsg': 'まだ記録がありません<br>今している活動を記録してみましょう！',
-    'record.welcomeMsg': 'すべての変化は記録から始まります<br>上のボタンから今している活動を選んでください。<br>積み重ねた記録があなたをGOD+生へ導きます。',
     'record.statusRecording': '記録中', 'record.statusRecordingActivity': '{activity} 記録中({elapsed})',
     'record.statusCompleted': '完了',
     'record.closeDay': '一日を締める', 'record.reopenDay': '締め取消（再記録する）',
@@ -3198,7 +3196,6 @@ const TRANSLATIONS = {
     'record.placeholder': 'Writing, meditation, walking...', 'record.record': 'Record',
     'record.todayTimeline': "Today's Timeline",
     'record.emptyMsg': 'No records yet<br>Start recording your current activity!',
-    'record.welcomeMsg': 'Every change begins with a record.<br>Tap a button above to log what you're doing now.<br>Your records will guide you to your best life.',
     'record.statusRecording': 'Recording', 'record.statusRecordingActivity': '{activity} Recording ({elapsed})',
     'record.statusCompleted': 'Completed',
     'record.closeDay': 'Close the Day', 'record.reopenDay': 'Cancel Close (Resume Recording)',
@@ -8285,16 +8282,6 @@ function renderTimeline() {
 
   if (dd.entries.length === 0) {
     container.innerHTML = '';
-    const isNewUser = Object.keys(data.dates).length <= 1 && dd.entries.length === 0;
-    const emoji = emptyState.querySelector('.emoji');
-    const msg = emptyState.querySelector('p');
-    if (isNewUser) {
-      emoji.textContent = '✨';
-      msg.innerHTML = t('record.welcomeMsg');
-    } else {
-      emoji.textContent = '📝';
-      msg.innerHTML = t('record.emptyMsg');
-    }
     emptyState.style.display = 'block';
     closeDayBtn.style.display = 'none';
     reopenDayBtn.style.display = 'none';
