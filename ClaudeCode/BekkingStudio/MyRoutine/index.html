@@ -8344,10 +8344,10 @@ function renderChips() {
   const dd = getDateData(currentDate);
 
   // Use customPresets only — preset manager is the single source of truth
-  // 기상 칩은 "하루 시작하기" 버튼으로 대체되었으므로 숨김
+  // 기상/취침 칩은 전용 버튼(하루 시작하기/하루 마감하기)으로 대체되었으므로 숨김
   const chips = (data.customPresets
     ? data.customPresets.map(p => p.name)
-    : DEFAULT_PRESETS).filter(c => !isWakeActivity(c));
+    : DEFAULT_PRESETS).filter(c => !isSleepPreset(c));
   const container = document.getElementById('quick-chips');
 
   if (chips.length === 0) {
