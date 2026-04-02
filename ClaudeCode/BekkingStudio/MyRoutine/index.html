@@ -2282,6 +2282,9 @@ body {
       </div>
     </div>
 
+    <button class="btn btn-block" id="start-day-btn" onclick="startDay()" style="display:none;background:var(--mint);color:#fff">
+      🌅 <span data-i18n="record.startDay">하루 시작하기</span>
+    </button>
     <button class="btn btn-coral btn-block" id="close-day-btn" onclick="closeDay()" style="display:none">
       🌙 <span data-i18n="record.closeDay">하루 마감하기</span>
     </button>
@@ -2674,7 +2677,7 @@ const TRANSLATIONS = {
     'record.emptyMsg': '아직 기록이 없어요<br>지금 하고 있는 활동을 기록해보세요!',
     'record.statusRecording': '기록 중', 'record.statusRecordingActivity': '{activity} 기록 중({elapsed})',
     'record.statusCompleted': '완료',
-    'record.closeDay': '하루 마감하기', 'record.reopenDay': '마감 취소 (다시 기록하기)',
+    'record.startDay': '하루 시작하기', 'record.closeDay': '하루 마감하기', 'record.reopenDay': '마감 취소 (다시 기록하기)',
     'classify.guide': '<strong>고정 시간</strong>: 반드시 해야 하는 것 (업무, 출퇴근, 식사, 수면 등)<br><strong>유동 시간</strong>: 내가 스스로 선택하는 시간 (영화, 산책, SNS 등)',
     'classify.analyze': '분석하기', 'classify.fixed': '고정', 'classify.flexible': '유동',
     'classify.emptyMsg': '분류할 활동이 없어요<br>먼저 기록 탭에서 활동을 기록하세요',
@@ -2936,7 +2939,7 @@ const TRANSLATIONS = {
     'record.emptyMsg': 'まだ記録がありません<br>今している活動を記録してみましょう！',
     'record.statusRecording': '記録中', 'record.statusRecordingActivity': '{activity} 記録中({elapsed})',
     'record.statusCompleted': '完了',
-    'record.closeDay': '一日を締める', 'record.reopenDay': '締め取消（再記録する）',
+    'record.startDay': '一日を始める', 'record.closeDay': '一日を締める', 'record.reopenDay': '締め取消（再記録する）',
     'classify.guide': '<strong>固定時間</strong>：必ずやるべきこと（仕事、通勤、食事、睡眠など）<br><strong>自由時間</strong>：自分で選べる時間（映画、散歩、SNSなど）',
     'classify.analyze': '分析する', 'classify.fixed': '固定', 'classify.flexible': '自由',
     'classify.emptyMsg': '分類する活動がありません<br>まず記録タブで活動を記録してください',
@@ -3198,7 +3201,7 @@ const TRANSLATIONS = {
     'record.emptyMsg': 'No records yet<br>Start recording your current activity!',
     'record.statusRecording': 'Recording', 'record.statusRecordingActivity': '{activity} Recording ({elapsed})',
     'record.statusCompleted': 'Completed',
-    'record.closeDay': 'Close the Day', 'record.reopenDay': 'Cancel Close (Resume Recording)',
+    'record.startDay': 'Start the Day', 'record.closeDay': 'Close the Day', 'record.reopenDay': 'Cancel Close (Resume Recording)',
     'classify.guide': '<strong>Fixed Time</strong>: Things you must do (work, commute, meals, sleep, etc.)<br><strong>Flexible Time</strong>: Time you choose yourself (movies, walks, SNS, etc.)',
     'classify.analyze': 'Analyze', 'classify.fixed': 'Fixed', 'classify.flexible': 'Flexible',
     'classify.emptyMsg': 'No activities to classify<br>Record activities in the Record tab first',
@@ -8135,6 +8138,10 @@ function confirmEditActivity(id, newActivity) {
   closeModal();
 }
 
+function startDay() {
+  addEntry('기상');
+}
+
 function closeDay() {
   const dd = getDateData(currentDate);
   if (dd.entries.length === 0) {
@@ -8275,14 +8282,18 @@ function renderTimeline() {
   updateRecordStatus();
   startRecordStatusTimer();
   const dd = getDateData(currentDate);
+  const today = new Date().toISOString().slice(0,10);
+  const isPast = currentDate !== today;
   const container = document.getElementById('timeline');
   const emptyState = document.getElementById('timeline-empty');
+  const startDayBtn = document.getElementById('start-day-btn');
   const closeDayBtn = document.getElementById('close-day-btn');
   const reopenDayBtn = document.getElementById('reopen-day-btn');
 
   if (dd.entries.length === 0) {
     container.innerHTML = '';
     emptyState.style.display = 'block';
+    startDayBtn.style.display = isPast ? 'none' : 'block';
     closeDayBtn.style.display = 'none';
     reopenDayBtn.style.display = 'none';
     return;
@@ -8290,6 +8301,8 @@ function renderTimeline() {
 
   emptyState.style.display = 'none';
   const isCompleted = dd.status === 'completed';
+  const hasWake = dd.entries.some(e => isWakeActivity(e.activity));
+  startDayBtn.style.display = (!isCompleted && !hasWake && !isPast) ? 'block' : 'none';
   closeDayBtn.style.display = isCompleted ? 'none' : 'block';
   reopenDayBtn.style.display = isCompleted ? 'block' : 'none';
 
@@ -8331,9 +8344,10 @@ function renderChips() {
   const dd = getDateData(currentDate);
 
   // Use customPresets only — preset manager is the single source of truth
-  const chips = data.customPresets
+  // 기상 칩은 "하루 시작하기" 버튼으로 대체되었으므로 숨김
+  const chips = (data.customPresets
     ? data.customPresets.map(p => p.name)
-    : DEFAULT_PRESETS;
+    : DEFAULT_PRESETS).filter(c => !isWakeActivity(c));
   const container = document.getElementById('quick-chips');
 
   if (chips.length === 0) {
