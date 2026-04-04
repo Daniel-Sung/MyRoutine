@@ -8282,7 +8282,7 @@ function renderTimeline() {
   updateRecordStatus();
   startRecordStatusTimer();
   const dd = getDateData(currentDate);
-  const today = new Date().toISOString().slice(0,10);
+  const today = getTodayStr();
   const isPast = currentDate !== today;
   const container = document.getElementById('timeline');
   const emptyState = document.getElementById('timeline-empty');
