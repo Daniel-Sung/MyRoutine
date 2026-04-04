@@ -2675,7 +2675,7 @@ const TRANSLATIONS = {
     'record.placeholder': '글쓰기, 명상, 산책...', 'record.record': '기록',
     'record.todayTimeline': '오늘의 타임라인',
     'record.emptyMsg': '아직 기록이 없어요<br>지금 하고 있는 활동을 기록해보세요!',
-    'record.statusRecording': '기록 중', 'record.statusRecordingActivity': '{activity} 기록 중({elapsed})',
+    'record.statusRecording': '기록 중', 'record.statusStartDay': '하루를 시작해 주세요', 'record.statusRecordingActivity': '{activity} 기록 중({elapsed})',
     'record.statusCompleted': '완료',
     'record.startDay': '하루 시작하기', 'record.closeDay': '하루 마감하기', 'record.reopenDay': '마감 취소 (다시 기록하기)',
     'classify.guide': '<strong>고정 시간</strong>: 반드시 해야 하는 것 (업무, 출퇴근, 식사, 수면 등)<br><strong>유동 시간</strong>: 내가 스스로 선택하는 시간 (영화, 산책, SNS 등)',
@@ -2937,7 +2937,7 @@ const TRANSLATIONS = {
     'record.placeholder': '執筆、瞑想、散歩...', 'record.record': '記録',
     'record.todayTimeline': '今日のタイムライン',
     'record.emptyMsg': 'まだ記録がありません<br>今している活動を記録してみましょう！',
-    'record.statusRecording': '記録中', 'record.statusRecordingActivity': '{activity} 記録中({elapsed})',
+    'record.statusRecording': '記録中', 'record.statusStartDay': '一日を始めましょう', 'record.statusRecordingActivity': '{activity} 記録中({elapsed})',
     'record.statusCompleted': '完了',
     'record.startDay': '一日を始める', 'record.closeDay': '一日を締める', 'record.reopenDay': '締め取消（再記録する）',
     'classify.guide': '<strong>固定時間</strong>：必ずやるべきこと（仕事、通勤、食事、睡眠など）<br><strong>自由時間</strong>：自分で選べる時間（映画、散歩、SNSなど）',
@@ -3199,7 +3199,7 @@ const TRANSLATIONS = {
     'record.placeholder': 'Writing, meditation, walking...', 'record.record': 'Record',
     'record.todayTimeline': "Today's Timeline",
     'record.emptyMsg': 'No records yet<br>Start recording your current activity!',
-    'record.statusRecording': 'Recording', 'record.statusRecordingActivity': '{activity} Recording ({elapsed})',
+    'record.statusRecording': 'Recording', 'record.statusStartDay': 'Start your day', 'record.statusRecordingActivity': '{activity} Recording ({elapsed})',
     'record.statusCompleted': 'Completed',
     'record.startDay': 'Start the Day', 'record.closeDay': 'Close the Day', 'record.reopenDay': 'Cancel Close (Resume Recording)',
     'classify.guide': '<strong>Fixed Time</strong>: Things you must do (work, commute, meals, sleep, etc.)<br><strong>Flexible Time</strong>: Time you choose yourself (movies, walks, SNS, etc.)',
@@ -8235,7 +8235,7 @@ function updateRecordStatus() {
     el.innerHTML = '<span class="pulse-dot"></span>' +
       t('record.statusRecordingActivity', { activity: actName, elapsed: elapsed });
   } else {
-    el.innerHTML = '<span class="pulse-dot"></span>' + t('record.statusRecording');
+    el.innerHTML = '<span class="pulse-dot"></span>' + t('record.statusStartDay');
   }
 }
 
