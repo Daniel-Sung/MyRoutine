@@ -2258,6 +2258,11 @@ body {
     <!-- Login Banner -->
     <div id="login-banner"></div>
 
+    <!-- Apply Yesterday button -->
+    <button class="btn btn-outline btn-block" id="apply-yesterday-btn" onclick="applyYesterdayRecords()" style="display:none;margin-bottom:12px">
+      📋 <span data-i18n="record.applyYesterday">어제 기록 적용하기</span>
+    </button>
+
     <!-- Quick chips -->
     <div class="chips-header">
       <span class="chips-title" data-i18n="record.quickRecord">빠른 기록</span>
@@ -2678,6 +2683,13 @@ const TRANSLATIONS = {
     'record.statusRecording': '기록 중', 'record.statusStartDay': '하루를 시작해 주세요', 'record.statusRecordingActivity': '{activity} 기록 중({elapsed})',
     'record.statusCompleted': '완료',
     'record.startDay': '하루 시작하기', 'record.closeDay': '하루 마감하기', 'record.reopenDay': '마감 취소 (다시 기록하기)',
+    'record.applyYesterday': '어제 기록 적용하기',
+    'modal.applyYesterdayTitle': '어제 기록 적용',
+    'modal.applyYesterdayDesc': '현재 시간({time}) 이후의 어제 기록을 오늘에 추가합니다. 같은 시간이면 덮어씁니다.',
+    'modal.applyYesterdayConfirm': '{count}개 적용',
+    'toast.appliedYesterday': '어제 기록 {count}개를 적용했어요',
+    'toast.noYesterdayRecord': '어제 기록이 없어요',
+    'toast.noYesterdayLater': '현재 시간 이후의 어제 기록이 없어요',
     'classify.guide': '<strong>고정 시간</strong>: 반드시 해야 하는 것 (업무, 출퇴근, 식사, 수면 등)<br><strong>유동 시간</strong>: 내가 스스로 선택하는 시간 (영화, 산책, SNS 등)',
     'classify.analyze': '분석하기', 'classify.fixed': '고정', 'classify.flexible': '유동',
     'classify.emptyMsg': '분류할 활동이 없어요<br>먼저 기록 탭에서 활동을 기록하세요',
@@ -2940,6 +2952,13 @@ const TRANSLATIONS = {
     'record.statusRecording': '記録中', 'record.statusStartDay': '一日を始めましょう', 'record.statusRecordingActivity': '{activity} 記録中({elapsed})',
     'record.statusCompleted': '完了',
     'record.startDay': '一日を始める', 'record.closeDay': '一日を締める', 'record.reopenDay': '締め取消（再記録する）',
+    'record.applyYesterday': '昨日の記録を適用',
+    'modal.applyYesterdayTitle': '昨日の記録を適用',
+    'modal.applyYesterdayDesc': '現在時刻（{time}）以降の昨日の記録を今日に追加します。同じ時刻なら上書きします。',
+    'modal.applyYesterdayConfirm': '{count}件適用',
+    'toast.appliedYesterday': '昨日の記録 {count}件を適用しました',
+    'toast.noYesterdayRecord': '昨日の記録がありません',
+    'toast.noYesterdayLater': '現在時刻以降の昨日の記録がありません',
     'classify.guide': '<strong>固定時間</strong>：必ずやるべきこと（仕事、通勤、食事、睡眠など）<br><strong>自由時間</strong>：自分で選べる時間（映画、散歩、SNSなど）',
     'classify.analyze': '分析する', 'classify.fixed': '固定', 'classify.flexible': '自由',
     'classify.emptyMsg': '分類する活動がありません<br>まず記録タブで活動を記録してください',
@@ -3202,6 +3221,13 @@ const TRANSLATIONS = {
     'record.statusRecording': 'Recording', 'record.statusStartDay': 'Start your day', 'record.statusRecordingActivity': '{activity} Recording ({elapsed})',
     'record.statusCompleted': 'Completed',
     'record.startDay': 'Start the Day', 'record.closeDay': 'Close the Day', 'record.reopenDay': 'Cancel Close (Resume Recording)',
+    'record.applyYesterday': 'Apply Yesterday',
+    'modal.applyYesterdayTitle': 'Apply Yesterday\'s Records',
+    'modal.applyYesterdayDesc': 'Adds yesterday\'s records after current time ({time}) to today. Same time will be overwritten.',
+    'modal.applyYesterdayConfirm': 'Apply {count}',
+    'toast.appliedYesterday': 'Applied {count} record(s) from yesterday',
+    'toast.noYesterdayRecord': 'No records from yesterday',
+    'toast.noYesterdayLater': 'No yesterday records after current time',
     'classify.guide': '<strong>Fixed Time</strong>: Things you must do (work, commute, meals, sleep, etc.)<br><strong>Flexible Time</strong>: Time you choose yourself (movies, walks, SNS, etc.)',
     'classify.analyze': 'Analyze', 'classify.fixed': 'Fixed', 'classify.flexible': 'Flexible',
     'classify.emptyMsg': 'No activities to classify<br>Record activities in the Record tab first',
@@ -8142,6 +8168,76 @@ function startDay() {
   addEntry('기상');
 }
 
+function getYesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function applyYesterdayRecords() {
+  const today = getTodayStr();
+  const todayData = getDateData(today);
+  if (todayData.status === 'completed') {
+    showToast(t('toast.alreadyClosed'));
+    return;
+  }
+  const yesterday = getYesterdayStr();
+  const ydData = data.dates[yesterday];
+  if (!ydData || !ydData.entries || ydData.entries.length === 0) {
+    showToast(t('toast.noYesterdayRecord'));
+    return;
+  }
+
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const nowTime = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+
+  const candidates = ydData.entries.filter(e => {
+    const [h, m] = e.time.split(':').map(Number);
+    return h * 60 + m >= nowMin;
+  });
+
+  if (candidates.length === 0) {
+    showToast(t('toast.noYesterdayLater'));
+    return;
+  }
+
+  const previewItems = candidates.map(c =>
+    `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span style="color:var(--text-sub);font-size:13px">${escHtml(c.time)}</span>
+      <span style="font-size:14px">${getIcon(c.activity)} ${escHtml(displayActivity(c.activity))}</span>
+    </div>`
+  ).join('');
+
+  const html = `
+    <h3>${t('modal.applyYesterdayTitle')}</h3>
+    <p style="font-size:13px;color:var(--text-sub);margin:8px 0 12px">${t('modal.applyYesterdayDesc').replace('{time}', nowTime)}</p>
+    <div style="max-height:240px;overflow-y:auto;margin-bottom:12px;padding:0 4px">${previewItems}</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-block" onclick="closeModal()" style="flex:1">${t('modal.cancel')}</button>
+      <button class="btn btn-primary btn-block" id="apply-yesterday-confirm" style="flex:1">${t('modal.applyYesterdayConfirm').replace('{count}', candidates.length)}</button>
+    </div>
+  `;
+  showModal(html);
+  document.getElementById('apply-yesterday-confirm').onclick = function() {
+    closeModal();
+    candidates.forEach(c => {
+      todayData.entries = todayData.entries.filter(e => e.time !== c.time);
+      todayData.entries.push({
+        id: generateId(),
+        time: c.time,
+        activity: c.activity,
+        category: c.category || null,
+        memo: c.memo || ''
+      });
+    });
+    todayData.entries.sort((a, b) => a.time.localeCompare(b.time));
+    saveData();
+    renderAll();
+    showToast(t('toast.appliedYesterday').replace('{count}', candidates.length));
+  };
+}
+
 function closeDay() {
   const dd = getDateData(currentDate);
   if (dd.entries.length === 0) {
@@ -8289,6 +8385,16 @@ function renderTimeline() {
   const startDayBtn = document.getElementById('start-day-btn');
   const closeDayBtn = document.getElementById('close-day-btn');
   const reopenDayBtn = document.getElementById('reopen-day-btn');
+  const applyYBtn = document.getElementById('apply-yesterday-btn');
+
+  // 어제 기록 적용 버튼 표시 조건: 오늘 + 마감 전 + 어제 기록 존재
+  const isCompletedNow = dd.status === 'completed';
+  const yesterday = getYesterdayStr();
+  const ydData = data.dates[yesterday];
+  const hasYesterday = !!(ydData && ydData.entries && ydData.entries.length > 0);
+  if (applyYBtn) {
+    applyYBtn.style.display = (!isPast && !isCompletedNow && hasYesterday) ? 'block' : 'none';
+  }
 
   if (dd.entries.length === 0) {
     container.innerHTML = '';
