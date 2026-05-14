@@ -10553,6 +10553,53 @@ async function exportExcel() {
   const bookSheetName = currentLang === 'ja' ? '読書記録' : currentLang === 'en' ? 'Books' : '독서 기록';
   XLSX.utils.book_append_sheet(wb, ws3, bookSheetName);
 
+  // ---- Sheet 4: Happy Buttons (자청 완벽한 원시인) ----
+  if (data.happyButtons && data.happyButtons.log) {
+    const hbHeader1 = [currentLang === 'ja' ? '項目' : currentLang === 'en' ? 'Item' : '항목'];
+    dates.forEach(dateStr => {
+      const [y, m, d] = dateStr.split('-').map(Number);
+      const dt = new Date(y, m - 1, d);
+      hbHeader1.push(`${m}/${d} (${dayNames[dt.getDay()]})`);
+    });
+    const hbRows = [hbHeader1];
+    const merges = [];
+    let lastLevel = -1;
+    const items = HAPPY_BUTTONS; // 숨김 무관, 엑셀은 전체 항목 표시
+    items.forEach((b) => {
+      if (b.level !== lastLevel) {
+        const lvLabel = getHappyLevelLabel(b.level);
+        const groupRow = [`LEVEL ${b.level} · ${lvLabel}`];
+        for (let i = 0; i < dates.length; i++) groupRow.push('');
+        hbRows.push(groupRow);
+        merges.push({ s: { r: hbRows.length - 1, c: 0 }, e: { r: hbRows.length - 1, c: dates.length } });
+        lastLevel = b.level;
+      }
+      const row = [`${b.icon} ${getHappyText(b, 'name')}`];
+      dates.forEach(dateStr => {
+        const log = data.happyButtons.log[dateStr];
+        row.push(log && log.includes(b.id) ? '●' : '');
+      });
+      hbRows.push(row);
+    });
+    // 합계 row
+    const totalLabel = currentLang === 'ja' ? '合計' : currentLang === 'en' ? 'Total' : '합계';
+    const totalRow = [totalLabel];
+    dates.forEach(dateStr => {
+      const log = data.happyButtons.log[dateStr] || [];
+      const valid = log.filter(id => HAPPY_BUTTONS.some(b => b.id === id));
+      totalRow.push(`${valid.length}/${HAPPY_BUTTONS.length}`);
+    });
+    hbRows.push(totalRow);
+
+    const ws4 = XLSX.utils.aoa_to_sheet(hbRows);
+    const hbCols = [{ wch: 22 }];
+    dates.forEach(() => hbCols.push({ wch: 11 }));
+    ws4['!cols'] = hbCols;
+    if (merges.length) ws4['!merges'] = merges;
+    const hbSheetName = currentLang === 'ja' ? '幸せボタン' : currentLang === 'en' ? 'Happy Buttons' : '행복 버튼';
+    XLSX.utils.book_append_sheet(wb, ws4, hbSheetName);
+  }
+
   // ---- Download or Share ----
   const fileName = `MyRoutine_${periodLabel.replace(/[\s\/~]/g, '_')}.xlsx`;
   const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
