@@ -2182,7 +2182,14 @@ body {
 @media (max-width: 340px) {
   .virtue-grid { grid-template-columns: 36px repeat(7, 1fr); }
   .virtue-grid .vg-label .vg-name { display: none; }
+  .virtue-grid.happy-grid { grid-template-columns: 64px repeat(7, 1fr); }
+  .virtue-grid.happy-grid .vg-label .vg-name { display: inline; font-size: 9px; }
 }
+
+/* Happy Buttons grid — wider label column for longer names */
+.virtue-grid.happy-grid { grid-template-columns: 84px repeat(7, 1fr); }
+.virtue-grid.happy-grid .vg-label { font-size: 11px; padding: 4px 2px; }
+.virtue-grid.happy-grid .hb-level-row { letter-spacing: 0.5px; }
 
 /* Calendar virtue star */
 .day-virtue-star { font-size: 8px; position: absolute; top: 1px; left: 1px; }
@@ -2366,6 +2373,7 @@ body {
   <div id="sec-analysis" class="section">
     <div id="past-date-banner"></div>
 
+    <div id="happy-buttons-section"></div>
     <div id="virtue-grid-section"></div>
 
     <div id="classify-section" class="card" style="display:none;">
@@ -2894,6 +2902,12 @@ const TRANSLATIONS = {
     'books.stepProgress': '{n}/5', 'books.lifeBook': '인생책',
     'books.coverImage': '책 표지', 'books.coverUrlPlaceholder': '이미지 URL 붙여넣기', 'books.coverFile': '파일',
     'books.goalDate': '독서 목표일', 'books.goalOverdue': '목표일 초과!', 'books.goalToday': '오늘이 목표일!', 'books.goalTomorrow': '내일이 목표일!',
+    // Happy Buttons (자청 완벽한 원시인)
+    'happy.title': '15가지 행복 버튼',
+    'happy.subtitle': '자청 「완벽한 원시인」 — 항목을 누르면 자세한 설명',
+    'happy.weekSummary': '이번 주 ● {n}/{total}개 ({p}%)',
+    'happy.concept': '핵심 개념',
+    'happy.apply': '현실 적용',
     // Virtue Tracker
     'virtue.title': '벤저민 프랭클린 덕목 관리표', 'virtue.focusThisWeek': '이번 주 집중',
     'virtue.weekLabel': '{n}/13주차', 'virtue.cycleLabel': '{n}차 사이클',
@@ -3163,6 +3177,12 @@ const TRANSLATIONS = {
     'books.stepProgress': '{n}/5', 'books.lifeBook': '人生の一冊',
     'books.coverImage': '表紙画像', 'books.coverUrlPlaceholder': '画像URLを貼り付け', 'books.coverFile': 'ファイル',
     'books.goalDate': '読書目標日', 'books.goalOverdue': '目標日超過！', 'books.goalToday': '今日が目標日！', 'books.goalTomorrow': '明日が目標日！',
+    // Happy Buttons (자청 完璧な原始人)
+    'happy.title': '15の幸せボタン',
+    'happy.subtitle': 'ジャチョン「完璧な原始人」— 項目をタップで詳細説明',
+    'happy.weekSummary': '今週 ● {n}/{total}個 ({p}%)',
+    'happy.concept': '核心コンセプト',
+    'happy.apply': '実生活への適用',
     // Virtue Tracker
     'virtue.title': 'B.フランクリン 徳目管理表', 'virtue.focusThisWeek': '今週の集中徳目',
     'virtue.weekLabel': '{n}/13週目', 'virtue.cycleLabel': '第{n}サイクル',
@@ -3432,6 +3452,12 @@ const TRANSLATIONS = {
     'books.stepProgress': '{n}/5', 'books.lifeBook': 'Life-changing Book',
     'books.coverImage': 'Cover Image', 'books.coverUrlPlaceholder': 'Paste image URL', 'books.coverFile': 'File',
     'books.goalDate': 'Reading Goal', 'books.goalOverdue': 'Overdue!', 'books.goalToday': 'Due today!', 'books.goalTomorrow': 'Due tomorrow!',
+    // Happy Buttons
+    'happy.title': '15 Happy Buttons',
+    'happy.subtitle': 'From Jacheong\'s "The Perfect Primitive" — tap an item for details',
+    'happy.weekSummary': 'This week ● {n}/{total} ({p}%)',
+    'happy.concept': 'Core Concept',
+    'happy.apply': 'Real-life Application',
     // Virtue Tracker
     'virtue.title': 'B. Franklin Virtue Chart', 'virtue.focusThisWeek': 'Focus this week',
     'virtue.weekLabel': 'Week {n}/13', 'virtue.cycleLabel': 'Cycle {n}',
@@ -3990,6 +4016,244 @@ function renderDailyWisdom() {
 let data = { dates: {}, activityPresets: {}, customPresets: null, settings: {}, goals: [], lifeGoals: [], books: [], virtues: null, dreams: [] };
 
 // ============== Franklin 13 Virtues Preset ==============
+// 자청 "완벽한 원시인" 15가지 행복 버튼 (5 LEVEL × 15 항목)
+const HAPPY_LEVELS = {
+  0: { ko: '생존', ja: '生存', en: 'Survival', sub: { ko: '망가진 뇌를 일단 살려내는 단계', ja: '壊れた脳をまず生かす段階', en: 'Reviving the worn-out brain' } },
+  1: { ko: '안정', ja: '安定', en: 'Stability', sub: { ko: '뇌가 다시 정상 작동하기 시작하는 단계', ja: '脳が再び正常に動き始める段階', en: 'Brain returns to normal function' } },
+  2: { ko: '성장', ja: '成長', en: 'Growth', sub: { ko: '인간이 다시 강해지는 단계', ja: '人間が再び強くなる段階', en: 'Becoming stronger again' } },
+  3: { ko: '연결', ja: 'つながり', en: 'Connection', sub: { ko: '인간은 혼자 살도록 설계되지 않았다', ja: '人間は一人で生きるよう設計されていない', en: 'Humans are not designed to live alone' } },
+  4: { ko: '초월', ja: '超越', en: 'Transcendence', sub: { ko: '단순 생존을 넘어선 몰입의 영역', ja: '単なる生存を超えた没入の領域', en: 'Beyond mere survival into flow' } },
+};
+
+const HAPPY_BUTTONS = [
+  { id: 'hb_sleep', level: 0, icon: '😴',
+    name: { ko: '수면', ja: '睡眠', en: 'Sleep' },
+    sub:  { ko: '밤 10시의 청소부', ja: '夜10時の清掃員', en: 'The 10pm Cleaner' },
+    concept: {
+      ko: '뇌는 수면 중에 독소를 청소합니다. 기억 정리, 감정 안정, 스트레스 회복이 모두 잠자는 동안 이루어집니다. 늦게 자는 것은 단순 피곤 문제가 아니라 뇌가 유지보수를 못 하는 상태입니다.',
+      ja: '脳は睡眠中に毒素を掃除します。記憶の整理、感情の安定、ストレス回復はすべて眠っている間に行われます。遅く寝ることは単なる疲労の問題ではなく、脳がメンテナンスできない状態です。',
+      en: 'The brain clears toxins during sleep. Memory consolidation, emotional stability, and stress recovery all happen while you sleep. Staying up late is not just about tiredness — it means the brain cannot perform its maintenance.'
+    },
+    apply: {
+      ko: '취침 시간 고정하기 / 밤 스마트폰 줄이기 / 가능하면 11시 전 수면',
+      ja: '就寝時間を固定 / 夜のスマホを減らす / できれば11時前に就寝',
+      en: 'Fix bedtime / Reduce phone use at night / Sleep before 11pm if possible'
+    }
+  },
+  { id: 'hb_water', level: 0, icon: '💧',
+    name: { ko: '물', ja: '水', en: 'Water' },
+    sub:  { ko: '탈수 2%가 지능 20%를 훔친다', ja: '脱水2%が知能20%を奪う', en: '2% dehydration steals 20% of intelligence' },
+    concept: {
+      ko: '인간의 뇌는 수분 의존도가 매우 높습니다. 탈수 시 집중력 저하, 피로감 증가, 짜증이 늘어납니다.',
+      ja: '人間の脳は水分依存度が非常に高いです。脱水時には集中力低下、疲労感、イライラが増加します。',
+      en: 'The human brain is highly water-dependent. Dehydration leads to reduced focus, increased fatigue, and irritability.'
+    },
+    apply: {
+      ko: '기상 직후 물 한 잔 / 커피만 마시는 습관 피하기 / 장시간 업무 중 물 자주 섭취',
+      ja: '起床直後に水一杯 / コーヒーだけの習慣を避ける / 長時間作業中はこまめに水分補給',
+      en: 'A glass of water on waking / Avoid coffee-only habit / Drink water often during long work sessions'
+    }
+  },
+  { id: 'hb_breath', level: 0, icon: '🫁',
+    name: { ko: '호흡', ja: '呼吸', en: 'Breathing' },
+    sub:  { ko: '생각으로 감정을 막을 수 없다', ja: '思考で感情を止められない', en: 'You cannot stop emotion with thought' },
+    concept: {
+      ko: '감정은 생각보다 몸 상태에 더 크게 영향을 받습니다. 불안할 때는 호흡이 짧아지고 교감신경이 과활성화됩니다.',
+      ja: '感情は思考よりも身体状態の影響を強く受けます。不安な時は呼吸が浅くなり、交感神経が過活性化します。',
+      en: 'Emotions are influenced more by body state than by thought. When anxious, breath shortens and the sympathetic nervous system activates.'
+    },
+    apply: {
+      ko: '천천히 코로 호흡 / 긴장될 땐 복식호흡 / 중요한 일 전 깊은 호흡',
+      ja: 'ゆっくり鼻で呼吸 / 緊張時は腹式呼吸 / 大事な場面の前に深呼吸',
+      en: 'Slow nose breathing / Belly breathing when tense / Deep breaths before important moments'
+    }
+  },
+  { id: 'hb_light', level: 1, icon: '☀️',
+    name: { ko: '빛', ja: '光', en: 'Light' },
+    sub:  { ko: '아침 햇빛 15분의 힘', ja: '朝の太陽光15分の力', en: 'The power of 15 minutes of morning sun' },
+    concept: {
+      ko: '햇빛은 단순 기분 문제가 아니라 생체 리듬, 세로토닌, 수면 호르몬 조절과 직접 연결됩니다.',
+      ja: '太陽光は単なる気分の問題ではなく、生体リズム・セロトニン・睡眠ホルモンの調節と直結しています。',
+      en: 'Sunlight is not just about mood — it directly regulates circadian rhythm, serotonin, and sleep hormones.'
+    },
+    apply: {
+      ko: '출근 중 햇빛 보기 / 점심 산책 / 실내 생활만 하지 않기',
+      ja: '通勤中に日光を浴びる / 昼休みに散歩 / 室内だけで過ごさない',
+      en: 'Catch sunlight on your commute / Walk at lunch / Do not stay indoors all day'
+    }
+  },
+  { id: 'hb_walk', level: 1, icon: '🚶',
+    name: { ko: '걷기', ja: '歩行', en: 'Walking' },
+    sub:  { ko: '앉아 있으면 뇌는 절전 모드로 들어간다', ja: '座り続けると脳は省エネモードに入る', en: 'Sit too long and the brain enters power-saving mode' },
+    concept: {
+      ko: '인간은 이동하도록 진화했습니다. 오래 앉아 있으면 집중력 감소, 우울감 증가, 사고력 둔화가 나타납니다.',
+      ja: '人間は移動するように進化しました。長時間座ると集中力低下、抑うつ感の増加、思考力の鈍化が現れます。',
+      en: 'Humans evolved to move. Sitting too long reduces focus, increases depression, and dulls thinking.'
+    },
+    apply: {
+      ko: '출퇴근 걷기 / 점심 후 산책 / 통화하며 걷기',
+      ja: '通勤を歩く / 昼食後の散歩 / 電話しながら歩く',
+      en: 'Walk to/from work / Walk after lunch / Walk while on calls'
+    }
+  },
+  { id: 'hb_nutrition', level: 1, icon: '🥗',
+    name: { ko: '영양', ja: '栄養', en: 'Nutrition' },
+    sub:  { ko: '뇌는 칼로리가 아니라 영양을 센다', ja: '脳はカロリーではなく栄養を数える', en: 'The brain counts nutrients, not calories' },
+    concept: {
+      ko: '현대 음식은 칼로리는 높지만 영양 밀도는 낮습니다. 초가공식품을 줄이고 단백질과 영양 균형을 맞추는 것이 핵심입니다.',
+      ja: '現代の食品はカロリーは高くても栄養密度は低いです。超加工食品を減らし、タンパク質と栄養バランスを取ることが重要です。',
+      en: 'Modern food is high in calories but low in nutrient density. Reduce ultra-processed foods and balance protein and nutrients.'
+    },
+    apply: {
+      ko: '단 음료 줄이기 / 과식 줄이기 / 단백질 충분히 섭취',
+      ja: '甘い飲み物を減らす / 食べ過ぎを減らす / タンパク質を十分に摂る',
+      en: 'Reduce sugary drinks / Avoid overeating / Get enough protein'
+    }
+  },
+  { id: 'hb_discomfort', level: 2, icon: '🥶',
+    name: { ko: '의도된 불편함', ja: '意図された不快さ', en: 'Intentional Discomfort' },
+    sub:  { ko: '편안함 속에서 뇌는 퇴화한다', ja: '快適さの中で脳は退化する', en: 'In comfort, the brain decays' },
+    concept: {
+      ko: '인간의 뇌는 적당한 스트레스에서 성장합니다. 찬물 샤워, 새로운 도전, 낯선 경험 같은 자극이 뇌를 깨웁니다.',
+      ja: '人間の脳は適度なストレスで成長します。冷水シャワー、新しい挑戦、慣れない経験などが脳を目覚めさせます。',
+      en: 'The brain grows under moderate stress. Cold showers, new challenges, and unfamiliar experiences wake up the brain.'
+    },
+    apply: {
+      ko: '일부러 어려운 일 시도 / 익숙함만 반복하지 않기 / 새로운 도전 더해 보기',
+      ja: 'あえて難しいことに挑戦 / 慣れたことばかり繰り返さない / 新しい挑戦を加える',
+      en: 'Try something difficult on purpose / Do not just repeat the familiar / Add a new challenge'
+    }
+  },
+  { id: 'hb_strength', level: 2, icon: '💪',
+    name: { ko: '근력 운동', ja: '筋トレ', en: 'Strength Training' },
+    sub:  { ko: '근육의 비명은 생존 신호다', ja: '筋肉の悲鳴は生存シグナル', en: 'Muscle strain is a survival signal' },
+    concept: {
+      ko: '근력 운동은 단순한 몸 만들기가 아니라 자신감, 활력, 호르몬 균형과 직접 연결됩니다.',
+      ja: '筋トレは単なる体作りではなく、自信・活力・ホルモンバランスと直結します。',
+      en: 'Strength training is not just body sculpting — it directly connects to confidence, vitality, and hormone balance.'
+    },
+    apply: {
+      ko: '스쿼트 / 푸쉬업 / 짧은 홈트 — 매일 조금씩 지속',
+      ja: 'スクワット / 腕立て伏せ / 短い宅トレ — 毎日少しずつ継続',
+      en: 'Squats / Push-ups / Short home workouts — a little every day'
+    }
+  },
+  { id: 'hb_cardio', level: 2, icon: '🏃',
+    name: { ko: '고강도 운동', ja: '高強度運動', en: 'High-Intensity Exercise' },
+    sub:  { ko: '작은 사냥', ja: '小さな狩り', en: 'A small hunt' },
+    concept: {
+      ko: '원시인은 매일 강한 신체 활동을 했습니다. 고강도 운동은 심폐 기능, 도파민, 활력을 크게 자극합니다.',
+      ja: '原始人は毎日強い身体活動をしていました。高強度運動は心肺機能・ドーパミン・活力を強く刺激します。',
+      en: 'Primitive humans engaged in vigorous activity daily. High-intensity exercise strongly stimulates cardio fitness, dopamine, and vitality.'
+    },
+    apply: {
+      ko: '짧은 인터벌 운동 / 계단 빠르게 오르기 / 짧고 강한 운동 주 2~3회',
+      ja: '短いインターバル運動 / 階段を駆け上がる / 短く強い運動を週2〜3回',
+      en: 'Short interval workouts / Sprint up stairs / Short, intense sessions 2–3 times a week'
+    }
+  },
+  { id: 'hb_connect', level: 3, icon: '👥',
+    name: { ko: '연결', ja: 'つながり', en: 'Connection' },
+    sub:  { ko: '5명의 진짜 인간', ja: '5人の本当の人間', en: 'Five real humans' },
+    concept: {
+      ko: 'SNS 관계보다 실제 관계가 중요합니다. 깊고 진짜인 인간관계가 행복의 핵심입니다.',
+      ja: 'SNSの関係よりも実際の関係が重要です。深く本物の人間関係が幸福の核心です。',
+      en: 'Real relationships matter more than SNS ones. Deep, authentic human connections are at the heart of happiness.'
+    },
+    apply: {
+      ko: '깊은 인간관계 유지 / 가족과 대화 / 혼자 고립되지 않기',
+      ja: '深い人間関係を保つ / 家族と話す / 一人で孤立しない',
+      en: 'Maintain deep relationships / Talk with family / Do not isolate yourself'
+    }
+  },
+  { id: 'hb_facetoface', level: 3, icon: '👁️',
+    name: { ko: '대면', ja: '対面', en: 'Face-to-Face' },
+    sub:  { ko: '눈맞춤과 스킨십', ja: 'アイコンタクトとスキンシップ', en: 'Eye contact and touch' },
+    concept: {
+      ko: '인간의 뇌는 실제 대면 상호작용에서 안정감을 얻습니다. 화면 너머가 아니라 같은 공간에서의 교감이 중요합니다.',
+      ja: '人間の脳は実際の対面のやり取りから安心感を得ます。画面越しではなく同じ空間での交流が大切です。',
+      en: 'The human brain finds calm in real, in-person interaction. Sharing the same space matters more than meeting through screens.'
+    },
+    apply: {
+      ko: '직접 대화하기 / 가족과 교감 / 사람 얼굴 보고 이야기하기',
+      ja: '直接会話する / 家族と触れ合う / 顔を見て話す',
+      en: 'Talk in person / Engage with family / Speak face-to-face'
+    }
+  },
+  { id: 'hb_contribute', level: 3, icon: '🤝',
+    name: { ko: '기여', ja: '貢献', en: 'Contribution' },
+    sub:  { ko: '공허함의 해답은 기여', ja: '虚しさの答えは貢献', en: 'The answer to emptiness is contribution' },
+    concept: {
+      ko: '자기만을 위한 삶은 쉽게 공허해집니다. 인간은 도움, 기여, 영향력 속에서 의미를 발견합니다.',
+      ja: '自分のためだけの人生は虚しくなりやすいです。人間は助け・貢献・影響力の中で意味を見出します。',
+      en: 'A life only for oneself easily feels empty. Humans find meaning through helping, contributing, and having impact.'
+    },
+    apply: {
+      ko: '경험과 지식 공유 / 작은 친절 / 누군가에게 도움이 되는 일 하기',
+      ja: '経験と知識を共有 / 小さな親切 / 誰かの役に立つことをする',
+      en: 'Share experience and knowledge / Small acts of kindness / Do something useful for others'
+    }
+  },
+  { id: 'hb_intimacy', level: 3, icon: '❤️',
+    name: { ko: '친밀감', ja: '親密さ', en: 'Intimacy' },
+    sub:  { ko: '뇌가 가장 강하게 원하는 보상', ja: '脳が最も強く求める報酬', en: 'The brain\'s strongest reward' },
+    concept: {
+      ko: '인간의 본능적 보상 시스템과 깊이 연결됩니다. 욕망, 동기, 친밀감이 삶의 활력에 큰 영향을 줍니다.',
+      ja: '人間の本能的報酬システムと深く結びついています。欲望・動機・親密さが人生の活力に大きく影響します。',
+      en: 'Deeply tied to the brain\'s instinctive reward system. Desire, motivation, and intimacy strongly affect life energy.'
+    },
+    apply: {
+      ko: '파트너와의 친밀감 유지 / 스킨십과 교감 / 건강한 관계 가꾸기',
+      ja: 'パートナーとの親密さを保つ / スキンシップと交流 / 健全な関係を育む',
+      en: 'Maintain intimacy with your partner / Physical and emotional closeness / Nurture a healthy relationship'
+    }
+  },
+  { id: 'hb_idle', level: 4, icon: '☁️',
+    name: { ko: '멍때리기', ja: 'ぼーっとする', en: 'Idle Mind' },
+    sub:  { ko: '구멍을 봉합하는 조용한 시간', ja: '隙間を縫う静かな時間', en: 'Quiet time that mends the gaps' },
+    concept: {
+      ko: '현대인은 입력 과부하 상태입니다. 멍때리는 시간은 뇌 회복, 감정 정리, 창의성과 직접 연결됩니다.',
+      ja: '現代人は入力過多の状態です。ぼーっとする時間は脳の回復・感情の整理・創造性と直結します。',
+      en: 'Modern people are in input overload. Idle time connects directly to brain recovery, emotional processing, and creativity.'
+    },
+    apply: {
+      ko: '산책할 때 음악 끄기 / 아무것도 안 하는 시간 만들기 / 휴대폰 계속 보지 않기',
+      ja: '散歩中に音楽を切る / 何もしない時間を作る / スマホを見続けない',
+      en: 'Turn off music on walks / Make time for doing nothing / Stop scrolling continuously'
+    }
+  },
+  { id: 'hb_flow', level: 4, icon: '🎯',
+    name: { ko: '몰입', ja: '没入', en: 'Flow' },
+    sub:  { ko: '초월의 순간', ja: '超越の瞬間', en: 'A moment of transcendence' },
+    concept: {
+      ko: '인간은 한 가지 일에 깊게 몰입할 때 가장 큰 만족을 느낍니다. 시간이 사라지는 그 상태가 행복의 정점입니다.',
+      ja: '人間は一つのことに深く没入している時、最大の満足を感じます。時間が消える状態こそが幸福の頂点です。',
+      en: 'Humans feel deepest satisfaction in deep flow on one thing. When time disappears, happiness peaks.'
+    },
+    apply: {
+      ko: '한 가지 활동에 깊이 빠져들기 / 방해 요소 차단 / 충분한 시간 확보',
+      ja: '一つの活動に深く没頭する / 邪魔を遮断する / 十分な時間を確保',
+      en: 'Dive deep into one activity / Block distractions / Secure enough time'
+    }
+  },
+];
+
+function getHappyText(item, field) {
+  const obj = item[field];
+  if (!obj) return '';
+  return obj[currentLang] || obj.ko || '';
+}
+function getHappyLevelLabel(lv) {
+  const l = HAPPY_LEVELS[lv];
+  if (!l) return '';
+  return l[currentLang] || l.ko;
+}
+function getHappyLevelSub(lv) {
+  const l = HAPPY_LEVELS[lv];
+  if (!l || !l.sub) return '';
+  return l.sub[currentLang] || l.sub.ko;
+}
+
 const FRANKLIN_VIRTUES = [
   { id: 'vp_temperance', nameKey: 'virtue.temperance', descKey: 'virtue.temperanceDesc', icon: '🍽️' },
   { id: 'vp_silence', nameKey: 'virtue.silence', descKey: 'virtue.silenceDesc', icon: '🤫' },
@@ -8924,6 +9188,120 @@ function handleCycleComplete() {
   if (typeof gtag === 'function') gtag('event', 'cycle_complete', { cycle: cycle.cycleNumber - 1, marks: totalMarks });
 }
 
+// ============== Happy Buttons (자청 완벽한 원시인) ==============
+function initDefaultHappyButtons() {
+  if (data.happyButtons) return;
+  data.happyButtons = { log: {}, hidden: [], startDate: getTodayStr() };
+  saveData();
+}
+
+function getActiveHappyButtons() {
+  const hidden = (data.happyButtons && data.happyButtons.hidden) || [];
+  return HAPPY_BUTTONS.filter(b => !hidden.includes(b.id));
+}
+
+function toggleHappyButton(dateStr, id) {
+  if (!data.happyButtons) initDefaultHappyButtons();
+  if (!data.happyButtons.log[dateStr]) data.happyButtons.log[dateStr] = [];
+  const arr = data.happyButtons.log[dateStr];
+  const idx = arr.indexOf(id);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(id);
+  saveData();
+  renderHappyButtons();
+}
+
+function renderHappyButtons() {
+  const container = document.getElementById('happy-buttons-section');
+  if (!container) return;
+  if (!data.happyButtons) initDefaultHappyButtons();
+
+  const items = getActiveHappyButtons();
+  const weekDates = getWeekDates();
+  const todayStr = getTodayStr();
+  const dayNames = getDayNames();
+  const weekMonth = weekDates[0].split('-')[1].replace(/^0/, '');
+  const monthSuffix = currentLang === 'en' ? '/' : (currentLang === 'ja' ? '月' : '월');
+
+  let gridHtml = '<div class="vg-header"></div>';
+  weekDates.forEach((d, i) => {
+    const isToday = d === todayStr;
+    const dayNum = d.split('-')[2].replace(/^0/, '');
+    gridHtml += `<div class="vg-header${isToday ? ' vg-today' : ''}"><span>${dayNames[i]}</span><br><span style="font-size:10px;font-weight:400">${dayNum}</span></div>`;
+  });
+
+  let lastLevel = -1;
+  items.forEach(b => {
+    if (b.level !== lastLevel) {
+      const lvLabel = getHappyLevelLabel(b.level);
+      gridHtml += `<div class="hb-level-row" style="grid-column:1/-1;font-size:11px;font-weight:700;color:var(--mint);padding:6px 4px 2px;border-top:1px dashed var(--text-light);margin-top:2px">LEVEL ${b.level} · ${escHtml(lvLabel)}</div>`;
+      lastLevel = b.level;
+    }
+    gridHtml += `<div class="vg-label" onclick="showHappyButtonDetail('${b.id}')">
+      <span class="vg-icon">${b.icon}</span>
+      <span class="vg-name">${escHtml(getHappyText(b, 'name'))}</span>
+    </div>`;
+    weekDates.forEach(d => {
+      const isToday = d === todayStr;
+      const isFuture = d > todayStr;
+      const log = data.happyButtons.log[d];
+      const hasMark = log && log.includes(b.id);
+      const editable = isToday;
+      let cls = 'vg-cell';
+      if (isToday) cls += ' vg-today-col';
+      if (isFuture) cls += ' vg-future';
+      if (editable) cls += ' vg-editable';
+      const onclick = editable ? ` onclick="toggleHappyButton('${d}','${b.id}')"` : '';
+      gridHtml += `<div class="${cls}"${onclick}>${hasMark ? '<span class="vg-mark"></span>' : ''}</div>`;
+    });
+  });
+
+  const thisWeekMarks = weekDates.reduce((sum, d) => sum + ((data.happyButtons.log[d] || []).filter(id => HAPPY_BUTTONS.some(b => b.id === id)).length), 0);
+  const totalCells = items.length * 7;
+  const percent = totalCells > 0 ? Math.round((thisWeekMarks / totalCells) * 100) : 0;
+
+  container.innerHTML = `
+    <div class="virtue-section"><div class="card">
+      <div class="virtue-header">
+        <h3>🌿 ${t('happy.title')} <span class="virtue-week">${weekMonth}${monthSuffix}</span></h3>
+      </div>
+      <div class="virtue-focus" style="font-size:12px">${t('happy.subtitle')}</div>
+      <div class="virtue-grid-wrap"><div class="virtue-grid happy-grid">${gridHtml}</div></div>
+      <div class="virtue-summary">${t('happy.weekSummary').replace('{n}', thisWeekMarks).replace('{total}', totalCells).replace('{p}', percent)}</div>
+    </div></div>`;
+}
+
+function showHappyButtonDetail(id) {
+  const item = HAPPY_BUTTONS.find(b => b.id === id);
+  if (!item) return;
+  const levelLabel = getHappyLevelLabel(item.level);
+  const levelSub = getHappyLevelSub(item.level);
+  const name = getHappyText(item, 'name');
+  const sub = getHappyText(item, 'sub');
+  const concept = getHappyText(item, 'concept');
+  const apply = getHappyText(item, 'apply');
+
+  showModal(`
+    <div style="margin-bottom:10px">
+      <span style="background:var(--mint);color:white;font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600">LEVEL ${item.level} · ${escHtml(levelLabel)}</span>
+      <div style="font-size:11px;color:var(--text-sub);margin-top:5px">${escHtml(levelSub)}</div>
+    </div>
+    <h3 style="margin-bottom:4px">${item.icon} ${escHtml(name)}</h3>
+    <div style="color:var(--text-sub);font-size:13px;font-style:italic;margin-bottom:14px">"${escHtml(sub)}"</div>
+    <div style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">💡 ${t('happy.concept')}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6">${escHtml(concept)}</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px">✅ ${t('happy.apply')}</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.6">${escHtml(apply)}</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end">
+      <button class="btn btn-primary" onclick="closeModal()">${t('modal.close')}</button>
+    </div>
+  `);
+}
+
 // ============== Virtue Check Modal (after close day) ==============
 function showVirtueCheckModal(dateStr) {
   const virtues = getActiveVirtues();
@@ -9080,6 +9458,7 @@ function deleteVirtue(virtueId) {
 // ============== Mission 3: Analysis ==============
 function renderAnalysis() {
   renderMonthlyCalendar();
+  renderHappyButtons();
   renderVirtueGrid();
   renderPastDateBanner();
   renderSaveReturnBtn();
