@@ -6333,11 +6333,11 @@ function showAddBookModal() {
         <h3>📚 ${t('books.addTitle')}</h3>
         <div style="margin-top:12px">
           <label style="font-size:13px;font-weight:600">${t('books.bookTitle')} *</label>
-          <input type="text" id="book-input-title" class="time-input" style="width:100%;font-size:15px;padding:8px;margin-top:4px" autofocus>
+          <textarea id="book-input-title" class="time-input" rows="2" style="width:100%;font-size:15px;padding:8px;margin-top:4px;resize:vertical;font-family:inherit" autofocus></textarea>
         </div>
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.author')}</label>
-          <input type="text" id="book-input-author" class="time-input" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+          <textarea id="book-input-author" class="time-input" rows="2" style="width:100%;font-size:15px;padding:8px;margin-top:4px;resize:vertical;font-family:inherit"></textarea>
         </div>
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.startDate')}</label>
@@ -6350,7 +6350,7 @@ function showAddBookModal() {
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
           <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
-            <input type="text" id="book-input-image-url" class="time-input" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <textarea id="book-input-image-url" class="time-input" rows="2" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px;resize:vertical;font-family:inherit"></textarea>
             <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap">
               ${t('books.coverFile')}
               <input type="file" accept="image/*" onchange="handleBookCoverFile(event)" style="display:none">
@@ -6564,11 +6564,11 @@ function showEditBookModal(bookId) {
         <h3>📖 ${t('books.editTitle')}</h3>
         <div style="margin-top:12px">
           <label style="font-size:13px;font-weight:600">${t('books.bookTitle')}</label>
-          <input type="text" id="book-edit-title" class="time-input" value="${escAttr(book.title)}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+          <textarea id="book-edit-title" class="time-input" rows="2" style="width:100%;font-size:15px;padding:8px;margin-top:4px;resize:vertical;font-family:inherit">${escHtml(book.title)}</textarea>
         </div>
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.author')}</label>
-          <input type="text" id="book-edit-author" class="time-input" value="${escAttr(book.author || '')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+          <textarea id="book-edit-author" class="time-input" rows="2" style="width:100%;font-size:15px;padding:8px;margin-top:4px;resize:vertical;font-family:inherit">${escHtml(book.author || '')}</textarea>
         </div>
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.startDate')}</label>
@@ -6586,7 +6586,7 @@ function showEditBookModal(bookId) {
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">📷 ${t('books.coverImage')}</label>
           <div style="display:flex;gap:6px;margin-top:4px;align-items:center">
-            <input type="text" id="book-edit-image-url" class="time-input" value="${escAttr(book.coverImage && !book.coverImage.startsWith('data:') ? book.coverImage : '')}" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px">
+            <textarea id="book-edit-image-url" class="time-input" rows="2" placeholder="${t('books.coverUrlPlaceholder')}" style="flex:1;font-size:13px;padding:6px 8px;resize:vertical;font-family:inherit">${escHtml(book.coverImage && !book.coverImage.startsWith('data:') ? book.coverImage : '')}</textarea>
             <label class="btn" style="font-size:12px;padding:6px 10px;cursor:pointer;white-space:nowrap">
               ${t('books.coverFile')}
               <input type="file" accept="image/*" onchange="handleBookEditCoverFile(event)" style="display:none">
@@ -6604,7 +6604,7 @@ function showEditBookModal(bookId) {
         </div>
         <div style="margin-top:10px">
           <label style="font-size:13px;font-weight:600">${t('books.memo')}</label>
-          <input type="text" id="book-edit-memo" class="time-input" value="${escAttr(book.memo || '')}" placeholder="${t('books.memoPlaceholder')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px">
+          <textarea id="book-edit-memo" class="time-input" rows="3" placeholder="${t('books.memoPlaceholder')}" style="width:100%;font-size:15px;padding:8px;margin-top:4px;resize:vertical;font-family:inherit">${escHtml(book.memo || '')}</textarea>
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
           <button class="btn" onclick="deleteBook('${escAttr(bookId)}')" style="color:var(--danger)">🗑️ ${t('books.delete')}</button>
